@@ -5,6 +5,7 @@ import './globals.css'
 const inter = Inter({ 
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -18,8 +19,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={inter.className} suppressHydrationWarning>
         {children}
       </body>
     </html>
