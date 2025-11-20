@@ -84,7 +84,7 @@ export async function getActiveProposals() {
 
   // Get options for each proposal
   const proposalsWithOptions = await Promise.all(
-    (proposals || []).map(async (proposal) => {
+    (proposals || []).map(async (proposal: Proposal) => {
       const { data: options } = await supabase
         .from('proposal_options')
         .select('*')
