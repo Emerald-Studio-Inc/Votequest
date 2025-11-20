@@ -1,14 +1,15 @@
 export interface User {
-  address: string | null;
-  level: number;
-  xp: number;
-  nextLevelXP: number;
-  streak: number;
-  votingPower: number;
-  votesCount: number;
-  globalRank: number;
-  achievements: string[];
-  votedProposals: string[];
+  id: string
+  wallet_address: string
+  level: number
+  xp: number
+  streak: number
+  voting_power: number
+  votes_count: number
+  global_rank: number
+  votedProposals: string[]
+  created_at?: string
+  updated_at?: string
 }
 
 export interface ProposalOption {
