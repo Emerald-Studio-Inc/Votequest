@@ -2,76 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ChevronLeft, Check, Clock, Users, Shield } from 'lucide-react';
-
-// Mock blockchain data - In production, this would come from smart contracts
-const mockProposals = [
-  {
-    id: 'PROP-2547',
-    title: 'Treasury Allocation Strategy',
-    description: 'Strategic allocation framework for 1,000,000 governance tokens from the community treasury for Q1 2025. The distribution model prioritizes sustainable ecosystem growth through balanced investment across infrastructure development, marketing initiatives, and community-driven programs.',
-    participants: 12543,
-    timeLeft: '2d 14h',
-    endDate: new Date(Date.now() + 2.5 * 24 * 60 * 60 * 1000),
-    status: 'active' as const,
-    options: [
-      { 
-        id: 1, 
-        title: 'Infrastructure Development', 
-        allocation: '450,000 tokens', 
-        percentage: '45%', 
-        votes: 5644, 
-        description: 'Core protocol upgrades, security audits, and technical infrastructure' 
-      },
-      { 
-        id: 2, 
-        title: 'Growth & Marketing', 
-        allocation: '300,000 tokens', 
-        percentage: '30%', 
-        votes: 3763, 
-        description: 'Strategic partnerships, brand development, and market expansion' 
-      },
-      { 
-        id: 3, 
-        title: 'Community Programs', 
-        allocation: '250,000 tokens', 
-        percentage: '25%', 
-        votes: 3136, 
-        description: 'Developer grants, hackathons, and educational initiatives' 
-      }
-    ]
-  },
-  {
-    id: 'PROP-2546',
-    title: 'Protocol Upgrade Proposal',
-    description: 'Implement v2.1 upgrade with enhanced security features and improved gas efficiency. This proposal includes implementation of EIP-4844 for reduced transaction costs and integration of advanced cryptographic primitives.',
-    participants: 8217,
-    timeLeft: '5d 3h',
-    endDate: new Date(Date.now() + 5.2 * 24 * 60 * 60 * 1000),
-    status: 'active' as const,
-    options: [
-      { id: 1, title: 'Approve Upgrade', votes: 4270, description: 'Implement all proposed changes immediately' },
-      { id: 2, title: 'Reject Upgrade', votes: 2893, description: 'Maintain current protocol version' },
-      { id: 3, title: 'Defer Decision', votes: 1054, description: 'Require additional security review period' }
-    ]
-  },
-  {
-    id: 'PROP-2545',
-    title: 'Governance Token Economics Revision',
-    description: 'Proposal to revise tokenomics model including staking rewards, inflation rate adjustments, and voting power calculations to ensure long-term protocol sustainability.',
-    participants: 15892,
-    timeLeft: '1d 8h',
-    endDate: new Date(Date.now() + 1.3 * 24 * 60 * 60 * 1000),
-    status: 'active' as const,
-    options: [
-      { id: 1, title: 'Reduce Inflation to 3%', votes: 7234, description: 'Lower annual inflation from 5% to 3%' },
-      { id: 2, title: 'Maintain Current Rate', votes: 5891, description: 'Keep inflation at 5% per year' },
-      { id: 3, title: 'Increase Staking Rewards', votes: 2767, description: 'Boost staking APY from 8% to 12%' }
-    ]
-  }
-];
+import { supabase } from '@/lib/supabase'
+import { 
+  getUserByWallet, 
+  createUser, 
+  getActiveProposals,
+  castVote as dbCastVote,
+  getUserVotedProposals 
+} from '@/lib/database'
 
 interface UserData {
   address: string | null;
+  userId: string | null;
   level: number;
   xp: number;
   nextLevelXP: number;
@@ -83,28 +25,31 @@ interface UserData {
   votedProposals: string[];
 }
 
+interface ProposalOption {
+  id: string;
+  option_number: number;
+  title: string;
+  description: string | null;
+  allocation?: string | null;
+  percentage?: string | null;
+  votes: number;
+}
+
 interface Proposal {
   id: string;
   title: string;
   description: string;
   participants: number;
-  timeLeft: string;
-  endDate: Date;
-  status: 'active' | 'closed' | 'pending';
-  options: Array<{
-    id: number;
-    title: string;
-    allocation?: string;
-    percentage?: string;
-    votes: number;
-    description: string;
-  }>;
+  end_date: string;
+  status: string;
+  options: ProposalOption[];
 }
 
 const VoteQuestApp = () => {
   const [currentScreen, setCurrentScreen] = useState('splash');
   const [userData, setUserData] = useState<UserData>({
     address: null,
+    userId: null,
     level: 5,
     xp: 3420,
     nextLevelXP: 5000,
@@ -116,10 +61,17 @@ const VoteQuestApp = () => {
     votedProposals: []
   });
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [proposals, setProposals] = useState<Proposal[]>(mockProposals);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
   const [animations, setAnimations] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(false);
 
+  // Load proposals from database on mount
+  useEffect(() => {
+    loadProposalsFromDB();
+  }, []);
+
+  // Splash screen timer
   useEffect(() => {
     if (currentScreen === 'splash') {
       const timer = setTimeout(() => setCurrentScreen('onboarding1'), 1800);
@@ -127,89 +79,128 @@ const VoteQuestApp = () => {
     }
   }, [currentScreen]);
 
-  useEffect(() => {
-    // Load user data from localStorage
-    const savedData = localStorage.getItem('votequest-user');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setUserData(parsed);
-      } catch (e) {
-        console.error('Failed to load user data');
-      }
+  const loadProposalsFromDB = async () => {
+    try {
+      const data = await getActiveProposals();
+      setProposals(data as any);
+    } catch (error) {
+      console.error('Error loading proposals:', error);
     }
-  }, []);
-
-  useEffect(() => {
-    // Save user data to localStorage
-    if (userData.address) {
-      localStorage.setItem('votequest-user', JSON.stringify(userData));
-    }
-  }, [userData]);
+  };
 
   const triggerAnimation = (key: string) => {
     setAnimations(prev => ({ ...prev, [key]: true }));
     setTimeout(() => setAnimations(prev => ({ ...prev, [key]: false })), 500);
   };
 
-  const connectWallet = (walletName: string) => {
-    // Simulate wallet connection
-    const mockAddress = '0x' + Math.random().toString(16).substr(2, 40);
-    setUserData(prev => ({
-      ...prev,
-      address: mockAddress
-    }));
-    setCurrentScreen('dashboard');
-    triggerAnimation('walletConnected');
+  const connectWallet = async (walletName: string) => {
+    setLoading(true);
+    try {
+      // Simulate wallet connection - generate a mock address
+      const mockAddress = '0x' + Math.random().toString(16).substr(2, 40);
+      
+      // Check if user exists in database
+      let user = await getUserByWallet(mockAddress);
+      
+      // If not, create new user
+      if (!user) {
+        user = await createUser(mockAddress);
+      }
+
+      if (user) {
+        // Load user's voted proposals
+        const votedProposals = await getUserVotedProposals(user.id);
+        
+        // Set user data
+        setUserData({
+          address: user.wallet_address,
+          userId: user.id,
+          level: user.level,
+          xp: user.xp,
+          nextLevelXP: 5000,
+          streak: user.streak,
+          votingPower: user.voting_power,
+          votesCount: user.votes_count,
+          globalRank: user.global_rank,
+          achievements: ['first_vote', 'week_streak', 'level_5'],
+          votedProposals: votedProposals
+        });
+        
+        setCurrentScreen('dashboard');
+        triggerAnimation('walletConnected');
+      }
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const castVote = () => {
-    if (!selectedOption || !selectedProposal) return;
+  const castVote = async () => {
+    if (!selectedOption || !selectedProposal || !userData.userId) return;
 
-    // Update proposal votes
-    setProposals(prev => prev.map(prop => {
-      if (prop.id === selectedProposal.id) {
-        return {
-          ...prop,
-          options: prop.options.map(opt => 
-            opt.id === selectedOption 
-              ? { ...opt, votes: opt.votes + 1 }
-              : opt
-          ),
-          participants: prop.participants + 1
-        };
+    setLoading(true);
+    try {
+      // Save vote to database
+      const success = await dbCastVote(
+        userData.userId,
+        selectedProposal.id,
+        selectedOption
+      );
+
+      if (success) {
+        // Reload proposals to get updated counts
+        await loadProposalsFromDB();
+        
+        // Reload user data to get updated stats
+        if (userData.address) {
+          const updatedUser = await getUserByWallet(userData.address);
+          if (updatedUser) {
+            const votedProposals = await getUserVotedProposals(updatedUser.id);
+            setUserData(prev => ({
+              ...prev,
+              xp: updatedUser.xp,
+              level: updatedUser.level,
+              votesCount: updatedUser.votes_count,
+              votingPower: updatedUser.voting_power,
+              votedProposals: votedProposals
+            }));
+          }
+        }
+
+        triggerAnimation('voteSuccess');
+        setTimeout(() => {
+          setSelectedOption(null);
+          setCurrentScreen('dashboard');
+        }, 1500);
       }
-      return prop;
-    }));
-
-    // Calculate new level
-    const newXP = userData.xp + 250;
-    const newLevel = Math.floor(Math.sqrt(newXP / 100));
-
-    // Update user data
-    setUserData(prev => ({
-      ...prev,
-      xp: newXP,
-      level: newLevel,
-      votesCount: prev.votesCount + 1,
-      votingPower: prev.votingPower + 10,
-      votedProposals: [...prev.votedProposals, selectedProposal.id]
-    }));
-
-    triggerAnimation('voteSuccess');
-    setTimeout(() => {
-      setSelectedOption(null);
-      setCurrentScreen('dashboard');
-    }, 1500);
+    } catch (error) {
+      console.error('Error casting vote:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const calculateParticipation = (proposal: Proposal) => {
     const totalVotes = proposal.options.reduce((sum, opt) => sum + opt.votes, 0);
-    return Math.round((totalVotes / proposal.participants) * 100);
+    return proposal.participants > 0 ? Math.round((totalVotes / proposal.participants) * 100) : 0;
   };
 
   const hasVoted = (proposalId: string) => {
     return userData.votedProposals.includes(proposalId);
+  };
+
+  const formatTimeLeft = (endDate: string) => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end.getTime() - now.getTime();
+    
+    if (diff <= 0) return 'Ended';
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    return `${days}d ${hours}h`;
   };
 
   const progressPercent = (userData.xp / userData.nextLevelXP) * 100;
@@ -332,7 +323,8 @@ const VoteQuestApp = () => {
               <button
                 key={idx}
                 onClick={() => connectWallet(wallet.name)}
-                className="w-full bg-zinc-900/50 hover:bg-zinc-900 backdrop-blur-xl rounded border border-zinc-800 hover:border-zinc-700 p-5 flex items-center justify-between transition-all group"
+                disabled={loading}
+                className="w-full bg-zinc-900/50 hover:bg-zinc-900 backdrop-blur-xl rounded border border-zinc-800 hover:border-zinc-700 p-5 flex items-center justify-between transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="text-left">
                   <div className="text-white font-medium mb-0.5">{wallet.name}</div>
@@ -429,53 +421,59 @@ const VoteQuestApp = () => {
             </div>
             
             <div className="space-y-3">
-              {proposals.map((proposal) => {
-                const participation = calculateParticipation(proposal);
-                const voted = hasVoted(proposal.id);
-                
-                return (
-                  <div 
-                    key={proposal.id}
-                    onClick={() => {
-                      setSelectedProposal(proposal);
-                      setCurrentScreen('proposal');
-                    }}
-                    className="bg-zinc-900/50 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 rounded p-5 transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="text-zinc-600 text-xs font-mono">{proposal.id}</div>
-                          {voted && (
-                            <div className="flex items-center gap-1 text-xs text-green-500">
-                              <Check className="w-3 h-3" strokeWidth={2} />
-                              <span>Voted</span>
-                            </div>
-                          )}
+              {proposals.length === 0 ? (
+                <div className="text-center py-12 text-zinc-500">
+                  Loading proposals...
+                </div>
+              ) : (
+                proposals.map((proposal) => {
+                  const participation = calculateParticipation(proposal);
+                  const voted = hasVoted(proposal.id);
+                  
+                  return (
+                    <div 
+                      key={proposal.id}
+                      onClick={() => {
+                        setSelectedProposal(proposal);
+                        setCurrentScreen('proposal');
+                      }}
+                      className="bg-zinc-900/50 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 rounded p-5 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="text-zinc-600 text-xs font-mono">{proposal.id}</div>
+                            {voted && (
+                              <div className="flex items-center gap-1 text-xs text-green-500">
+                                <Check className="w-3 h-3" strokeWidth={2} />
+                                <span>Voted</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-white font-light mb-3">{proposal.title}</div>
+                          <div className="flex items-center gap-6 text-xs text-zinc-500">
+                            <span className="flex items-center gap-2">
+                              <Users className="w-3 h-3" strokeWidth={1.5} />
+                              {proposal.participants.toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-2">
+                              <Clock className="w-3 h-3" strokeWidth={1.5} />
+                              {formatTimeLeft(proposal.end_date)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-white font-light mb-3">{proposal.title}</div>
-                        <div className="flex items-center gap-6 text-xs text-zinc-500">
-                          <span className="flex items-center gap-2">
-                            <Users className="w-3 h-3" strokeWidth={1.5} />
-                            {proposal.participants.toLocaleString()}
-                          </span>
-                          <span className="flex items-center gap-2">
-                            <Clock className="w-3 h-3" strokeWidth={1.5} />
-                            {proposal.timeLeft}
-                          </span>
+                        <ArrowRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-500 group-hover:translate-x-1 transition-all mt-1" strokeWidth={2} />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500" style={{ width: `${participation}%` }} />
                         </div>
+                        <div className="text-xs text-zinc-500 font-mono">{participation}%</div>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-500 group-hover:translate-x-1 transition-all mt-1" strokeWidth={2} />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500" style={{ width: `${participation}%` }} />
-                      </div>
-                      <div className="text-xs text-zinc-500 font-mono">{participation}%</div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
@@ -580,7 +578,7 @@ const VoteQuestApp = () => {
             <div className="flex items-center gap-6 text-sm text-zinc-500">
               <span className="flex items-center gap-2">
                 <Clock className="w-4 h-4" strokeWidth={1.5} />
-                {selectedProposal.timeLeft} remaining
+                {formatTimeLeft(selectedProposal.end_date)} remaining
               </span>
               <span className="flex items-center gap-2">
                 <Users className="w-4 h-4" strokeWidth={1.5} />
@@ -608,82 +606,4 @@ const VoteQuestApp = () => {
             </div>
             <div className="space-y-3">
               {selectedProposal.options.map((option) => {
-                const votePercent = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
-                
-                return (
-                  <button
-                    key={option.id}
-                    onClick={() => !hasVotedOnThis && setSelectedOption(option.id)}
-                    disabled={hasVotedOnThis}
-                    className={`w-full p-6 rounded border transition-all text-left ${
-                      hasVotedOnThis
-                        ? 'border-zinc-800 bg-zinc-900/30 cursor-default'
-                        : selectedOption === option.id
-                        ? 'border-white bg-zinc-900'
-                        : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="text-white font-light text-lg mb-2">{option.title}</div>
-                        {option.allocation && (
-                          <div className="text-zinc-500 text-sm mb-3">{option.allocation} • {option.percentage}</div>
-                        )}
-                        <div className="text-zinc-600 text-sm">{option.description}</div>
-                      </div>
-                      <div className="text-white text-3xl font-light ml-6">{votePercent}%</div>
-                    </div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-500" style={{ width: `${votePercent}%` }} />
-                      </div>
-                      <div className="text-zinc-500 text-xs font-mono">{option.votes.toLocaleString()} votes</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {!hasVotedOnThis && (
-              <button
-                onClick={castVote}
-                disabled={!selectedOption}
-                className={`w-full mt-6 py-4 rounded font-medium transition-all ${
-                  selectedOption
-                    ? 'bg-white hover:bg-zinc-100 text-black'
-                    : 'bg-zinc-900 text-zinc-700 cursor-not-allowed'
-                }`}
-              >
-                {selectedOption ? 'Submit Vote & Earn 250 XP' : 'Select an option to continue'}
-              </button>
-            )}
-
-            {hasVotedOnThis && (
-              <div className="mt-6 bg-green-500/10 border border-green-500/20 rounded p-4 flex items-center gap-3">
-                <Check className="w-5 h-5 text-green-500" strokeWidth={2} />
-                <div className="text-green-500 text-sm">You have already voted on this proposal</div>
-              </div>
-            )}
-          </div>
-
-          {/* Security Info */}
-          <div className="bg-zinc-900/30 border border-zinc-800 rounded p-6">
-            <div className="flex items-start gap-4">
-              <Shield className="w-5 h-5 text-zinc-500 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <div className="text-white text-sm mb-1">Cryptographic Verification</div>
-                <div className="text-zinc-500 text-xs leading-relaxed">
-                  Your vote will be cryptographically signed using your wallet&apos;s private key and permanently recorded on-chain. Transaction hash will be provided upon confirmation for full auditability.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
-};
-
-export default VoteQuestApp;
+                const votePercent = totalVotes > 0 ? Math.round((option.votes / total
