@@ -20,7 +20,7 @@ export const useStore = create<AppState>()(
       addVotedProposal: (proposalId) => set((state) => ({
         user: state.user ? {
           ...state.user,
-          votedProposals: [...state.user.votedProposals, proposalId]
+          votedProposals: [...(state.user.votedProposals || []), proposalId]
         } : null
       }))
     }),
