@@ -606,4 +606,82 @@ const VoteQuestApp = () => {
             </div>
             <div className="space-y-3">
               {selectedProposal.options.map((option) => {
-                const votePercent = totalVotes > 0 ? Math.round((option.votes / total
+                const votePercent = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
+                
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => !hasVotedOnThis && setSelectedOption(option.id)}
+                    disabled={hasVotedOnThis || loading}
+                    className={`w-full p-6 rounded border transition-all text-left ${
+                      hasVotedOnThis || loading
+                        ? 'border-zinc-800 bg-zinc-900/30 cursor-default'
+                        : selectedOption === option.id
+                        ? 'border-white bg-zinc-900'
+                        : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="text-white font-light text-lg mb-2">{option.title}</div>
+                        {option.allocation && (
+                          <div className="text-zinc-500 text-sm mb-3">{option.allocation} • {option.percentage}</div>
+                        )}
+                        <div className="text-zinc-600 text-sm">{option.description}</div>
+                      </div>
+                      <div className="text-white text-3xl font-light ml-6">{votePercent}%</div>
+                    </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-500" style={{ width: `${votePercent}%` }} />
+                      </div>
+                      <div className="text-zinc-500 text-xs font-mono">{option.votes.toLocaleString()} votes</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {!hasVotedOnThis && (
+              <button
+                onClick={castVote}
+                disabled={!selectedOption || loading}
+                className={`w-full mt-6 py-4 rounded font-medium transition-all ${
+                  selectedOption && !loading
+                    ? 'bg-white hover:bg-zinc-100 text-black'
+                    : 'bg-zinc-900 text-zinc-700 cursor-not-allowed'
+                }`}
+              >
+                {loading ? 'Submitting...' : selectedOption ? 'Submit Vote & Earn 250 XP' : 'Select an option to continue'}
+              </button>
+            )}
+
+            {hasVotedOnThis && (
+              <div className="mt-6 bg-green-500/10 border border-green-500/20 rounded p-4 flex items-center gap-3">
+                <Check className="w-5 h-5 text-green-500" strokeWidth={2} />
+                <div className="text-green-500 text-sm">You have already voted on this proposal</div>
+              </div>
+            )}
+          </div>
+
+          {/* Security Info */}
+          <div className="bg-zinc-900/30 border border-zinc-800 rounded p-6">
+            <div className="flex items-start gap-4">
+              <Shield className="w-5 h-5 text-zinc-500 mt-0.5" strokeWidth={1.5} />
+              <div>
+                <div className="text-white text-sm mb-1">Cryptographic Verification</div>
+                <div className="text-zinc-500 text-xs leading-relaxed">
+                  Your vote will be cryptographically signed using your wallet&apos;s private key and permanently recorded on-chain. Transaction hash will be provided upon confirmation for full auditability.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default VoteQuestApp;
