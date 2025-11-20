@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { User, Proposal, ProposalOption } from './supabase'
+import type { User, Proposal } from './supabase'
 
 // User Functions
 export async function getUserByWallet(walletAddress: string): Promise<User | null> {
@@ -176,5 +176,5 @@ export async function getUserVotedProposals(userId: string): Promise<string[]> {
     .select('proposal_id')
     .eq('user_id', userId)
 
-  return data?.map(v => v.proposal_id) || []
+  return data?.map((v: { proposal_id: string }) => v.proposal_id) || []
 }
