@@ -16,6 +16,9 @@ A modern, gamified blockchain voting application built with Next.js and TypeScri
 ```bash
 npm install
 ```
+```bash
+npm install @supabase/supabase-js
+```
 
 ### Development
 ```bash
