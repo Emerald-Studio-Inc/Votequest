@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { LayoutGrid, List, BarChart2, Settings, Plus, ArrowLeft, Check, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase'
 import type { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase'
 import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -22,6 +23,10 @@ import LoginScreen from './LoginScreen';
 import DashboardScreen from './DashboardScreen';
 import ProposalDetailScreen from './ProposalDetailScreen';
 import CreateProposalScreen from './CreateProposalScreen';
+import ProposalsListScreen from './ProposalsListScreen';
+import AnalyticsScreen from './AnalyticsScreen';
+import SettingsScreen from './SettingsScreen';
+import Tooltip from './Tooltip';
 
 interface UserData {
   address: string | null;
@@ -39,6 +44,7 @@ interface UserData {
 
 const VoteQuestApp = () => {
   const [currentScreen, setCurrentScreen] = useState('splash');
+  const [activeDashboardTab, setActiveDashboardTab] = useState<'overview' | 'proposals' | 'analytics' | 'settings'>('overview');
   const [userData, setUserData] = useState<UserData>({
     address: null,
     userId: null,
@@ -83,6 +89,8 @@ const VoteQuestApp = () => {
     setTimeout(() => setAnimations(prev => ({ ...prev, [key]: false })), 500);
   };
 
+  const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
+
   const { address, isConnected } = useAccount();
 
   // Contract Hooks
@@ -92,7 +100,7 @@ const VoteQuestApp = () => {
     functionName: 'proposalCount',
   });
 
-  const proposalIds = proposalCount ? Array.from({ length: Number(proposalCount) }, (_, i) => BigInt(i)) : [];
+  const proposalIds = proposalCount ? Array.from({ length: Number(proposalCount) }, (_, i) => BigInt(i + 1)) : [];
 
   const { data: proposalsData, refetch: refetchProposals } = useReadContracts({
     contracts: proposalIds.map(id => ({
@@ -148,56 +156,66 @@ const VoteQuestApp = () => {
 
   // Handle transaction success
   useEffect(() => {
-    if (isConfirmed && selectedProposal && selectedOption && userData.userId) {
-      const finishVote = async () => {
-        // Record in DB for gamification
-        await dbCastVote(
-          userData.userId!,
-          selectedProposal.id,
-          selectedOption
-        );
+    if (isConfirmed) {
+      if (pendingAction === 'vote' && selectedProposal && selectedOption && userData.userId) {
+        const finishVote = async () => {
+          // Record in DB for gamification
+          await dbCastVote(
+            userData.userId!,
+            selectedProposal.id,
+            selectedOption
+          );
 
-        // Reload user data
-        if (userData.address) {
-          const updatedUser = await getUserByWallet(userData.address);
-          if (updatedUser) {
-            const votedProposals = await getUserVotedProposals(updatedUser.id);
-            const hasNewAchievements = await checkAndAwardAchievements(updatedUser.id);
+          // Reload user data
+          if (userData.address) {
+            const updatedUser = await getUserByWallet(userData.address);
+            if (updatedUser) {
+              const votedProposals = await getUserVotedProposals(updatedUser.id);
+              const hasNewAchievements = await checkAndAwardAchievements(updatedUser.id);
 
-            if (hasNewAchievements) {
-              const updatedAchievements = await getUserAchievements(updatedUser.id);
-              setUserAchievements(updatedAchievements);
-              triggerAnimation('achievementUnlocked');
+              if (hasNewAchievements) {
+                const updatedAchievements = await getUserAchievements(updatedUser.id);
+                setUserAchievements(updatedAchievements);
+                triggerAnimation('achievementUnlocked');
+              }
+
+              setUserData(prev => ({
+                ...prev,
+                xp: updatedUser.xp,
+                level: updatedUser.level,
+                votesCount: updatedUser.votes_count,
+                votingPower: updatedUser.voting_power,
+                votedProposals: votedProposals
+              }));
             }
-
-            setUserData(prev => ({
-              ...prev,
-              xp: updatedUser.xp,
-              level: updatedUser.level,
-              votesCount: updatedUser.votes_count,
-              votingPower: updatedUser.voting_power,
-              votedProposals: votedProposals
-            }));
           }
-        }
 
+          refetchProposals();
+          triggerAnimation('voteSuccess');
+          setLoading(false);
+          setPendingAction(null);
+          setTimeout(() => {
+            setSelectedOption(null);
+            setCurrentScreen('dashboard');
+          }, 1500);
+        };
+        finishVote();
+      } else if (pendingAction === 'create') {
         refetchProposals();
-        triggerAnimation('voteSuccess');
         setLoading(false);
-        setTimeout(() => {
-          setSelectedOption(null);
-          setCurrentScreen('dashboard');
-        }, 1500);
-      };
-      finishVote();
+        setPendingAction(null);
+        setCurrentScreen('dashboard');
+        // Optional: Award XP for creating a proposal if desired
+      }
     }
-  }, [isConfirmed]);
+  }, [isConfirmed, pendingAction]);
 
   // Handle write error
   useEffect(() => {
     if (writeError) {
-      console.error("Vote error:", writeError);
+      console.error("Transaction error:", writeError);
       setLoading(false);
+      setPendingAction(null);
     }
   }, [writeError]);
 
@@ -276,6 +294,7 @@ const VoteQuestApp = () => {
     if (!option) return;
 
     setLoading(true);
+    setPendingAction('vote');
     try {
       writeContract({
         address: VOTE_QUEST_ADDRESS,
@@ -286,6 +305,7 @@ const VoteQuestApp = () => {
     } catch (error) {
       console.error('Error casting vote:', error);
       setLoading(false);
+      setPendingAction(null);
     }
   };
 
@@ -293,31 +313,26 @@ const VoteQuestApp = () => {
     if (!userData.userId) return;
 
     setLoading(true);
+    setPendingAction('create');
     try {
-      const success = await createProposal(
-        data.title,
-        data.description,
-        data.end_date,
-        data.options,
-        userData.userId
-      );
+      const durationInMinutes = Math.max(1, Math.floor((new Date(data.end_date).getTime() - Date.now()) / (1000 * 60)));
+      const optionTitles = data.options.map((o: any) => o.title);
 
-      if (success) {
-        refetchProposals();
-
-        // Check for new achievements
-        const hasNewAchievements = await checkAndAwardAchievements(userData.userId);
-        if (hasNewAchievements) {
-          const updatedAchievements = await getUserAchievements(userData.userId);
-          setUserAchievements(updatedAchievements);
-        }
-
-        setCurrentScreen('dashboard');
-      }
+      writeContract({
+        address: VOTE_QUEST_ADDRESS,
+        abi: VOTE_QUEST_ABI,
+        functionName: 'createProposal',
+        args: [
+          data.title,
+          data.description,
+          BigInt(durationInMinutes),
+          optionTitles
+        ],
+      });
     } catch (error) {
       console.error('Error creating proposal:', error);
-    } finally {
       setLoading(false);
+      setPendingAction(null);
     }
   };
 
@@ -340,18 +355,74 @@ const VoteQuestApp = () => {
 
   if (currentScreen === 'dashboard') {
     return (
-      <DashboardScreen
-        userData={userData}
-        proposals={proposals}
-        achievements={achievements}
-        userAchievements={userAchievements}
-        onSelectProposal={(proposal) => {
-          setSelectedProposal(proposal);
-          setCurrentScreen('proposal');
-        }}
-        onNavigate={setCurrentScreen}
-        animations={animations}
-      />
+      <>
+        {activeDashboardTab === 'overview' && (
+          <DashboardScreen
+            userData={userData}
+            proposals={proposals}
+            achievements={achievements}
+            userAchievements={userAchievements}
+            onSelectProposal={(proposal) => {
+              setSelectedProposal(proposal);
+              setCurrentScreen('proposal');
+            }}
+            onNavigate={setCurrentScreen}
+            activeTab={activeDashboardTab}
+            onTabChange={setActiveDashboardTab}
+            animations={animations}
+          />
+        )}
+        {activeDashboardTab === 'proposals' && (
+          <ProposalsListScreen
+            proposals={proposals}
+            onSelectProposal={(proposal) => {
+              setSelectedProposal(proposal);
+              setCurrentScreen('proposal');
+            }}
+            hasVoted={hasVoted}
+          />
+        )}
+        {activeDashboardTab === 'analytics' && (
+          <AnalyticsScreen
+            userData={userData}
+            proposals={proposals}
+          />
+        )}
+        {activeDashboardTab === 'settings' && (
+          <SettingsScreen
+            userData={userData}
+          />
+        )}
+
+        {/* Bottom Navigation - Shared across all tabs */}
+        {/* Floating Bottom Navigation */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
+          <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10">
+            {[
+              { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
+              { label: 'Proposals', value: 'proposals' as const, icon: List },
+              { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
+              { label: 'Settings', value: 'settings' as const, icon: Settings }
+            ].map((item) => {
+              const isActive = activeDashboardTab === item.value;
+              return (
+                <Tooltip key={item.value} content={item.label} position="top">
+                  <button
+                    onClick={() => setActiveDashboardTab(item.value)}
+                    className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                      }`}
+                  >
+                    <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
+                    {isActive && (
+                      <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
+                    )}
+                  </button>
+                </Tooltip>
+              );
+            })}
+          </div>
+        </div>
+      </>
     );
   }
 
