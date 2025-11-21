@@ -51,3 +51,24 @@ export type Vote = {
   tx_hash: string | null
   voted_at: string
 }
+
+export type ProposalWithOptions = Proposal & {
+  options: ProposalOption[]
+}
+
+export interface Achievement {
+  id: string
+  code: string
+  name: string
+  description: string
+  icon: string
+  xp_reward: number
+}
+
+export interface UserAchievement {
+  id: string
+  user_id: string
+  achievement_id: string
+  earned_at: string
+  achievement?: Achievement
+}

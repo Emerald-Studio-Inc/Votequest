@@ -1,8 +1,14 @@
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
+-- CLEANUP: Drop existing tables to ensure fresh setup
+drop table if exists votes cascade;
+drop table if exists proposal_options cascade;
+drop table if exists proposals cascade;
+drop table if exists users cascade;
+
 -- Users Table
-create table if not exists users (
+create table users (
   id uuid default uuid_generate_v4() primary key,
   wallet_address text unique not null,
   level int default 1,
@@ -16,7 +22,7 @@ create table if not exists users (
 );
 
 -- Proposals Table
-create table if not exists proposals (
+create table proposals (
   id uuid default uuid_generate_v4() primary key,
   title text not null,
   description text,
@@ -29,7 +35,7 @@ create table if not exists proposals (
 );
 
 -- Proposal Options Table
-create table if not exists proposal_options (
+create table proposal_options (
   id uuid default uuid_generate_v4() primary key,
   proposal_id uuid references proposals(id) on delete cascade not null,
   option_number int not null,
@@ -42,7 +48,7 @@ create table if not exists proposal_options (
 );
 
 -- Votes Table
-create table if not exists votes (
+create table votes (
   id uuid default uuid_generate_v4() primary key,
   user_id uuid references users(id) not null,
   proposal_id uuid references proposals(id) not null,
