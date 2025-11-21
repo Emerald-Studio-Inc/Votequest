@@ -1,5 +1,5 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { polygon, polygonAmoy } from 'wagmi/chains';
+import { polygon, polygonAmoy } from 'viem/chains';
 
 export const config = getDefaultConfig({
     appName: 'VoteQuest',

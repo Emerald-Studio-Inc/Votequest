@@ -85,8 +85,8 @@ const VoteQuestApp = () => {
   }, [currentScreen]);
 
   const triggerAnimation = (key: string) => {
-    setAnimations(prev => ({ ...prev, [key]: true }));
-    setTimeout(() => setAnimations(prev => ({ ...prev, [key]: false })), 500);
+    setAnimations((prev: Record<string, boolean>) => ({ ...prev, [key]: true }));
+    setTimeout(() => setAnimations((prev: Record<string, boolean>) => ({ ...prev, [key]: false })), 500);
   };
 
   const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
@@ -117,41 +117,50 @@ const VoteQuestApp = () => {
     hash,
   });
 
-  // Sync proposals from contract
+  // Sync proposals from contract or Supabase (fallback)
   useEffect(() => {
-    if (proposalsData) {
-      const formattedProposals = proposalsData.map((result) => {
-        if (result.status === 'success' && result.result) {
-          const p = result.result as any;
-          const totalVotes = p.voteCounts.reduce((a: number, b: bigint) => a + Number(b), 0);
-          return {
-            id: p.id.toString(),
-            title: p.title,
-            description: p.description,
-            status: (Date.now() < Number(p.deadline) * 1000 ? 'active' : 'closed') as 'active' | 'closed' | 'pending',
-            participants: totalVotes,
-            end_date: new Date(Number(p.deadline) * 1000).toISOString(),
-            created_by: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            options: p.options.map((opt: string, idx: number) => ({
-              id: `${p.id}-${idx}`,
-              proposal_id: p.id.toString(),
-              option_number: idx,
-              title: opt,
-              description: null,
-              allocation: null,
-              percentage: totalVotes > 0 ? Math.round((Number(p.voteCounts[idx]) / totalVotes) * 100).toString() : '0',
-              votes: Number(p.voteCounts[idx]),
-              created_at: new Date().toISOString()
-            }))
-          } as ProposalWithOptions;
-        }
-        return null;
-      }).filter((p): p is ProposalWithOptions => p !== null);
+    const fetchProposals = async () => {
+      // Try contract first
+      if (proposalsData && proposalsData.length > 0) {
+        const formattedProposals = proposalsData.map((result: any) => {
+          if (result.status === 'success' && result.result) {
+            const p = result.result as any;
+            const totalVotes = p.voteCounts.reduce((a: number, b: bigint) => a + Number(b), 0);
+            return {
+              id: p.id.toString(),
+              title: p.title,
+              description: p.description,
+              status: (Date.now() < Number(p.deadline) * 1000 ? 'active' : 'closed') as 'active' | 'closed' | 'pending',
+              participants: totalVotes,
+              end_date: new Date(Number(p.deadline) * 1000).toISOString(),
+              created_by: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              options: p.options.map((opt: string, idx: number) => ({
+                id: `${p.id}-${idx}`,
+                proposal_id: p.id.toString(),
+                option_number: idx,
+                title: opt,
+                description: null,
+                allocation: null,
+                percentage: totalVotes > 0 ? Math.round((Number(p.voteCounts[idx]) / totalVotes) * 100).toString() : '0',
+                votes: Number(p.voteCounts[idx]),
+                created_at: new Date().toISOString()
+              }))
+            } as ProposalWithOptions;
+          }
+          return null;
+        }).filter((p: any): p is ProposalWithOptions => p !== null);
 
-      setProposals(formattedProposals);
-    }
+        setProposals(formattedProposals);
+      } else {
+        // Fallback to Supabase if no contract data
+        const supabaseProposals = await getActiveProposals();
+        setProposals(supabaseProposals);
+      }
+    };
+
+    fetchProposals();
   }, [proposalsData]);
 
   // Handle transaction success
@@ -179,7 +188,7 @@ const VoteQuestApp = () => {
                 triggerAnimation('achievementUnlocked');
               }
 
-              setUserData(prev => ({
+              setUserData((prev: any) => ({
                 ...prev,
                 xp: updatedUser.xp,
                 level: updatedUser.level,
@@ -290,7 +299,7 @@ const VoteQuestApp = () => {
     if (!selectedOption || !selectedProposal || !userData.userId) return;
 
     // Find option index
-    const option = selectedProposal.options.find(o => o.id === selectedOption);
+    const option = selectedProposal.options.find((o: any) => o.id === selectedOption);
     if (!option) return;
 
     setLoading(true);
@@ -362,7 +371,7 @@ const VoteQuestApp = () => {
             proposals={proposals}
             achievements={achievements}
             userAchievements={userAchievements}
-            onSelectProposal={(proposal) => {
+            onSelectProposal={(proposal: any) => {
               setSelectedProposal(proposal);
               setCurrentScreen('proposal');
             }}
@@ -375,7 +384,7 @@ const VoteQuestApp = () => {
         {activeDashboardTab === 'proposals' && (
           <ProposalsListScreen
             proposals={proposals}
-            onSelectProposal={(proposal) => {
+            onSelectProposal={(proposal: any) => {
               setSelectedProposal(proposal);
               setCurrentScreen('proposal');
             }}
