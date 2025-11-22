@@ -27,6 +27,7 @@ import ProposalsListScreen from './ProposalsListScreen';
 import AnalyticsScreen from './AnalyticsScreen';
 import SettingsScreen from './SettingsScreen';
 import Tooltip from './Tooltip';
+import Skeleton from './Skeleton';
 
 interface UserData {
   address: string | null;
@@ -90,6 +91,7 @@ const VoteQuestApp = () => {
   };
 
   const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
+  const [pendingProposalData, setPendingProposalData] = useState<any>(null);
 
   const { address, isConnected } = useAccount();
 
@@ -172,7 +174,9 @@ const VoteQuestApp = () => {
           await dbCastVote(
             userData.userId!,
             selectedProposal.id,
-            selectedOption
+            selectedOption,
+            hash, // Pass transaction hash
+            userData.address! // Pass wallet address
           );
 
           // Reload user data
@@ -209,12 +213,25 @@ const VoteQuestApp = () => {
           }, 1500);
         };
         finishVote();
-      } else if (pendingAction === 'create') {
-        refetchProposals();
-        setLoading(false);
-        setPendingAction(null);
-        setCurrentScreen('dashboard');
-        // Optional: Award XP for creating a proposal if desired
+      } else if (pendingAction === 'create' && pendingProposalData && userData.userId) {
+        const finishCreate = async () => {
+          await createProposal(
+            pendingProposalData.title,
+            pendingProposalData.description,
+            pendingProposalData.end_date,
+            pendingProposalData.options,
+            userData.userId!,
+            userData.address!,
+            hash
+          );
+
+          refetchProposals();
+          setLoading(false);
+          setPendingAction(null);
+          setPendingProposalData(null);
+          setCurrentScreen('dashboard');
+        };
+        finishCreate();
       }
     }
   }, [isConfirmed, pendingAction]);
@@ -323,6 +340,7 @@ const VoteQuestApp = () => {
 
     setLoading(true);
     setPendingAction('create');
+    setPendingProposalData(data);
     try {
       const durationInMinutes = Math.max(1, Math.floor((new Date(data.end_date).getTime() - Date.now()) / (1000 * 60)));
       const optionTitles = data.options.map((o: any) => o.title);
@@ -396,12 +414,15 @@ const VoteQuestApp = () => {
             userData={userData}
             proposals={proposals}
           />
-        )}
-        {activeDashboardTab === 'settings' && (
-          <SettingsScreen
-            userData={userData}
-          />
-        )}
+        )
+        }
+        {
+          activeDashboardTab === 'settings' && (
+            <SettingsScreen
+              userData={userData}
+            />
+          )
+        }
 
         {/* Bottom Navigation - Shared across all tabs */}
         {/* Floating Bottom Navigation */}

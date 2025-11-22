@@ -1,4 +1,4 @@
-export const VOTE_QUEST_ADDRESS = "0x77405d9D0a34D6eb59bC57dd5F434F8902CC5a5d" as `0x${string}`;
+export const VOTE_QUEST_ADDRESS = "0xcf576bd6a1CC6b7dC4bcE1AF68540aFfD3aa3ef2" as `0x${string}`;
 
 export const VOTE_QUEST_ABI = [
     {

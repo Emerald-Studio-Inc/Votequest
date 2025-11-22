@@ -17,27 +17,20 @@ export async function getUserByWallet(walletAddress: string): Promise<User | nul
 }
 
 export async function createUser(walletAddress: string): Promise<User | null> {
-  const { data, error } = await supabase
-    .from('users')
-    .insert([
-      {
-        wallet_address: walletAddress.toLowerCase(),
-        level: 5,
-        xp: 3420,
-        streak: 12,
-        voting_power: 2847,
-        votes_count: 47,
-        global_rank: 247,
-      }
-    ])
-    .select()
-    .single()
+  try {
+    const response = await fetch('/api/user/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ walletAddress }),
+    });
 
-  if (error) {
-    console.error('Error creating user:', error)
-    return null
+    if (!response.ok) throw new Error('Failed to create user');
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return null;
   }
-  return data
 }
 
 export async function updateUserXP(userId: string, xpGained: number): Promise<boolean> {
@@ -131,43 +124,39 @@ export async function getProposalWithOptions(proposalId: string) {
 export async function castVote(
   userId: string,
   proposalId: string,
-  optionId: string
+  optionId: string,
+  txHash?: string,
+  walletAddress?: string
 ): Promise<boolean> {
-  // Check if user already voted
-  const { data: existingVote } = await supabase
-    .from('votes')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('proposal_id', proposalId)
-    .single()
-
-  if (existingVote) {
-    console.error('User already voted on this proposal')
-    return false
+  if (!txHash || !walletAddress) {
+    console.error('Missing txHash or walletAddress for secure vote');
+    return false;
   }
 
-  // Insert vote
-  const { error } = await supabase
-    .from('votes')
-    .insert([{
-      user_id: userId,
-      proposal_id: proposalId,
-      option_id: optionId,
-      tx_hash: null,
-    }])
+  try {
+    const response = await fetch('/api/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        proposalId,
+        optionId,
+        txHash,
+        walletAddress
+      }),
+    });
 
-  if (error) {
-    console.error('Error casting vote:', error)
-    return false
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Error casting vote:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error casting vote:', error);
+    return false;
   }
-
-  // Update counts using database functions
-  await supabase.rpc('increment_option_votes', { option_id: optionId })
-  await supabase.rpc('increment_proposal_participants', { proposal_id: proposalId })
-  await supabase.rpc('increment_user_votes', { user_id: userId })
-  await updateUserXP(userId, 250)
-
-  return true
 }
 
 export async function getUserVotedProposals(userId: string): Promise<string[]> {
@@ -184,48 +173,41 @@ export async function createProposal(
   description: string,
   endDate: string,
   options: { title: string; description: string }[],
-  creatorId: string
+  creatorId: string,
+  walletAddress?: string,
+  txHash?: string
 ): Promise<boolean> {
-  const { data: proposal, error: propError } = await supabase
-    .from('proposals')
-    .insert([
-      {
+  if (!walletAddress || !txHash) {
+    console.error('Missing walletAddress or txHash for secure proposal creation');
+    return false;
+  }
+
+  try {
+    const response = await fetch('/api/proposal/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         title,
         description,
-        end_date: endDate,
-        created_by: creatorId,
-        status: 'active',
-        participants: 0
-      }
-    ])
-    .select()
-    .single()
+        endDate,
+        options,
+        creatorId,
+        walletAddress,
+        txHash
+      }),
+    });
 
-  if (propError || !proposal) {
-    console.error('Error creating proposal:', propError)
-    return false
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Error creating proposal:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error creating proposal:', error);
+    return false;
   }
-
-  const optionsData = options.map((opt, index) => ({
-    proposal_id: proposal.id,
-    option_number: index + 1,
-    title: opt.title,
-    description: opt.description,
-    votes: 0
-  }))
-
-  const { error: optError } = await supabase
-    .from('proposal_options')
-    .insert(optionsData)
-
-  if (optError) {
-    console.error('Error creating options:', optError)
-    // Ideally we should rollback proposal creation here, but Supabase JS client doesn't support transactions easily without RPC.
-    // For now we'll just log it.
-    return false
-  }
-
-  return true
 }
 // Achievement Functions
 export async function getAchievements() {
@@ -255,57 +237,19 @@ export async function getUserAchievements(userId: string) {
 }
 
 export async function checkAndAwardAchievements(userId: string) {
-  const user = await getUserByWallet((await supabase.auth.getUser()).data.user?.email || '') // This might be wrong if we don't use auth email. 
-  // Actually we should fetch user by ID since we have it.
-  const { data: userData } = await supabase.from('users').select('*').eq('id', userId).single()
+  try {
+    const response = await fetch('/api/achievements/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
 
-  if (!userData) return
+    if (!response.ok) return false;
 
-  const achievements = await getAchievements()
-  const userAchievements = await getUserAchievements(userId)
-  const earnedCodes = new Set(userAchievements.map((ua: any) => ua.achievement.code))
-
-  const newAchievements = []
-
-  // Check 'first_vote'
-  if (!earnedCodes.has('first_vote') && userData.votes_count > 0) {
-    newAchievements.push('first_vote')
+    const data = await response.json();
+    return data.hasNewAchievements;
+  } catch (error) {
+    console.error('Error checking achievements:', error);
+    return false;
   }
-
-  // Check 'week_streak'
-  if (!earnedCodes.has('week_streak') && userData.streak >= 7) {
-    newAchievements.push('week_streak')
-  }
-
-  // Check 'level_5'
-  if (!earnedCodes.has('level_5') && userData.level >= 5) {
-    newAchievements.push('level_5')
-  }
-
-  // Check 'proposal_creator'
-  // We need to check if they created a proposal.
-  if (!earnedCodes.has('proposal_creator')) {
-    const { count } = await supabase
-      .from('proposals')
-      .select('*', { count: 'exact', head: true })
-      .eq('created_by', userId)
-
-    if (count && count > 0) {
-      newAchievements.push('proposal_creator')
-    }
-  }
-
-  for (const code of newAchievements) {
-    const achievement = achievements.find((a: any) => a.code === code)
-    if (achievement) {
-      await supabase.from('user_achievements').insert({
-        user_id: userId,
-        achievement_id: achievement.id
-      })
-      // Award XP
-      await updateUserXP(userId, achievement.xp_reward)
-    }
-  }
-
-  return newAchievements.length > 0
 }

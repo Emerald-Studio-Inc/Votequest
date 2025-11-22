@@ -3,16 +3,32 @@ require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-    solidity: "0.8.24",
+    solidity: {
+        version: "0.8.24",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 200
+            }
+        }
+    },
     networks: {
         amoy: {
-            url: "https://rpc-amoy.polygon.technology",
+            url: process.env.POLYGON_AMOY_RPC_URL || "https://rpc-amoy.polygon.technology",
             accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            chainId: 80002,
+        },
+        sepolia: {
+            url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/demo",
+            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            chainId: 11155111,
+            timeout: 120000,
         },
     },
     etherscan: {
         apiKey: {
-            polygonAmoy: "RAPG4YHI7T9W2MQD26JBTJF4SY3BT1QH92",
+            polygonAmoy: process.env.POLYGONSCAN_API_KEY || "RAPG4YHI7T9W2MQD26JBTJF4SY3BT1QH92",
+            sepolia: process.env.ETHERSCAN_API_KEY || "",
         },
         customChains: [
             {

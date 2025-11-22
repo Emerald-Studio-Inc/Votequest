@@ -5,6 +5,7 @@
       "dom.iterable",
       "esnext"
     ],
+    "target": "es2015",
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -34,6 +35,7 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "blockchain"
   ]
 }

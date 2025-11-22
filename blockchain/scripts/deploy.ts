@@ -1,12 +1,12 @@
-const hre = require("hardhat");
-const fs = require("fs");
-const path = require("path");
+import { ethers } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
 async function main() {
     console.log("Deploying VoteQuest contract...");
 
     try {
-        const VoteQuest = await hre.ethers.getContractFactory("VoteQuest");
+        const VoteQuest = await ethers.getContractFactory("VoteQuest");
         console.log("Contract factory created, deploying...");
 
         const voteQuest = await VoteQuest.deploy();
@@ -16,9 +16,9 @@ async function main() {
         console.log("Deployment confirmed!");
 
         const address = await voteQuest.getAddress();
-        const network = hre.network.name;
-        const chainId = (await hre.ethers.provider.getNetwork()).chainId;
-        const deployBlock = await hre.ethers.provider.getBlockNumber();
+        const network = (await ethers.provider.getNetwork()).name;
+        const chainId = (await ethers.provider.getNetwork()).chainId;
+        const deployBlock = await ethers.provider.getBlockNumber();
 
         console.log(`\n✅ VoteQuest deployed successfully!`);
         console.log(`   Address: ${address}`);
@@ -71,9 +71,10 @@ async function main() {
         console.log(`   npx hardhat verify --network ${network} ${address}`);
 
         console.log("\n📊 View on block explorer:");
-        if (network === 'amoy') {
+        const networkName = await (await ethers.provider.getNetwork()).name;
+        if (networkName.includes('amoy') || chainId === 80002n) {
             console.log(`   https://amoy.polygonscan.com/address/${address}`);
-        } else if (network === 'sepolia') {
+        } else if (networkName.includes('sepolia') || chainId === 11155111n) {
             console.log(`   https://sepolia.etherscan.io/address/${address}`);
         }
     } catch (error) {
