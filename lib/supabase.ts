@@ -15,6 +15,7 @@ export type User = {
   voting_power: number
   votes_count: number
   global_rank: number
+  coins: number
   created_at: string
   updated_at: string
 }
@@ -29,6 +30,8 @@ export type Proposal = {
   created_by: string | null
   created_at: string
   updated_at: string
+  onchain_id?: number | null
+  tx_hash?: string | null
 }
 
 export type ProposalOption = {

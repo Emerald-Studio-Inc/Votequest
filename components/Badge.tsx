@@ -28,39 +28,42 @@ const Badge: React.FC<BadgeProps> = ({ achievement, earned, size = 'md' }) => {
     };
 
     const iconSizes = {
-        sm: 'w-4 h-4',
-        md: 'w-6 h-6',
-        lg: 'w-8 h-8'
+        sm: 'w-3.5 h-3.5',
+        md: 'w-5 h-5',
+        lg: 'w-7 h-7'
     };
 
     return (
         <div className="group relative flex flex-col items-center">
             <div
                 className={`
-          ${sizeClasses[size]} rounded-full flex items-center justify-center transition-all duration-300
-          ${earned
-                        ? 'bg-gradient-to-br from-yellow-400/20 to-orange-500/20 border border-yellow-500/50 text-yellow-500 shadow-[0_0_15px_-3px_rgba(234,179,8,0.3)]'
-                        : 'bg-zinc-900/50 border border-zinc-800 text-zinc-700 grayscale'
+                    ${sizeClasses[size]} rounded-xl flex items-center justify-center transition-all duration-300
+                    ${earned
+                        ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.15)]'
+                        : 'bg-white/5 border border-white/5 text-gray-600'
                     }
-        `}
+                `}
             >
-                {earned ? <Icon className={iconSizes[size]} strokeWidth={1.5} /> : <Lock className={iconSizes[size]} strokeWidth={1.5} />}
+                {earned ? (
+                    <Icon className={iconSizes[size]} strokeWidth={2} />
+                ) : (
+                    <Lock className={iconSizes[size]} strokeWidth={1.5} />
+                )}
             </div>
 
             {/* Tooltip */}
-            <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 w-48 text-center">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 shadow-xl">
-                    <div className={`text-sm font-medium mb-1 ${earned ? 'text-white' : 'text-zinc-500'}`}>
+            <div className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 w-48 text-center translate-y-2 group-hover:translate-y-0">
+                <div className="glass-heavy rounded-lg p-3 shadow-2xl border border-white/10">
+                    <div className={`text-sm font-medium mb-1 ${earned ? 'text-white' : 'text-gray-500'}`}>
                         {achievement.name}
                     </div>
-                    <div className="text-xs text-zinc-500 leading-relaxed">
+                    <div className="text-xs text-gray-500 leading-relaxed mb-2">
                         {achievement.description}
                     </div>
-                    <div className="mt-2 text-xs font-mono text-yellow-500/80">
+                    <div className="text-[10px] font-medium text-white/80 bg-white/10 inline-block px-2 py-0.5 rounded">
                         +{achievement.xp_reward} XP
                     </div>
                 </div>
-                <div className="w-2 h-2 bg-zinc-900 border-r border-b border-zinc-800 rotate-45 mx-auto -mt-1"></div>
             </div>
         </div>
     );

@@ -1,8 +1,9 @@
-import React from 'react';
-import { ArrowRight, Check, Users, Clock, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Users, Clock, Plus, Activity, TrendingUp, Zap, Award, Flame, ChevronRight, BarChart3, Vote, ArrowUpRight, Check } from 'lucide-react';
 import { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase';
-import Badge from './Badge';
 import Tooltip from './Tooltip';
+import CoinBadge from './CoinBadge';
+import NotificationBell from './NotificationBell';
 
 interface DashboardScreenProps {
     userData: any;
@@ -19,16 +20,18 @@ interface DashboardScreenProps {
 const DashboardScreen: React.FC<DashboardScreenProps> = ({
     userData,
     proposals,
-    achievements,
-    userAchievements,
     onSelectProposal,
     onNavigate,
+    onTabChange,
     animations
 }) => {
-    const calculateParticipation = (proposal: any) => {
-        const totalVotes = proposal.options.reduce((sum: number, opt: any) => sum + opt.votes, 0);
-        return proposal.participants > 0 ? Math.round((totalVotes / proposal.participants) * 100) : 0;
-    };
+    const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     const hasVoted = (proposalId: string) => {
         return userData.votedProposals.includes(proposalId);
@@ -39,165 +42,333 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         const now = new Date();
         const diff = end.getTime() - now.getTime();
 
-        if (diff <= 0) return 'Ended';
+        if (diff <= 0) return { text: 'Ended', urgent: false };
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-        return `${days}d ${hours}h`;
+        const urgent = diff < 24 * 60 * 60 * 1000; // Less than 24 hours
+
+        if (days > 0) {
+            return { text: `${days}d ${hours}h`, urgent };
+        } else if (hours > 0) {
+            return { text: `${hours}h ${minutes}m`, urgent };
+        } else {
+            return { text: `${minutes}m`, urgent: true };
+        }
     };
 
     const progressPercent = (userData.xp / userData.nextLevelXP) * 100;
+    const activeProposals = proposals.filter(p => p.status === 'active');
+    const recentProposals = activeProposals.slice(0, 5);
 
     return (
-        <div className="min-h-screen pb-32 animate-fade-in">
-            {/* Header */}
-            <div className="relative z-10 pt-16 pb-8 px-6">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-light text-white tracking-tight mb-1 animate-slide-up" style={{ animationDelay: '0.1s' }}>Portfolio</h1>
-                        <p className="text-zinc-500 text-sm font-light animate-slide-up" style={{ animationDelay: '0.2s' }}>Governance Dashboard</p>
-                    </div>
-                    <Tooltip content="Create New Proposal" position="left">
-                        <button
-                            onClick={() => onNavigate('create-proposal')}
-                            className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform animate-scale-in shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-                        >
-                            <Plus className="w-5 h-5" strokeWidth={2} />
-                        </button>
-                    </Tooltip>
-                </div>
+        <div className="min-h-screen pb-32 relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-white/[0.02] rounded-full blur-[120px] animate-float" style={{ animationDuration: '8s' }}></div>
+                <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-white/[0.015] rounded-full blur-[140px] animate-float" style={{ animationDuration: '12s', animationDelay: '2s' }}></div>
+            </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                    {[
-                        { label: 'Power', value: userData.votingPower.toLocaleString(), tooltip: 'Your Voting Weight' },
-                        { label: 'Votes', value: userData.votesCount, tooltip: 'Total Votes Cast' },
-                        { label: 'Streak', value: `${userData.streak}d`, tooltip: 'Consecutive Days Active' },
-                        { label: 'Rank', value: `#${userData.globalRank}`, tooltip: 'Global Leaderboard Rank' }
-                    ].map((stat, idx) => (
-                        <Tooltip key={idx} content={stat.tooltip} position="bottom">
-                            <div className="bg-black/20 p-4 hover:bg-black/40 transition-colors w-full h-full flex flex-col justify-center">
-                                <div className="text-zinc-500 text-[10px] uppercase tracking-widest mb-2">{stat.label}</div>
-                                <div className="text-white text-xl font-light tracking-tight">{stat.value}</div>
+            {/* Header - Premium Minimal */}
+            <div className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+                <div className="max-w-[1400px] mx-auto px-8 py-5">
+                    <div className="flex items-center justify-between">
+                        {/* Logo & Brand */}
+                        <div className="flex items-center gap-10">
+                            <div className="flex items-center gap-3 animate-slide-right">
+                                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                                    <Vote className="w-5 h-5 text-black" strokeWidth={2.5} />
+                                </div>
+                                <h1 className="text-xl font-bold tracking-tight">VoteQuest</h1>
                             </div>
-                        </Tooltip>
-                    ))}
+
+                            {/* Quick Stats - Inline */}
+                            <div className="hidden lg:flex items-center gap-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                                <Tooltip content="Current Level" position="bottom">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Zap className="w-4 h-4 text-mono-60" strokeWidth={2} />
+                                        <span className="text-mono-95 font-semibold">Level {userData.level}</span>
+                                    </div>
+                                </Tooltip>
+
+                                <div className="w-px h-4 bg-white/10"></div>
+
+                                <Tooltip content="Voting Streak" position="bottom">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Flame className="w-4 h-4 text-orange-400" strokeWidth={2} />
+                                        <span className="text-mono-95 font-semibold">{userData.streak} days</span>
+                                    </div>
+                                </Tooltip>
+
+                                <div className="w-px h-4 bg-white/10"></div>
+
+                                <Tooltip content="Total Votes Cast" position="bottom">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Activity className="w-4 h-4 text-mono-60" strokeWidth={2} />
+                                        <span className="text-mono-95 font-semibold">{userData.votesCount} votes</span>
+                                    </div>
+                                </Tooltip>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-4 animate-slide-left">
+                            <CoinBadge coins={userData.coins || 0} size="md" />
+                            <NotificationBell />
+
+                            <button
+                                onClick={() => onNavigate('create-proposal')}
+                                className="btn btn-primary btn-sm group"
+                            >
+                                <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={2.5} />
+                                <span>New Proposal</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Reputation Section */}
-            <div className="relative z-10 px-6 py-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-                <div className="glass rounded-2xl p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/10 transition-colors duration-500"></div>
+            {/* Main Content */}
+            <div className="max-w-[1400px] mx-auto px-8 pt-12 relative z-10">
 
-                    <div className="flex items-center justify-between mb-4 relative z-10">
+                {/* Hero Section */}
+                <div className="mb-16 animate-slide-up">
+                    <div className="flex items-end justify-between mb-6">
                         <div>
-                            <div className="text-zinc-500 text-[10px] uppercase tracking-widest mb-1">Reputation</div>
-                            <div className="text-white text-2xl font-light">Level {userData.level}</div>
-                        </div>
-                        <div className="text-right">
-                            <div className="text-zinc-500 text-[10px] uppercase tracking-widest mb-1">Progress</div>
-                            <div className="text-white text-2xl font-light">{Math.round(progressPercent)}%</div>
+                            <p className="text-mono-50 text-sm mb-2 uppercase tracking-wider font-semibold">
+                                {time.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                            </p>
+                            <h2 className="text-display mb-3">
+                                Welcome back,
+                                <br />
+                                <span className="text-mono-70">Voter</span>
+                            </h2>
+                            <p className="text-body text-mono-60 max-w-2xl">
+                                You're ranked <span className="text-mono-95 font-semibold">#{userData.globalRank}</span> globally with <span className="text-mono-95 font-semibold">{userData.votingPower.toLocaleString()}</span> voting power.
+                            </p>
                         </div>
                     </div>
-                    <div className="relative h-0.5 bg-zinc-800 w-full rounded-full overflow-hidden">
-                        <div
-                            className="absolute inset-y-0 left-0 bg-white transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                            style={{ width: `${progressPercent}%` }}
-                        />
-                    </div>
-                    <div className="mt-3 text-zinc-600 text-xs font-mono flex justify-between items-center">
-                        <span>{userData.nextLevelXP - userData.xp} XP to next level</span>
-                        <Tooltip content="Next Level Reward: 2x Voting Power" position="left">
-                            <span className="text-white/50 hover:text-white cursor-help transition-colors">Reward Info</span>
-                        </Tooltip>
+
+                    {/* Progress Overview Card */}
+                    <div className="card card-elevated p-8 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                        <div className="relative z-10">
+                            <div className="flex items-start justify-between mb-8">
+                                <div>
+                                    <h3 className="text-heading mb-2">Level Progress</h3>
+                                    <p className="text-body-small text-mono-50">
+                                        {userData.xp.toLocaleString()} / {userData.nextLevelXP.toLocaleString()} XP
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10">
+                                    <TrendingUp className="w-4 h-4 text-green-400" strokeWidth={2} />
+                                    <span className="text-sm font-semibold text-mono-95">{Math.round(progressPercent)}%</span>
+                                </div>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="relative h-3 bg-white/5 rounded-full overflow-hidden mb-6">
+                                <div
+                                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-white via-white/90 to-white/80 rounded-full transition-all duration-1000 ease-out"
+                                    style={{ width: `${progressPercent}%` }}
+                                >
+                                    <div className="absolute inset-0 bg-white/20 animate-shimmer"></div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+                            </div>
+
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-4 gap-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+                                        <Zap className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                                    </div>
+                                    <div>
+                                        <p className="text-caption text-mono-50 uppercase">Level</p>
+                                        <p className="text-xl font-bold">{userData.level}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+                                        <Flame className="w-5 h-5 text-orange-400" strokeWidth={2} />
+                                    </div>
+                                    <div>
+                                        <p className="text-caption text-mono-50 uppercase">Streak</p>
+                                        <p className="text-xl font-bold">{userData.streak} days</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+                                        <Activity className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                                    </div>
+                                    <div>
+                                        <p className="text-caption text-mono-50 uppercase">Votes</p>
+                                        <p className="text-xl font-bold">{userData.votesCount}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+                                        <BarChart3 className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                                    </div>
+                                    <div>
+                                        <p className="text-caption text-mono-50 uppercase">Power</p>
+                                        <p className="text-xl font-bold">{userData.votingPower.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Active Proposals */}
-            <div className="relative z-10 px-6 py-6 animate-slide-up" style={{ animationDelay: '0.5s' }}>
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-light text-white">Active Proposals</h2>
-                    <Tooltip content="See all proposals" position="left">
-                        <button className="text-zinc-500 hover:text-white text-xs uppercase tracking-widest transition-colors flex items-center gap-2 group">
-                            View All
-                            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" strokeWidth={1.5} />
+                {/* Active Proposals Section */}
+                <div className="mb-16 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-heading-xl mb-2">Active Proposals</h3>
+                            <p className="text-body text-mono-60">
+                                {activeProposals.length} proposals awaiting your vote
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => onTabChange('proposals')}
+                            className="btn btn-ghost btn-sm group"
+                        >
+                            <span>View All</span>
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={2} />
                         </button>
-                    </Tooltip>
-                </div>
+                    </div>
 
-                <div className="space-y-4">
-                    {proposals.length === 0 ? (
-                        <div className="text-center py-12 text-zinc-600 font-light">
-                            No active proposals
-                        </div>
-                    ) : (
-                        proposals.map((proposal: any, idx: number) => {
-                            const participation = calculateParticipation(proposal);
+                    {/* Proposals Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {recentProposals.map((proposal, index) => {
+                            const timeLeft = formatTimeLeft(proposal.end_date);
                             const voted = hasVoted(proposal.id);
+                            const totalVotes = proposal.options.reduce((sum: number, opt: any) => sum + opt.votes, 0);
 
                             return (
                                 <div
                                     key={proposal.id}
+                                    className="card card-interactive relative overflow-hidden group"
                                     onClick={() => onSelectProposal(proposal)}
-                                    className="glass glass-hover rounded-2xl p-6 transition-all cursor-pointer group animate-slide-up"
-                                    style={{ animationDelay: `${0.6 + (idx * 0.1)}s` }}
+                                    onMouseEnter={() => setHoveredCard(proposal.id)}
+                                    onMouseLeave={() => setHoveredCard(null)}
+                                    style={{ animationDelay: `${index * 0.05}s` }}
                                 >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="text-zinc-600 text-[10px] font-mono tracking-wider">#{proposal.id.substring(0, 6)}</div>
-                                                {voted && (
-                                                    <Tooltip content="You have voted on this proposal" position="right">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse-slow"></div>
-                                                    </Tooltip>
-                                                )}
+                                    {/* Hover Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                    <div className="relative z-10 p-6">
+                                        {/* Header */}
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex-1">
+                                                <h4 className="text-subheading mb-2 line-clamp-2 group-hover:text-mono-100 transition-colors">
+                                                    {proposal.title}
+                                                </h4>
+                                                <p className="text-body-small text-mono-50 line-clamp-2">
+                                                    {proposal.description}
+                                                </p>
                                             </div>
-                                            <div className="text-white text-lg font-light leading-snug mb-4 group-hover:text-zinc-200 transition-colors">{proposal.title}</div>
-                                            <div className="flex items-center gap-6 text-xs text-zinc-500">
-                                                <Tooltip content="Time Remaining" position="bottom">
-                                                    <span className="flex items-center gap-2">
-                                                        <Clock className="w-3.5 h-3.5" strokeWidth={1.5} />
-                                                        {formatTimeLeft(proposal.end_date)}
-                                                    </span>
+                                            {voted && (
+                                                <Tooltip content="You voted" position="left">
+                                                    <div className="flex-shrink-0 ml-3">
+                                                        <div className="w-8 h-8 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                                                            <Check className="w-4 h-4 text-green-400" strokeWidth={2.5} />
+                                                        </div>
+                                                    </div>
                                                 </Tooltip>
-                                                <Tooltip content="Total Participants" position="bottom">
-                                                    <span className="flex items-center gap-2">
-                                                        <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
-                                                        {proposal.participants.toLocaleString()}
-                                                    </span>
+                                            )}
+                                        </div>
+
+                                        {/* Voting Options Preview */}
+                                        <div className="space-y-2 mb-6">
+                                            {proposal.options.slice(0, 2).map((option: any) => {
+                                                const percentage = totalVotes > 0
+                                                    ? Math.round((option.votes / totalVotes) * 100)
+                                                    : 0;
+
+                                                return (
+                                                    <div key={option.id} className="relative">
+                                                        <div className="flex items-center justify-between mb-1.5">
+                                                            <span className="text-caption text-mono-60 uppercase">
+                                                                {option.title}
+                                                            </span>
+                                                            <span className="text-caption text-mono-70 font-semibold">
+                                                                {percentage}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-white/20 rounded-full transition-all duration-500"
+                                                                style={{ width: `${percentage}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {proposal.options.length > 2 && (
+                                                <p className="text-caption text-mono-40 italic">
+                                                    +{proposal.options.length - 2} more options
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Footer */}
+                                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                            <div className="flex items-center gap-4">
+                                                <Tooltip content="Total Participants" position="top">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Users className="w-4 h-4 text-mono-50" strokeWidth={2} />
+                                                        <span className="text-sm text-mono-70 font-medium">
+                                                            {totalVotes.toLocaleString()}
+                                                        </span>
+                                                    </div>
                                                 </Tooltip>
+
+                                                <div className={`flex items-center gap-1.5 ${timeLeft.urgent ? 'text-orange-400' : 'text-mono-50'}`}>
+                                                    <Clock className="w-4 h-4" strokeWidth={2} />
+                                                    <span className="text-sm font-medium">
+                                                        {timeLeft.text}
+                                                    </span>
+                                                </div>
                                             </div>
+
+                                            <ArrowUpRight
+                                                className="w-5 h-5 text-mono-40 group-hover:text-mono-95 transition-all group-hover:translate-x-1 group-hover:-translate-y-1"
+                                                strokeWidth={2}
+                                            />
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-zinc-800 group-hover:text-white transition-colors duration-300 transform group-hover:translate-x-1" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex-1 h-0.5 bg-zinc-800/50 overflow-hidden rounded-full">
-                                            <div className="h-full bg-zinc-400 group-hover:bg-white transition-colors duration-500" style={{ width: `${participation}%` }} />
-                                        </div>
-                                        <div className="text-[10px] text-zinc-600 font-mono">{participation}% Turnout</div>
                                     </div>
                                 </div>
                             );
-                        })
+                        })}
+                    </div>
+
+                    {activeProposals.length === 0 && (
+                        <div className="card p-16 text-center">
+                            <div className="w-16 h-16 rounded-full bg-white/5 mx-auto mb-6 flex items-center justify-center">
+                                <Vote className="w-8 h-8 text-mono-50" strokeWidth={1.5} />
+                            </div>
+                            <h4 className="text-heading mb-3">No Active Proposals</h4>
+                            <p className="text-body text-mono-60 mb-8 max-w-md mx-auto">
+                                There are no active proposals at the moment. Check back later or create a new proposal to get started.
+                            </p>
+                            <button
+                                onClick={() => onNavigate('create-proposal')}
+                                className="btn btn-primary mx-auto"
+                            >
+                                <Plus className="w-4 h-4" strokeWidth={2.5} />
+                                Create Proposal
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
-
-            {/* Notifications */}
-            {animations.voteSuccess && (
-                <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-slide-down w-full max-w-sm px-6">
-                    <div className="glass bg-black/80 rounded-xl px-6 py-4 flex items-center gap-4 shadow-2xl border-l-2 border-emerald-500">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse"></div>
-                        <div>
-                            <div className="text-white text-sm font-medium tracking-wide">Vote Recorded</div>
-                            <div className="text-zinc-500 text-xs font-mono mt-0.5">+250 XP earned</div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

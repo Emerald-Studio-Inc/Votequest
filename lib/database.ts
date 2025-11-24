@@ -64,60 +64,62 @@ export async function updateUserXP(userId: string, xpGained: number): Promise<bo
 
 // Proposal Functions
 export async function getActiveProposals() {
-  const { data: proposals, error: propError } = await supabase
+  // Optimized: Single query with nested select (eliminates N+1 problem)
+  const { data, error } = await supabase
     .from('proposals')
-    .select('*')
+    .select(`
+      *,
+      proposal_options (
+        id,
+        proposal_id,
+        option_number,
+        title,
+        description,
+        allocation,
+        votes,
+        created_at
+      )
+    `)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
-  if (propError) {
-    console.error('Error fetching proposals:', propError)
+  if (error) {
+    console.error('Error fetching proposals:', error)
     return []
   }
 
-  // Get options for each proposal
-  const proposalsWithOptions = await Promise.all(
-    (proposals || []).map(async (proposal: Proposal) => {
-      const { data: options } = await supabase
-        .from('proposal_options')
-        .select('*')
-        .eq('proposal_id', proposal.id)
-        .order('option_number')
-
-      return {
-        ...proposal,
-        options: options || []
-      }
-    })
-  )
-
-  return proposalsWithOptions
+  // Rename nested field for consistency
+  return (data || []).map(proposal => ({
+    ...proposal,
+    options: proposal.proposal_options || [],
+    proposal_options: undefined
+  })).filter(p => p.options && p.options.length > 0)
 }
 
 export async function getProposalWithOptions(proposalId: string) {
-  const { data: proposal, error: propError } = await supabase
+  // Optimized: Single query with nested select
+  const { data, error } = await supabase
     .from('proposals')
-    .select('*')
+    .select(`
+      *,
+      proposal_options (*)
+    `)
     .eq('id', proposalId)
     .single()
 
-  if (propError) {
-    console.error('Error fetching proposal:', propError)
+  if (error) {
+    console.error('Error fetching proposal:', error)
     return null
   }
 
-  const { data: options, error: optError } = await supabase
-    .from('proposal_options')
-    .select('*')
-    .eq('proposal_id', proposalId)
-    .order('option_number')
+  if (!data) return null
 
-  if (optError) {
-    console.error('Error fetching options:', optError)
-    return null
+  // Rename nested field for consistency
+  return {
+    ...data,
+    options: data.proposal_options || [],
+    proposal_options: undefined
   }
-
-  return { ...proposal, options }
 }
 
 // Vote Functions
@@ -128,10 +130,8 @@ export async function castVote(
   txHash?: string,
   walletAddress?: string
 ): Promise<boolean> {
-  if (!txHash || !walletAddress) {
-    console.error('Missing txHash or walletAddress for secure vote');
-    return false;
-  }
+  // Note: txHash and walletAddress are optional for database-only votes
+  // Blockchain votes will provide both, Supabase-only votes will not
 
   try {
     const response = await fetch('/api/vote', {
@@ -141,8 +141,8 @@ export async function castVote(
         userId,
         proposalId,
         optionId,
-        txHash,
-        walletAddress
+        txHash: txHash || null,
+        walletAddress: walletAddress || null
       }),
     });
 
@@ -168,6 +168,44 @@ export async function getUserVotedProposals(userId: string): Promise<string[]> {
   return data?.map((v: { proposal_id: string }) => v.proposal_id) || []
 }
 
+// NEW: Simplified proposal creation (no blockchain)
+export async function createProposalSimple(
+  title: string,
+  description: string,
+  endDate: string,
+  options: { title: string; description?: string }[],
+  userId: string,
+  category?: string
+): Promise<{ success: boolean; proposalId?: string; error?: string }> {
+  try {
+    const response = await fetch('/api/proposal/create-simple', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        description,
+        endDate,
+        options,
+        userId,
+        category
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('Error creating proposal:', result);
+      return { success: false, error: result.error || 'Failed to create proposal' };
+    }
+
+    return { success: true, proposalId: result.proposalId };
+  } catch (error) {
+    console.error('Error creating proposal:', error);
+    return { success: false, error: 'Network error' };
+  }
+}
+
+// OLD: Blockchain-based proposal creation (deprecated for now)
 export async function createProposal(
   title: string,
   description: string,
@@ -209,7 +247,8 @@ export async function createProposal(
     return false;
   }
 }
-// Achievement Functions
+
+// Achievement Functions  
 export async function getAchievements() {
   const { data, error } = await supabase
     .from('achievements')
@@ -252,4 +291,80 @@ export async function checkAndAwardAchievements(userId: string) {
     console.error('Error checking achievements:', error);
     return false;
   }
+}
+
+// Analytics functions (stubs - AnalyticsScreen uses mock data)
+export async function getUserVotingHistory(userId: string) {
+  const { data, error } = await supabase
+    .from('votes')
+    .select(`
+      *,
+      proposal:proposals(id, title, status, end_date),
+      option:proposal_options(id, title)
+    `)
+    .eq('user_id', userId)
+    .order('voted_at', { ascending: false })
+    .limit(50)
+
+  if (error) {
+    console.error('Error fetching voting history:', error)
+    return []
+  }
+  return data || []
+}
+
+export async function getUserCategoryBreakdown(userId: string) {
+  const { data, error } = await supabase
+    .from('votes')
+    .select(`
+      proposal:proposals(category)
+    `)
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('Error fetching category breakdown:', error)
+    return []
+  }
+
+  // Count votes by category
+  const categoryCount: Record<string, number> = {}
+  data?.forEach((vote: any) => {
+    const category = vote.proposal?.category || 'Other'
+    categoryCount[category] = (categoryCount[category] || 0) + 1
+  })
+
+  // Convert to array format
+  return Object.entries(categoryCount).map(([name, value]) => ({
+    name,
+    value,
+    percentage: data.length > 0 ? Math.round((value / data.length) * 100) : 0
+  }))
+}
+
+export async function getUserVotingActivity(userId: string, days: number = 7) {
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - days)
+
+  const { data, error } = await supabase
+    .from('votes')
+    .select('voted_at')
+    .eq('user_id', userId)
+    .gte('voted_at', startDate.toISOString())
+
+  if (error) {
+    console.error('Error fetching voting activity:', error)
+    return []
+  }
+
+  // Group by date
+  const activityByDate: Record<string, number> = {}
+  data?.forEach((vote: any) => {
+    const date = new Date(vote.voted_at).toLocaleDateString()
+    activityByDate[date] = (activityByDate[date] || 0) + 1
+  })
+
+  return Object.entries(activityByDate).map(([date, votes]) => ({
+    date,
+    votes
+  }))
 }

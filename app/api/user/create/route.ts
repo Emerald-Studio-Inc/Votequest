@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/server-db';
 import { rateLimit } from '@/lib/rate-limit';
+import { z } from 'zod';
+
+// Validation schema
+const createUserSchema = z.object({
+    walletAddress: z.string()
+        .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum wallet address format')
+        .transform(addr => addr.toLowerCase()) // Normalize to lowercase
+});
 
 export async function POST(request: Request) {
     try {
@@ -10,29 +18,42 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { walletAddress } = body;
 
-        if (!walletAddress) {
-            return NextResponse.json({ error: 'Missing wallet address' }, { status: 400 });
+        // Validate input with Zod
+        const validationResult = createUserSchema.safeParse(body);
+        if (!validationResult.success) {
+            return NextResponse.json({
+                error: 'Invalid input',
+                details: validationResult.error.issues.map(i => i.message)
+            }, { status: 400 });
         }
 
+        const { walletAddress } = validationResult.data;
+        console.log('[API] Creating/fetching user for wallet:', walletAddress);
+
         // Check if user exists
-        const { data: existingUser } = await supabaseAdmin
+        const { data: existingUser, error: fetchError } = await supabaseAdmin
             .from('users')
             .select('*')
-            .eq('wallet_address', walletAddress.toLowerCase())
+            .eq('wallet_address', walletAddress) // Already lowercase from Zod transform
             .single();
 
+        if (fetchError && fetchError.code !== 'PGRST116') {
+            console.error('[API] Error fetching user:', fetchError);
+        }
+
         if (existingUser) {
+            console.log('[API] User already exists, returning existing user');
             return NextResponse.json(existingUser);
         }
 
         // Create new user
+        console.log('[API] Creating new user in database...');
         const { data: newUser, error } = await supabaseAdmin
             .from('users')
             .insert([
                 {
-                    wallet_address: walletAddress.toLowerCase(),
+                    wallet_address: walletAddress, // Already lowercase from Zod transform
                     level: 5,
                     xp: 3420,
                     streak: 12,
@@ -45,10 +66,11 @@ export async function POST(request: Request) {
             .single();
 
         if (error) {
-            console.error('Error creating user:', error);
-            return NextResponse.json({ error: 'Database error' }, { status: 500 });
+            console.error('[API] Error creating user:', error);
+            return NextResponse.json({ error: 'Database error', details: error }, { status: 500 });
         }
 
+        console.log('[API] User created successfully:', newUser.id);
         return NextResponse.json(newUser);
 
     } catch (error: any) {

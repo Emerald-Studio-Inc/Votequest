@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, Award, Target, Zap } from 'lucide-react';
 import Tooltip from './Tooltip';
+import LoadingSpinner from './LoadingSpinner';
+import { getUserVotingActivity, getUserCategoryBreakdown } from '@/lib/database';
 
 interface AnalyticsScreenProps {
     userData: any;
@@ -8,34 +10,57 @@ interface AnalyticsScreenProps {
 }
 
 const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }) => {
-    // Calculate voting activity over time (mock data for now)
-    const votingActivityData = [
-        { date: 'Mon', votes: 2 },
-        { date: 'Tue', votes: 3 },
-        { date: 'Wed', votes: 1 },
-        { date: 'Thu', votes: 4 },
-        { date: 'Fri', votes: 2 },
-        { date: 'Sat', votes: 1 },
-        { date: 'Sun', votes: 3 },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [votingActivityData, setVotingActivityData] = useState<any[]>([]);
+    const [categoryData, setCategoryData] = useState<any[]>([]);
 
-    const maxVotes = Math.max(...votingActivityData.map(d => d.votes));
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            if (!userData?.userId) return;
+
+            setLoading(true);
+            try {
+                // Fetch real voting activity
+                const activity = await getUserVotingActivity(userData.userId, 7);
+                setVotingActivityData(activity);
+
+                // Fetch real category breakdown
+                const categories = await getUserCategoryBreakdown(userData.userId);
+
+                // Add colors to categories
+                const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
+                const categoriesWithColors = categories.map((cat, idx) => ({
+                    ...cat,
+                    color: colors[idx % colors.length]
+                }));
+                setCategoryData(categoriesWithColors);
+            } catch (error) {
+                console.error('Error fetching analytics:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAnalytics();
+    }, [userData?.userId]);
+
+    const maxVotes = votingActivityData.length > 0 ? Math.max(...votingActivityData.map(d => d.votes)) : 1;
 
     // Calculate participation rate
     const totalProposals = proposals.length;
-    const votedProposals = userData.votedProposals.length;
+    const votedProposals = userData?.votedProposals?.length || 0;
     const participationRate = totalProposals > 0 ? Math.round((votedProposals / totalProposals) * 100) : 0;
 
-    // Category breakdown (mock data)
-    const categoryData = [
-        { name: 'Governance', value: 40, color: '#3b82f6' },
-        { name: 'Treasury', value: 30, color: '#8b5cf6' },
-        { name: 'Protocol', value: 20, color: '#ec4899' },
-        { name: 'Community', value: 10, color: '#10b981' },
-    ];
+    // Use actual voting power (no fake formulas)
+    const impactScore = userData.votingPower || 0;
 
-    // Impact score calculation
-    const impactScore = Math.round((userData.votingPower / 10000) * 100);
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <LoadingSpinner size="large" message="Loading analytics..." />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen pb-32 animate-fade-in">

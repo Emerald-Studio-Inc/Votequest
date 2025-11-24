@@ -11,7 +11,10 @@ const nextConfig = {
             config.resolve.fallback = {
                 ...config.resolve.fallback,
                 '@react-native-async-storage/async-storage': false,
+                'react-native-async-storage': false,
                 'pino-pretty': false,
+                'encoding': false,
+                'lokijs': false,
             };
         }
         return config;

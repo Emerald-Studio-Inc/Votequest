@@ -7,6 +7,7 @@ export interface User {
   voting_power: number
   votes_count: number
   global_rank: number
+  coins: number
   votedProposals: string[]
   created_at?: string
   updated_at?: string

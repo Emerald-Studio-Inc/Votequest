@@ -49,15 +49,16 @@ const VoteQuestApp = () => {
   const [userData, setUserData] = useState<UserData>({
     address: null,
     userId: null,
-    level: 5,
-    xp: 3420,
-    nextLevelXP: 5000,
-    streak: 12,
-    votingPower: 2847,
-    votesCount: 47,
-    globalRank: 247,
-    achievements: ['first_vote', 'week_streak', 'level_5'],
-    votedProposals: []
+    level: 0,
+    xp: 0,
+    nextLevelXP: 100,
+    streak: 0,
+    votingPower: 0,
+    votesCount: 0,
+    globalRank: 0,
+    achievements: [],
+    votedProposals: [],
+    coins: 0
   });
   const [selectedProposal, setSelectedProposal] = useState<ProposalWithOptions | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -266,18 +267,20 @@ const VoteQuestApp = () => {
             setUserAchievements(myAchievements);
 
             // Set user data
+            const nextLevelXP = Math.pow(user.level + 1, 2) * 100; // Formula: (level+1)^2 * 100
             setUserData({
               address: user.wallet_address,
               userId: user.id,
               level: user.level,
               xp: user.xp,
-              nextLevelXP: 5000,
+              nextLevelXP: nextLevelXP,
               streak: user.streak,
               votingPower: user.voting_power,
               votesCount: user.votes_count,
               globalRank: user.global_rank,
-              achievements: ['first_vote', 'week_streak', 'level_5'],
-              votedProposals: votedProposals
+              achievements: myAchievements.map((a: any) => a.achievement_id),
+              votedProposals: votedProposals,
+              coins: user.coins || 0
             });
 
             if (currentScreen === 'login') {
@@ -295,15 +298,16 @@ const VoteQuestApp = () => {
         setUserData({
           address: null,
           userId: null,
-          level: 5,
-          xp: 3420,
-          nextLevelXP: 5000,
-          streak: 12,
-          votingPower: 2847,
-          votesCount: 47,
-          globalRank: 247,
+          level: 0,
+          xp: 0,
+          nextLevelXP: 100,
+          streak: 0,
+          votingPower: 0,
+          votesCount: 0,
+          globalRank: 0,
           achievements: [],
-          votedProposals: []
+          votedProposals: [],
+          coins: 0
         });
         setCurrentScreen('login');
       }
@@ -315,51 +319,124 @@ const VoteQuestApp = () => {
   const castVote = async () => {
     if (!selectedOption || !selectedProposal || !userData.userId) return;
 
-    // Find option index
+    // Find option
     const option = selectedProposal.options.find((o: any) => o.id === selectedOption);
     if (!option) return;
 
     setLoading(true);
-    setPendingAction('vote');
     try {
-      writeContract({
-        address: VOTE_QUEST_ADDRESS,
-        abi: VOTE_QUEST_ABI,
-        functionName: 'vote',
-        args: [BigInt(selectedProposal.id), BigInt(option.option_number)],
+      console.log('[DEBUG] Casting vote...', { proposalId: selectedProposal.id, optionId: selectedOption });
+
+      // Call vote API directly
+      const response = await fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userData.userId,
+          proposalId: selectedProposal.id,
+          optionId: selectedOption,
+          walletAddress: userData.address
+        }),
       });
+
+      const result = await response.json();
+      console.log('[DEBUG] Vote response:', result);
+
+      if (response.ok) {
+        // Success! Update proposals and user data
+        const { getActiveProposals, getUserByWallet } = await import('@/lib/database');
+        const supabaseProposals = await getActiveProposals();
+        setProposals(supabaseProposals);
+
+        // Update user data
+        if (userData.address) {
+          const updatedUser = await getUserByWallet(userData.address);
+          if (updatedUser) {
+            const votedProposals = await getUserVotedProposals(updatedUser.id);
+            setUserData((prev: any) => ({
+              ...prev,
+              xp: updatedUser.xp,
+              level: updatedUser.level,
+              votesCount: updatedUser.votes_count,
+              coins: updatedUser.coins || 0,
+              votedProposals: votedProposals
+            }));
+          }
+        }
+
+        alert('Vote cast successfully! You earned 10 VQC and 250 XP!');
+        setSelectedOption(null);
+        setCurrentScreen('dashboard');
+      } else {
+        console.error('[ERROR] Vote failed:', result);
+        alert(`Failed to cast vote: ${result.error || 'Unknown error'}`);
+      }
     } catch (error) {
-      console.error('Error casting vote:', error);
+      console.error('[ERROR] Vote exception:', error);
+      alert('Failed to cast vote. Please try again.');
+    } finally {
       setLoading(false);
       setPendingAction(null);
     }
   };
 
   const handleCreateProposal = async (data: any) => {
-    if (!userData.userId) return;
+    if (!userData.userId) {
+      alert('Please connect your wallet first');
+      return;
+    }
 
     setLoading(true);
-    setPendingAction('create');
-    setPendingProposalData(data);
     try {
-      const durationInMinutes = Math.max(1, Math.floor((new Date(data.end_date).getTime() - Date.now()) / (1000 * 60)));
-      const optionTitles = data.options.map((o: any) => o.title);
+      console.log('[DEBUG] Creating proposal...', data);
 
-      writeContract({
-        address: VOTE_QUEST_ADDRESS,
-        abi: VOTE_QUEST_ABI,
-        functionName: 'createProposal',
-        args: [
-          data.title,
-          data.description,
-          BigInt(durationInMinutes),
-          optionTitles
-        ],
+      // Call the simple API endpoint directly
+      const response = await fetch('/api/proposal/create-simple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: data.title,
+          description: data.description || '',
+          endDate: data.end_date,
+          options: data.options,
+          userId: userData.userId,
+          category: data.category || 'Community'
+        }),
       });
+
+      const result = await response.json();
+      console.log('[DEBUG] API response:', result);
+
+      if (response.ok && result.success) {
+        // Success! Refetch proposals
+        const { getActiveProposals, getUserByWallet } = await import('@/lib/database');
+        const supabaseProposals = await getActiveProposals();
+        setProposals(supabaseProposals);
+
+        // Update user coins
+        if (userData.address) {
+          const updatedUser = await getUserByWallet(userData.address);
+          if (updatedUser) {
+            setUserData((prev: any) => ({
+              ...prev,
+              coins: updatedUser.coins || 0
+            }));
+          }
+        }
+
+        alert('Proposal created successfully! You earned 50 VQC!');
+        setCurrentScreen('dashboard');
+      } else {
+        console.error('[ERROR] Failed:', result);
+        alert(`Failed to create proposal: ${result.error || 'Unknown error'}`);
+      }
     } catch (error) {
-      console.error('Error creating proposal:', error);
+      console.error('[ERROR] Exception:', error);
+      alert('Failed to create proposal. Please try again.');
+    } finally {
       setLoading(false);
       setPendingAction(null);
+      setPendingProposalData(null);
     }
   };
 
@@ -426,8 +503,8 @@ const VoteQuestApp = () => {
 
         {/* Bottom Navigation - Shared across all tabs */}
         {/* Floating Bottom Navigation */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-          <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10">
+        <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center animate-slide-up" style={{ animationDelay: '0.8s' }}>
+          <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-auto">\
             {[
               { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
               { label: 'Proposals', value: 'proposals' as const, icon: List },

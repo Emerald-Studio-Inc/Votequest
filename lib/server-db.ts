@@ -4,11 +4,15 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 if (!supabaseUrl) {
-    console.error('Missing Supabase URL');
+    console.error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
 }
 
-// Create client only if key is available (runtime), otherwise return a proxy or null
-// For build time, we can return a dummy object if the key is missing
+if (!supabaseServiceRoleKey) {
+    console.warn('⚠️  SUPABASE_SERVICE_ROLE_KEY is not set. API routes will fail.');
+    console.warn('   Please add it to .env.local and restart the server.');
+}
+
+// Create client only if key is available (runtime), otherwise return a proxy that throws helpful errors
 export const supabaseAdmin = supabaseServiceRoleKey
     ? createClient(supabaseUrl, supabaseServiceRoleKey, {
         auth: {
@@ -16,4 +20,8 @@ export const supabaseAdmin = supabaseServiceRoleKey
             persistSession: false,
         },
     })
-    : ({} as any); // This will fail if used, but allows build to pass
+    : new Proxy({} as any, {
+        get: () => {
+            throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set. Add it to .env.local and restart the server.');
+        }
+    });

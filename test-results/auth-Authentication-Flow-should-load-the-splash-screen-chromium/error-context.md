@@ -1,0 +1,105 @@
+# Page snapshot
+
+```yaml
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - img [ref=e11]
+          - heading "VoteQuest" [level=1] [ref=e14]
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - generic [ref=e17]:
+              - img [ref=e18]
+              - generic [ref=e20]: Level 5
+            - generic: Current Level
+          - generic [ref=e22]:
+            - generic [ref=e23]:
+              - img [ref=e24]
+              - generic [ref=e26]: 12 days
+            - generic: Voting Streak
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - img [ref=e30]
+              - generic [ref=e32]: 47 votes
+            - generic: Total Votes Cast
+      - generic [ref=e33]:
+        - generic "0 VoteQuest Coins" [ref=e34]:
+          - generic [ref=e36]: "0"
+        - button "New Proposal" [ref=e37] [cursor=pointer]:
+          - img [ref=e38]
+          - generic [ref=e39]: New Proposal
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e43]:
+          - paragraph [ref=e44]: Monday, Nov 24
+          - heading "Welcome back, Voter" [level=2] [ref=e45]:
+            - text: Welcome back,
+            - text: Voter
+          - paragraph [ref=e46]:
+            - text: You're ranked
+            - generic [ref=e47]: "#247"
+            - text: globally with 2,847 voting power.
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]:
+              - heading "Level Progress" [level=3] [ref=e53]
+              - paragraph [ref=e54]: 3,420 / 5,000 XP
+            - generic [ref=e55]:
+              - img [ref=e56]
+              - generic [ref=e59]: 68%
+          - generic [ref=e64]:
+            - generic [ref=e65]:
+              - img [ref=e67]
+              - generic [ref=e69]:
+                - paragraph [ref=e70]: Level
+                - paragraph [ref=e71]: "5"
+            - generic [ref=e72]:
+              - img [ref=e74]
+              - generic [ref=e76]:
+                - paragraph [ref=e77]: Streak
+                - paragraph [ref=e78]: 12 days
+            - generic [ref=e79]:
+              - img [ref=e81]
+              - generic [ref=e83]:
+                - paragraph [ref=e84]: Votes
+                - paragraph [ref=e85]: "47"
+            - generic [ref=e86]:
+              - img [ref=e88]
+              - generic [ref=e90]:
+                - paragraph [ref=e91]: Power
+                - paragraph [ref=e92]: 2,847
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - heading "Active Proposals" [level=3] [ref=e96]
+            - paragraph [ref=e97]: 0 proposals awaiting your vote
+          - button "View All" [ref=e98] [cursor=pointer]:
+            - generic [ref=e99]: View All
+            - img [ref=e100]
+        - generic [ref=e102]:
+          - img [ref=e104]
+          - heading "No Active Proposals" [level=4] [ref=e107]
+          - paragraph [ref=e108]: There are no active proposals at the moment. Check back later or create a new proposal to get started.
+          - button "Create Proposal" [ref=e109] [cursor=pointer]:
+            - img [ref=e110]
+            - text: Create Proposal
+  - generic [ref=e112]:
+    - generic [ref=e113]:
+      - button [ref=e114] [cursor=pointer]:
+        - img [ref=e115]
+      - generic: Overview
+    - generic [ref=e121]:
+      - button [ref=e122] [cursor=pointer]:
+        - img [ref=e123]
+      - generic: Proposals
+    - generic [ref=e124]:
+      - button [ref=e125] [cursor=pointer]:
+        - img [ref=e126]
+      - generic: Analytics
+    - generic [ref=e127]:
+      - button [ref=e128] [cursor=pointer]:
+        - img [ref=e129]
+      - generic: Settings
+```

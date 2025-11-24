@@ -4,10 +4,20 @@ import { createPublicClient, http } from 'viem';
 import { sepolia } from 'viem/chains';
 import { VOTE_QUEST_ABI } from '@/lib/contracts';
 import { rateLimit } from '@/lib/rate-limit';
+import { z } from 'zod';
 
 const publicClient = createPublicClient({
     chain: sepolia,
     transport: http(),
+});
+
+// Validation schema
+const voteSchema = z.object({
+    userId: z.string().uuid('Invalid user ID format'),
+    proposalId: z.string().uuid('Invalid proposal ID format'),
+    optionId: z.string().uuid('Invalid option ID format'),
+    txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash').optional().nullable(),
+    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address').optional().nullable()
 });
 
 export async function POST(request: Request) {
@@ -18,27 +28,40 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { userId, proposalId, optionId, txHash, walletAddress } = body;
 
-        if (!userId || !proposalId || !optionId || !txHash || !walletAddress) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        // Validate input with Zod
+        const validationResult = voteSchema.safeParse(body);
+        if (!validationResult.success) {
+            return NextResponse.json({
+                error: 'Invalid input',
+                details: validationResult.error.issues.map(i => i.message)
+            }, { status: 400 });
         }
 
-        // 1. Verify transaction on-chain
-        const tx = await publicClient.getTransaction({ hash: txHash as `0x${string}` });
-        const receipt = await publicClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
+        const { userId, proposalId, optionId, txHash, walletAddress } = validationResult.data;
 
-        if (!tx || !receipt) {
-            return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
-        }
+        // If txHash provided, verify transaction on-chain
+        if (txHash && walletAddress) {
+            try {
+                const tx = await publicClient.getTransaction({ hash: txHash as `0x${string}` });
+                const receipt = await publicClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
 
-        if (receipt.status !== 'success') {
-            return NextResponse.json({ error: 'Transaction failed on-chain' }, { status: 400 });
-        }
+                if (!tx || !receipt) {
+                    return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
+                }
 
-        // Verify sender matches wallet address
-        if (tx.from.toLowerCase() !== walletAddress.toLowerCase()) {
-            return NextResponse.json({ error: 'Transaction sender mismatch' }, { status: 403 });
+                if (receipt.status !== 'success') {
+                    return NextResponse.json({ error: 'Transaction failed on-chain' }, { status: 400 });
+                }
+
+                // Verify sender matches wallet address
+                if (tx.from.toLowerCase() !== walletAddress.toLowerCase()) {
+                    return NextResponse.json({ error: 'Transaction sender mismatch' }, { status: 403 });
+                }
+            } catch (error) {
+                console.error('Blockchain verification error:', error);
+                return NextResponse.json({ error: 'Failed to verify transaction' }, { status: 500 });
+            }
         }
 
         // 2. Check if user already voted in DB
@@ -60,7 +83,7 @@ export async function POST(request: Request) {
                 user_id: userId,
                 proposal_id: proposalId,
                 option_id: optionId,
-                tx_hash: txHash,
+                tx_hash: txHash || null,
             }]);
 
         if (voteError) {
@@ -88,6 +111,38 @@ export async function POST(request: Request) {
                 .from('users')
                 .update({ xp: newXP, level: newLevel, updated_at: new Date().toISOString() })
                 .eq('id', userId);
+        }
+
+        // 5. Award coins for voting (10 VQC) and notify proposal creator
+        try {
+            const { awardCoins, createNotification } = await import('@/lib/coins');
+
+            // Award coins to voter
+            await awardCoins(userId, 10, 'vote_cast', proposalId);
+
+            // Notify proposal creator
+            const { data: proposal } = await supabaseAdmin
+                .from('proposals')
+                .select('created_by, title')
+                .eq('id', proposalId)
+                .single();
+
+            // Notify proposal creator (only if we have wallet address)
+            if (proposal && proposal.created_by && proposal.created_by !== userId && walletAddress) {
+                await createNotification(
+                    proposal.created_by,
+                    'proposal_voted',
+                    'New vote on your proposal!',
+                    `Someone voted on "${proposal.title}"`,
+                    proposalId,
+                    { voterAddress: walletAddress.substring(0, 8) + '...' }
+                );
+            }
+
+            console.log('[API] Awarded 10 VQC for voting');
+        } catch (coinError) {
+            console.error('[API] Error with coins/notifications:', coinError);
+            // Don't fail the request
         }
 
         return NextResponse.json({ success: true });

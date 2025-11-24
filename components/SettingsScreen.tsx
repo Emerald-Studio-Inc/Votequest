@@ -1,9 +1,15 @@
-import React from 'react';
-import { Wallet, Network, Bell, Globe, Info, ExternalLink, Copy, LogOut, ChevronRight } from 'lucide-react';
-import { useDisconnect, useSwitchChain } from 'wagmi';
-import { polygonAmoy } from 'wagmi/chains';
-import { VOTE_QUEST_ADDRESS } from '@/lib/contracts';
+import React, { useState } from 'react';
+import { User, Bell, Shield, Palette, Globe, LogOut, ChevronRight, Check, X, AlertCircle, ExternalLink } from 'lucide-react';
+import { useDisconnect } from 'wagmi';
 import Tooltip from './Tooltip';
+
+interface SettingItem {
+    label: string;
+    value: string;
+    description?: string;
+    action?: () => void | Promise<void>;
+    actionLabel?: string;
+}
 
 interface SettingsScreenProps {
     userData: any;
@@ -11,175 +17,308 @@ interface SettingsScreenProps {
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData }) => {
     const { disconnect } = useDisconnect();
-    const { switchChain } = useSwitchChain();
+    const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
+    const [notifications, setNotifications] = useState({
+        proposals: true,
+        votes: true,
+        achievements: true,
+        updates: false
+    });
 
-    const copyAddress = () => {
-        if (userData.address) {
-            navigator.clipboard.writeText(userData.address);
-            // Could add a toast notification here
+    const handleDisconnect = () => {
+        disconnect();
+        setShowDisconnectConfirm(false);
+    };
+
+    const toggleNotification = (key: keyof typeof notifications) => {
+        setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const settingsSections: { title: string; icon: any; items: SettingItem[] }[] = [
+        {
+            title: 'Account',
+            icon: User,
+            items: [
+                {
+                    label: 'Wallet Address',
+                    value: userData.address ? `${userData.address.slice(0, 6)}...${userData.address.slice(-4)}` : 'Not connected',
+                    action: () => navigator.clipboard.writeText(userData.address || ''),
+                    actionLabel: 'Copy'
+                },
+                {
+                    label: 'User ID',
+                    value: userData.userId ? `${userData.userId.slice(0, 8)}...` : 'N/A',
+                    action: () => navigator.clipboard.writeText(userData.userId || ''),
+                    actionLabel: 'Copy'
+                }
+            ]
+        },
+        {
+            title: 'Privacy & Security',
+            icon: Shield,
+            items: [
+                {
+                    label: 'Data Collection',
+                    value: 'Minimal',
+                    description: 'We only collect essential voting data'
+                },
+                {
+                    label: 'Blockchain Transparency',
+                    value: 'Public',
+                    description: 'All votes are publicly verifiable'
+                }
+            ]
         }
-    };
-
-    const truncateAddress = (address: string) => {
-        return `${address.slice(0, 6)}...${address.slice(-4)}`;
-    };
+    ];
 
     return (
-        <div className="min-h-screen pb-32 animate-fade-in">
+        <div className="min-h-screen pb-32 relative">
+            {/* Background Effects */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-white/[0.015] rounded-full blur-[120px] animate-float" style={{ animationDuration: '10s' }}></div>
+            </div>
+
             {/* Header */}
-            <div className="relative z-10 pt-16 pb-6 px-6">
-                <h1 className="text-3xl font-light text-white tracking-tight mb-1 animate-slide-up" style={{ animationDelay: '0.1s' }}>Settings</h1>
-                <p className="text-zinc-500 text-sm font-light animate-slide-up" style={{ animationDelay: '0.2s' }}>Manage your account and preferences</p>
+            <div className="sticky top-0 z-40 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+                <div className="max-w-[900px] mx-auto px-8 py-6">
+                    <div>
+                        <h1 className="text-display mb-2">Settings</h1>
+                        <p className="text-body text-mono-60">
+                            Manage your account preferences and security
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <div className="relative z-10 px-6 space-y-8">
-                {/* Account Section */}
-                <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                    <h2 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-3 pl-2">Account</h2>
-                    <div className="glass rounded-2xl overflow-hidden">
-                        <div className="p-5 border-b border-white/5">
-                            <div className="flex items-center gap-3 mb-3">
-                                <Wallet className="w-4 h-4 text-zinc-400" strokeWidth={1.5} />
-                                <div className="text-zinc-400 text-xs font-light">Connected Wallet</div>
+            {/* Main Content */}
+            <div className="max-w-[900px] mx-auto px-8 pt-12 relative z-10">
+
+                {/* Profile Card */}
+                <div className="card-elevated p-8 mb-12 animate-slide-up">
+                    <div className="flex items-start gap-6">
+                        {/* Avatar */}
+                        <div className="relative group">
+                            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-all">
+                                <User className="w-12 h-12 text-mono-70" strokeWidth={1.5} />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div className="text-white font-mono text-sm tracking-wide">
-                                    {userData.address ? truncateAddress(userData.address) : 'Not connected'}
-                                </div>
-                                {userData.address && (
-                                    <Tooltip content="Copy Address" position="left">
-                                        <button
-                                            onClick={copyAddress}
-                                            className="p-2 hover:bg-white/5 rounded-full transition-colors group"
-                                        >
-                                            <Copy className="w-3.5 h-3.5 text-zinc-500 group-hover:text-white transition-colors" strokeWidth={1.5} />
-                                        </button>
-                                    </Tooltip>
-                                )}
+                            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-green-500/20 border-2 border-black flex items-center justify-center">
+                                <Check className="w-4 h-4 text-green-400" strokeWidth={2.5} />
                             </div>
                         </div>
 
-                        <Tooltip content="Disconnect your wallet" position="bottom">
-                            <button
-                                onClick={() => disconnect()}
-                                className="w-full p-5 flex items-center justify-between hover:bg-red-500/5 transition-colors group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <LogOut className="w-4 h-4 text-red-500/70 group-hover:text-red-500 transition-colors" strokeWidth={1.5} />
-                                    <div className="text-red-500/70 group-hover:text-red-500 text-sm font-light transition-colors">Disconnect Wallet</div>
-                                </div>
-                            </button>
-                        </Tooltip>
-                    </div>
-                </div>
+                        {/* Info */}
+                        <div className="flex-1">
+                            <h2 className="text-heading mb-2">
+                                {userData.address ? `${userData.address.slice(0, 6)}...${userData.address.slice(-4)}` : 'Voter'}
+                            </h2>
+                            <p className="text-body text-mono-60 mb-4">
+                                Member since {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            </p>
 
-                {/* Network Section */}
-                <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
-                    <h2 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-3 pl-2">Network</h2>
-                    <div className="glass rounded-2xl overflow-hidden">
-                        <div className="p-5 border-b border-white/5">
-                            <div className="flex items-center gap-3 mb-3">
-                                <Network className="w-4 h-4 text-zinc-400" strokeWidth={1.5} />
-                                <div className="text-zinc-400 text-xs font-light">Current Network</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]"></div>
-                                <div className="text-white text-sm font-light">Polygon Amoy Testnet</div>
+                            {/* Stats */}
+                            <div className="flex items-center gap-6">
+                                <div>
+                                    <p className="text-caption text-mono-50 uppercase mb-1">Level</p>
+                                    <p className="text-xl font-bold">{userData.level}</p>
+                                </div>
+                                <div className="w-px h-10 bg-white/10"></div>
+                                <div>
+                                    <p className="text-caption text-mono-50 uppercase mb-1">Votes Cast</p>
+                                    <p className="text-xl font-bold">{userData.votesCount}</p>
+                                </div>
+                                <div className="w-px h-10 bg-white/10"></div>
+                                <div>
+                                    <p className="text-caption text-mono-50 uppercase mb-1">Global Rank</p>
+                                    <p className="text-xl font-bold">#{userData.globalRank}</p>
+                                </div>
                             </div>
                         </div>
-
-                        <Tooltip content="Switch to Polygon Amoy" position="bottom">
-                            <button
-                                onClick={() => switchChain({ chainId: polygonAmoy.id })}
-                                className="w-full p-5 flex items-center justify-between hover:bg-white/5 transition-colors group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="text-zinc-400 group-hover:text-white text-sm font-light transition-colors">Switch Network</div>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors" strokeWidth={1.5} />
-                            </button>
-                        </Tooltip>
                     </div>
                 </div>
 
-                {/* Preferences Section */}
-                <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
-                    <h2 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-3 pl-2">Preferences</h2>
-                    <div className="glass rounded-2xl overflow-hidden">
-                        <div className="p-5 border-b border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Bell className="w-4 h-4 text-zinc-400" strokeWidth={1.5} />
-                                <div className="text-white text-sm font-light">Notifications</div>
-                            </div>
-                            <Tooltip content="Toggle Notifications" position="left">
-                                <button className="w-10 h-5 bg-zinc-800 rounded-full relative transition-colors hover:bg-zinc-700">
-                                    <div className="w-3 h-3 bg-zinc-500 rounded-full absolute left-1 top-1"></div>
+                {/* Notifications Settings */}
+                <div className="card-elevated p-8 mb-8 animate-slide-up" style={{ animationDelay: '0.05s' }}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+                            <Bell className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                        </div>
+                        <div>
+                            <h3 className="text-heading mb-1">Notifications</h3>
+                            <p className="text-caption text-mono-60">Manage your notification preferences</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        {Object.entries({
+                            proposals: 'New Proposals',
+                            votes: 'Vote Confirmations',
+                            achievements: 'Achievement Unlocks',
+                            updates: 'Platform Updates'
+                        }).map(([key, label]) => (
+                            <div key={key} className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-fast">
+                                <div>
+                                    <p className="text-sm font-medium text-mono-95 mb-1">{label}</p>
+                                    <p className="text-caption text-mono-60">
+                                        {key === 'proposals' && 'Get notified when new proposals are created'}
+                                        {key === 'votes' && 'Receive confirmations for your votes'}
+                                        {key === 'achievements' && 'Celebrate when you unlock achievements'}
+                                        {key === 'updates' && 'Stay informed about platform changes'}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => toggleNotification(key as keyof typeof notifications)}
+                                    className={`
+                                        relative w-12 h-6 rounded-full transition-all
+                                        ${notifications[key as keyof typeof notifications]
+                                            ? 'bg-white'
+                                            : 'bg-white/10'
+                                        }
+                                    `}
+                                >
+                                    <div className={`
+                                        absolute top-1 w-4 h-4 rounded-full transition-all
+                                        ${notifications[key as keyof typeof notifications]
+                                            ? 'left-7 bg-black'
+                                            : 'left-1 bg-mono-50'
+                                        }
+                                    `}></div>
                                 </button>
-                            </Tooltip>
-                        </div>
-
-                        <div className="p-5 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Globe className="w-4 h-4 text-zinc-400" strokeWidth={1.5} />
-                                <div className="text-white text-sm font-light">Language</div>
                             </div>
-                            <select className="bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-white text-xs font-light focus:outline-none cursor-pointer hover:bg-black/40 transition-colors">
-                                <option>English</option>
-                                <option>Spanish</option>
-                                <option>French</option>
-                            </select>
-                        </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* About Section */}
-                <div className="animate-slide-up" style={{ animationDelay: '0.6s' }}>
-                    <h2 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-3 pl-2">About</h2>
-                    <div className="glass rounded-2xl overflow-hidden">
-                        <div className="p-5 border-b border-white/5">
-                            <div className="flex items-center gap-3 mb-3">
-                                <Info className="w-4 h-4 text-zinc-400" strokeWidth={1.5} />
-                                <div className="text-zinc-400 text-xs font-light">App Version</div>
-                            </div>
-                            <div className="text-white text-sm font-mono">v1.0.0</div>
-                        </div>
-
-                        <div className="p-5 border-b border-white/5">
-                            <div className="flex items-center gap-3 mb-3">
-                                <Network className="w-4 h-4 text-zinc-400" strokeWidth={1.5} />
-                                <div className="text-zinc-400 text-xs font-light">Smart Contract</div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div className="text-white font-mono text-xs tracking-wide opacity-80">
-                                    {truncateAddress(VOTE_QUEST_ADDRESS)}
+                {/* Settings Sections */}
+                <div className="space-y-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                    {settingsSections.map((section, sectionIndex) => {
+                        const Icon = section.icon;
+                        return (
+                            <div key={sectionIndex} className="card-elevated p-8">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+                                        <Icon className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                                    </div>
+                                    <h3 className="text-heading">{section.title}</h3>
                                 </div>
-                                <Tooltip content="View on Explorer" position="left">
-                                    <a
-                                        href={`https://amoy.polygonscan.com/address/${VOTE_QUEST_ADDRESS}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 hover:bg-white/5 rounded-full transition-colors group"
-                                    >
-                                        <ExternalLink className="w-3.5 h-3.5 text-zinc-500 group-hover:text-white transition-colors" strokeWidth={1.5} />
-                                    </a>
-                                </Tooltip>
-                            </div>
-                        </div>
 
-                        <a
-                            href="https://github.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full p-5 flex items-center justify-between hover:bg-white/5 transition-colors group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="text-zinc-400 group-hover:text-white text-sm font-light transition-colors">Documentation</div>
+                                <div className="space-y-3">
+                                    {section.items.map((item, itemIndex) => (
+                                        <div
+                                            key={itemIndex}
+                                            className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-fast group"
+                                        >
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium text-mono-95 mb-1">{item.label}</p>
+                                                <p className="text-caption text-mono-60">{item.value}</p>
+                                                {item.description && (
+                                                    <p className="text-caption text-mono-50 mt-1">{item.description}</p>
+                                                )}
+                                            </div>
+                                            {item.action && (
+                                                <Tooltip content={item.actionLabel || 'Action'} position="left">
+                                                    <button
+                                                        onClick={item.action}
+                                                        className="btn btn-ghost btn-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        {item.actionLabel}
+                                                    </button>
+                                                </Tooltip>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            <ExternalLink className="w-3.5 h-3.5 text-zinc-600 group-hover:text-white transition-colors" strokeWidth={1.5} />
-                        </a>
+                        );
+                    })}
+                </div>
+
+                {/* Links Section */}
+                <div className="card-elevated p-8 my-8 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+                            <Globe className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                        </div>
+                        <h3 className="text-heading">Resources</h3>
                     </div>
+
+                    <div className="space-y-3">
+                        {[
+                            { label: 'Documentation', url: '#' },
+                            { label: 'Terms of Service', url: '#' },
+                            { label: 'Privacy Policy', url: '#' },
+                            { label: 'Support', url: '#' }
+                        ].map((link, index) => (
+                            <a
+                                key={index}
+                                href={link.url}
+                                className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-fast group"
+                            >
+                                <span className="text-sm font-medium text-mono-95">{link.label}</span>
+                                <ExternalLink className="w-4 h-4 text-mono-50 group-hover:text-mono-95 transition-fast" strokeWidth={2} />
+                            </a>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="card p-8 border-red-500/20 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <div className="flex items-start gap-4 mb-6">
+                        <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                            <AlertCircle className="w-5 h-5 text-red-400" strokeWidth={2} />
+                        </div>
+                        <div>
+                            <h3 className="text-heading text-red-400 mb-2">Disconnect Wallet</h3>
+                            <p className="text-body-small text-mono-60">
+                                Disconnecting will log you out and remove your session. Your blockchain data remains secure and unchanged.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => setShowDisconnectConfirm(true)}
+                        className="btn btn-danger w-full"
+                    >
+                        <LogOut className="w-4 h-4" strokeWidth={2} />
+                        <span>Disconnect Wallet</span>
+                    </button>
                 </div>
             </div>
+
+            {/* Disconnect Confirmation Modal */}
+            {showDisconnectConfirm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center px-6 animate-fade-in">
+                    <div className="card-elevated p-8 max-w-md w-full animate-scale-bounce">
+                        <div className="flex items-start gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <AlertCircle className="w-6 h-6 text-red-400" strokeWidth={2} />
+                            </div>
+                            <div>
+                                <h3 className="text-heading mb-2">Disconnect Wallet?</h3>
+                                <p className="text-body text-mono-60">
+                                    Are you sure you want to disconnect your wallet? You'll need to reconnect to access your account.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setShowDisconnectConfirm(false)}
+                                className="btn btn-secondary flex-1"
+                            >
+                                <X className="w-4 h-4" strokeWidth={2} />
+                                <span>Cancel</span>
+                            </button>
+                            <button
+                                onClick={handleDisconnect}
+                                className="btn btn-danger flex-1"
+                            >
+                                <Check className="w-4 h-4" strokeWidth={2} />
+                                <span>Disconnect</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
