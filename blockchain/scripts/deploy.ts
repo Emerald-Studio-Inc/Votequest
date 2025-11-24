@@ -1,6 +1,9 @@
-import { ethers } from "hardhat";
+import * as hre from "hardhat";
 import * as fs from "fs";
 import * as path from "path";
+
+// @ts-ignore - ethers is available via hardhat-toolbox plugin
+const ethers = hre.ethers;
 
 async function main() {
     console.log("Deploying VoteQuest contract...");
@@ -72,9 +75,9 @@ async function main() {
 
         console.log("\n📊 View on block explorer:");
         const networkName = await (await ethers.provider.getNetwork()).name;
-        if (networkName.includes('amoy') || chainId === 80002n) {
+        if (networkName.includes('amoy') || chainId === BigInt(80002)) {
             console.log(`   https://amoy.polygonscan.com/address/${address}`);
-        } else if (networkName.includes('sepolia') || chainId === 11155111n) {
+        } else if (networkName.includes('sepolia') || chainId === BigInt(11155111)) {
             console.log(`   https://sepolia.etherscan.io/address/${address}`);
         }
     } catch (error) {

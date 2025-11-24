@@ -1,4 +1,7 @@
-import { ethers } from "hardhat";
+import * as hre from "hardhat";
+
+// @ts-ignore - ethers is available via hardhat-toolbox plugin
+const ethers = hre.ethers;
 
 async function main() {
     console.log("=== Starting deployment test ===");
