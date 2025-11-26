@@ -284,6 +284,13 @@ const VoteQuestApp = () => {
               coins: user.coins || 0
             });
 
+            console.log('[DEBUG] User data loaded:', {
+              address: user.wallet_address,
+              coins: user.coins,
+              level: user.level,
+              votesCount: user.votes_count
+            });
+
             if (currentScreen === 'login') {
               setCurrentScreen('dashboard');
               triggerAnimation('walletConnected');
@@ -325,10 +332,40 @@ const VoteQuestApp = () => {
     if (!option) return;
 
     setLoading(true);
+    let blockchainTxHash: string | undefined;
+
     try {
       console.log('[DEBUG] Casting vote...', { proposalId: selectedProposal.id, optionId: selectedOption });
 
-      // Call vote API directly
+      // Attempt blockchain vote if proposal has blockchain_id
+      if (selectedProposal.blockchain_id && isConnected && address) {
+        console.log('[BLOCKCHAIN] Proposal has blockchain_id, attempting blockchain vote...');
+
+        try {
+          const { attemptBlockchainVote } = await import('@/lib/blockchain-vote');
+
+          // Find option index (blockchain uses index, not ID)
+          const optionIndex = selectedProposal.options.findIndex((o: any) => o.id === selectedOption);
+
+          const blockchainResult = await attemptBlockchainVote(
+            selectedProposal.blockchain_id,
+            optionIndex,
+            isConnected,
+            address
+          );
+
+          if (blockchainResult.success && blockchainResult.txHash) {
+            console.log('[BLOCKCHAIN] Vote transaction submitted:', blockchainResult.txHash);
+            blockchainTxHash = blockchainResult.txHash;
+          } else {
+            console.log('[BLOCKCHAIN] Vote failed, falling back to database:', blockchainResult.error);
+          }
+        } catch (blockchainError: any) {
+          console.warn('[BLOCKCHAIN] Error during blockchain vote:', blockchainError.message);
+        }
+      }
+
+      // Call vote API (with or without blockchain tx hash)
       const response = await fetch('/api/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -336,6 +373,7 @@ const VoteQuestApp = () => {
           userId: userData.userId,
           proposalId: selectedProposal.id,
           optionId: selectedOption,
+          txHash: blockchainTxHash || null,
           walletAddress: userData.address
         }),
       });
@@ -365,7 +403,13 @@ const VoteQuestApp = () => {
           }
         }
 
-        alert('Vote cast successfully! You earned 10 VQC and 250 XP!');
+        // Show appropriate success message
+        if (blockchainTxHash) {
+          alert('✅ Vote recorded on blockchain! You earned 10 VQC and 250 XP!');
+        } else {
+          alert('✅ Vote saved to database! You earned 250 XP (coins only awarded for blockchain votes)');
+        }
+
         setSelectedOption(null);
         setCurrentScreen('dashboard');
       } else {
@@ -597,6 +641,7 @@ const VoteQuestApp = () => {
         hasVoted={hasVoted(selectedProposal.id)}
         selectedOption={selectedOption}
         setSelectedOption={setSelectedOption}
+        userId={userData.userId || ''}
       />
     );
   }

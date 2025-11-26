@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, Users, Check, Shield, TrendingUp, Activity, AlertCircle, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Check, Shield, TrendingUp, Activity, AlertCircle, CheckCircle2, ChevronRight, Share2 } from 'lucide-react';
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
+import ShareModal from './ShareModal';
 
 interface ProposalDetailScreenProps {
     proposal: ProposalWithOptions;
@@ -11,6 +12,7 @@ interface ProposalDetailScreenProps {
     hasVoted: boolean;
     selectedOption: string | null;
     setSelectedOption: (optionId: string | null) => void;
+    userId: string;
 }
 
 const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
@@ -20,10 +22,12 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
     loading,
     hasVoted,
     selectedOption,
-    setSelectedOption
+    setSelectedOption,
+    userId
 }) => {
     const [hoveredOption, setHoveredOption] = useState<string | null>(null);
     const [showVoteAnimation, setShowVoteAnimation] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
 
     const totalVotes = proposal.options.reduce((sum: number, opt: any) => sum + opt.votes, 0);
 
@@ -83,12 +87,22 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                             <span>Back to Proposals</span>
                         </button>
 
-                        {hasVoted && (
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20 animate-scale-in">
-                                <CheckCircle2 className="w-4 h-4 text-green-400" strokeWidth={2} />
-                                <span className="text-sm font-semibold text-green-400">Vote Recorded</span>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setShowShareModal(true)}
+                                className="btn btn-secondary btn-sm group"
+                            >
+                                <Share2 className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
+                                <span>Share</span>
+                            </button>
+
+                            {hasVoted && (
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20 animate-scale-in">
+                                    <CheckCircle2 className="w-4 h-4 text-green-400" strokeWidth={2} />
+                                    <span className="text-sm font-semibold text-green-400">Vote Recorded</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -362,6 +376,15 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                     </div>
                 </div>
             )}
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                proposalId={proposal.id}
+                proposalTitle={proposal.title}
+                userId={userId}
+            />
         </div>
     );
 };
