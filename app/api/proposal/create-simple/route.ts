@@ -37,6 +37,10 @@ export async function POST(request: Request) {
         }
 
         const { title, description, endDate, options, userId, category } = validationResult.data;
+        const txHash = body.txHash || null;
+        const walletAddress = body.walletAddress || null;
+
+        console.log('[API] Creating proposal with blockchain data:', { hasTxHash: !!txHash, hasWallet: !!walletAddress });
 
         // Create proposal in DB
         const { data: proposal, error: propError } = await supabaseAdmin
@@ -50,9 +54,9 @@ export async function POST(request: Request) {
                     status: 'active',
                     participants: 0,
                     category: category || 'Community',
-                    onchain_id: null, // Not on-chain yet
-                    blockchain_id: null, // Will be set if blockchain creation succeeds
-                    tx_hash: null
+                    onchain_id: null,
+                    blockchain_id: txHash ? 1 : null, // Set to 1 if blockchain tx exists
+                    tx_hash: txHash
                 }
             ])
             .select()

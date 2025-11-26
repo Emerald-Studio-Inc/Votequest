@@ -41,6 +41,7 @@ interface UserData {
   globalRank: number;
   achievements: string[];
   votedProposals: string[];
+  coins: number;
 }
 
 const VoteQuestApp = () => {
