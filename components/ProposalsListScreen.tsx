@@ -6,7 +6,7 @@ import Tooltip from './Tooltip';
 interface ProposalsListScreenProps {
     proposals: ProposalWithOptions[];
     onSelectProposal: (proposal: ProposalWithOptions) => void;
-    userData: any;
+    hasVoted: (proposalId: string) => boolean;
 }
 
 type SortOption = 'recent' | 'popular' | 'ending-soon';
@@ -15,17 +15,13 @@ type FilterOption = 'all' | 'active' | 'voted' | 'not-voted';
 const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
     proposals,
     onSelectProposal,
-    userData
+    hasVoted
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<SortOption>('recent');
     const [filterBy, setFilterBy] = useState<FilterOption>('all');
     const [showFilters, setShowFilters] = useState(false);
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-
-    const hasVoted = (proposalId: string) => {
-        return userData?.votedProposals?.includes(proposalId) || false;
-    };
 
     const formatTimeLeft = (endDate: string) => {
         const end = new Date(endDate);
@@ -93,7 +89,7 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
         });
 
         return sorted;
-    }, [proposals, searchQuery, sortBy, filterBy, userData?.votedProposals]);
+    }, [proposals, searchQuery, sortBy, filterBy, hasVoted]);
 
     const activeCount = proposals.filter(p => p.status === 'active').length;
     const votedCount = proposals.filter(p => hasVoted(p.id)).length;
