@@ -44,6 +44,10 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
         fetchAnalytics();
     }, [userData?.userId]);
 
+    console.log('📊 Voting Activity Data:', votingActivityData);
+    console.log('📈 Category Data:', categoryData);
+    console.log('📏 Max Votes:', votingActivityData.length > 0 ? Math.max(...votingActivityData.map(d => d.votes)) : 1);
+
     const maxVotes = votingActivityData.length > 0 ? Math.max(...votingActivityData.map(d => d.votes)) : 1;
 
     // Calculate participation rate
@@ -121,26 +125,24 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                 {/* Voting Activity Chart - CSS Based */}
                 <div className="glass rounded-2xl p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
                     <h3 className="text-white text-sm font-light mb-6 tracking-wide">Voting Activity (7 Days)</h3>
-                    <div className="flex items-end justify-between gap-3 h-40">
+                    <div className="flex items-end justify-between gap-2" style={{ height: '160px' }}>
                         {votingActivityData.map((day, idx) => {
-                            const heightPercent = (day.votes / maxVotes) * 100;
+                            const barHeightPx = maxVotes > 0 ? Math.max((day.votes / maxVotes) * 140, day.votes > 0 ? 20 : 4) : 4;
                             return (
-                                <Tooltip key={idx} content={`${day.votes} votes on ${day.date}`} position="top">
-                                    <div className="flex-1 flex flex-col items-center gap-3 group cursor-pointer">
-                                        <div className="flex-1 w-full flex items-end relative">
-                                            <div
-                                                className="w-full bg-white/10 rounded-t-sm transition-all duration-500 group-hover:bg-white/20 relative overflow-hidden"
-                                                style={{ height: `${heightPercent}%` }}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent"></div>
-                                            </div>
-                                        </div>
-                                        <div className="text-zinc-600 text-[10px] font-mono uppercase">{day.date}</div>
+                                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                                    <div className="w-full flex items-end justify-center" style={{ height: '140px' }}>
+                                        <div
+                                            className={`w-full rounded-t ${day.votes > 0 ? 'bg-blue-500' : 'bg-white/10'}`}
+                                            style={{ height: `${barHeightPx}px` }}
+                                            title={`${day.votes} votes`}
+                                        />
                                     </div>
-                                </Tooltip>
+                                    <div className="text-zinc-500 text-[10px]">{day.date.split('/')[1]}/{day.date.split('/')[0]}</div>
+                                </div>
                             );
                         })}
                     </div>
+                    <div className="text-zinc-600 text-[10px] mt-2 text-center">Total: {votingActivityData.reduce((sum, d) => sum + d.votes, 0)} votes</div>
                 </div>
 
                 {/* Category Breakdown - CSS Based */}
@@ -151,25 +153,24 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                         <div className="relative w-48 h-48">
                             <svg viewBox="0 0 100 100" className="transform -rotate-90 drop-shadow-2xl">
                                 {categoryData.reduce((acc, cat, idx) => {
-                                    const prevSum = categoryData.slice(0, idx).reduce((sum, c) => sum + c.value, 0);
+                                    const prevSum = categoryData.slice(0, idx).reduce((sum, c) => sum + c.percentage, 0);
                                     const circumference = 2 * Math.PI * 40; // radius = 40
                                     const offset = (prevSum / 100) * circumference;
-                                    const dashArray = `${(cat.value / 100) * circumference} ${circumference}`;
+                                    const dashArray = `${(cat.percentage / 100) * circumference} ${circumference}`;
 
                                     acc.push(
-                                        <Tooltip key={idx} content={`${cat.name}: ${cat.value}%`} position="top">
-                                            <circle
-                                                cx="50"
-                                                cy="50"
-                                                r="40"
-                                                fill="none"
-                                                stroke={cat.color}
-                                                strokeWidth="6"
-                                                strokeDasharray={dashArray}
-                                                strokeDashoffset={-offset}
-                                                className="transition-all opacity-80 hover:opacity-100 hover:stroke-[8] cursor-pointer"
-                                            />
-                                        </Tooltip>
+                                        <circle
+                                            key={idx}
+                                            cx="50"
+                                            cy="50"
+                                            r="40"
+                                            fill="none"
+                                            stroke={cat.color}
+                                            strokeWidth="8"
+                                            strokeDasharray={dashArray}
+                                            strokeDashoffset={-offset}
+                                            className="transition-all opacity-90"
+                                        />
                                     );
                                     return acc;
                                 }, [] as JSX.Element[])}
@@ -188,7 +189,7 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                             <div key={cat.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors">
                                 <div className="w-2 h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]" style={{ backgroundColor: cat.color }}></div>
                                 <div className="text-zinc-400 text-xs font-light">{cat.name}</div>
-                                <div className="text-white text-xs font-mono ml-auto opacity-60">{cat.value}%</div>
+                                <div className="text-white text-xs font-mono ml-auto opacity-60">{cat.percentage}%</div>
                             </div>
                         ))}
                     </div>

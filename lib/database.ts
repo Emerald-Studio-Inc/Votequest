@@ -356,15 +356,27 @@ export async function getUserVotingActivity(userId: string, days: number = 7) {
     return []
   }
 
-  // Group by date
+  // Create array for all 7 days with 0 votes
   const activityByDate: Record<string, number> = {}
+
+  // Initialize all days with 0 votes
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+    activityByDate[dateStr] = 0
+  }
+
+  // Count actual votes
   data?.forEach((vote: any) => {
-    const date = new Date(vote.voted_at).toLocaleDateString()
-    activityByDate[date] = (activityByDate[date] || 0) + 1
+    const dateStr = new Date(vote.voted_at).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+    if (activityByDate.hasOwnProperty(dateStr)) {
+      activityByDate[dateStr]++
+    }
   })
 
-  return Object.entries(activityByDate).map(([date, votes]) => ({
-    date,
-    votes
-  }))
+  // Return in chronological order
+  return Object.entries(activityByDate)
+    .map(([date, votes]) => ({ date, votes }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 }

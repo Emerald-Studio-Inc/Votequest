@@ -51,6 +51,7 @@ export async function POST(request: Request) {
                     participants: 0,
                     category: category || 'Community',
                     onchain_id: null, // Not on-chain yet
+                    blockchain_id: null, // Will be set if blockchain creation succeeds
                     tx_hash: null
                 }
             ])
@@ -85,13 +86,20 @@ export async function POST(request: Request) {
             }
         }
 
-        // Award coins for creating proposal (50 VQC)
+        // Award coins for creating proposal ONLY if on blockchain (50 VQC)
+        // For now, proposals are database-only, so no coins awarded yet
+        // Once blockchain proposal creation is implemented, check for tx_hash here
         try {
-            const { awardCoins } = await import('@/lib/coins');
-            await awardCoins(userId, 50, 'proposal_created', proposal.id, {
-                proposalTitle: title
-            });
-            console.log('[API] Awarded 50 VQC for proposal creation');
+            // Check if proposal was created on blockchain
+            if (proposal.tx_hash) {
+                const { awardCoins } = await import('@/lib/coins');
+                await awardCoins(userId, 50, 'proposal_created', proposal.id, {
+                    proposalTitle: title
+                });
+                console.log('[API] Awarded 50 VQC for blockchain proposal creation');
+            } else {
+                console.log('[API] No coins awarded - proposal is database-only (no blockchain tx)');
+            }
         } catch (coinError) {
             console.error('[API] Error awarding coins:', coinError);
         }

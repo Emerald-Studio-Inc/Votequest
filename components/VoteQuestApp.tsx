@@ -387,8 +387,46 @@ const VoteQuestApp = () => {
     }
 
     setLoading(true);
+    setPendingAction('create');
+    let blockchainTxHash: string | undefined;
+
     try {
       console.log('[DEBUG] Creating proposal...', data);
+
+      // Attempt blockchain proposal creation if wallet is connected
+      if (isConnected && address) {
+        console.log('[BLOCKCHAIN] Attempting blockchain proposal creation...');
+
+        try {
+          const { attemptBlockchainProposalCreation } = await import('@/lib/blockchain-vote');
+
+          // Calculate duration in minutes from end date
+          const durationMinutes = Math.floor(
+            (new Date(data.end_date).getTime() - Date.now()) / (1000 * 60)
+          );
+
+          const blockchainResult = await attemptBlockchainProposalCreation(
+            data.title,
+            data.description || '',
+            durationMinutes,
+            data.options.map((opt: any) => opt.title),
+            isConnected,
+            address
+          );
+
+          if (blockchainResult.success && blockchainResult.txHash) {
+            console.log('[BLOCKCHAIN] Proposal creation transaction:', blockchainResult.txHash);
+            blockchainTxHash = blockchainResult.txHash;
+          } else {
+            console.log('[BLOCKCHAIN] Failed, falling back to database:', blockchainResult.error);
+          }
+        } catch (blockchainError: any) {
+          console.warn('[BLOCKCHAIN] Error during blockchain creation:', blockchainError.message);
+        }
+      }
+
+      // Create proposal in database (with or without blockchain tx hash)
+      console.log('[DATABASE] Creating proposal in Supabase...');
 
       // Call the simple API endpoint directly
       const response = await fetch('/api/proposal/create-simple', {
@@ -400,7 +438,9 @@ const VoteQuestApp = () => {
           endDate: data.end_date,
           options: data.options,
           userId: userData.userId,
-          category: data.category || 'Community'
+          category: data.category || 'Community',
+          txHash: blockchainTxHash || null,
+          walletAddress: address || null
         }),
       });
 

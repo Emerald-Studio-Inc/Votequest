@@ -113,12 +113,17 @@ export async function POST(request: Request) {
                 .eq('id', userId);
         }
 
-        // 5. Award coins for voting (10 VQC) and notify proposal creator
+        // 5. Award coins for voting ONLY if blockchain transaction succeeded (10 VQC)
         try {
             const { awardCoins, createNotification } = await import('@/lib/coins');
 
-            // Award coins to voter
-            await awardCoins(userId, 10, 'vote_cast', proposalId);
+            // Only award coins if vote was recorded on blockchain
+            if (txHash) {
+                await awardCoins(userId, 10, 'vote_cast', proposalId);
+                console.log('[API] Awarded 10 VQC for blockchain vote');
+            } else {
+                console.log('[API] No coins awarded - vote was database-only (no blockchain tx)');
+            }
 
             // Notify proposal creator
             const { data: proposal } = await supabaseAdmin
@@ -138,8 +143,6 @@ export async function POST(request: Request) {
                     { voterAddress: walletAddress.substring(0, 8) + '...' }
                 );
             }
-
-            console.log('[API] Awarded 10 VQC for voting');
         } catch (coinError) {
             console.error('[API] Error with coins/notifications:', coinError);
             // Don't fail the request
