@@ -349,9 +349,9 @@ const VoteQuestApp = () => {
     try {
       console.log('[DEBUG] Casting vote...', { proposalId: selectedProposal.id, optionId: selectedOption });
 
-      // Attempt blockchain vote if proposal has blockchain_id
-      if (selectedProposal.blockchain_id && isConnected && address) {
-        console.log('[BLOCKCHAIN] Proposal has blockchain_id, attempting blockchain vote...');
+      // Attempt blockchain vote if proposal has onchain_id
+      if (selectedProposal.onchain_id && isConnected && address) {
+        console.log('[BLOCKCHAIN] Proposal has onchain_id, attempting blockchain vote...');
 
         try {
           const { attemptBlockchainVote } = await import('@/lib/blockchain-vote');
@@ -360,7 +360,7 @@ const VoteQuestApp = () => {
           const optionIndex = selectedProposal.options.findIndex((o: any) => o.id === selectedOption);
 
           const blockchainResult = await attemptBlockchainVote(
-            selectedProposal.blockchain_id,
+            selectedProposal.onchain_id,
             optionIndex,
             isConnected,
             address

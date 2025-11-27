@@ -19,25 +19,16 @@ export async function GET(request: Request) {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const shareUrl = `${baseUrl}/proposal/${proposalId}?ref=${code}`;
 
-        // Generate QR code as Data URL
-        const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+        // Generate QR code as buffer
+        const qrBuffer = await QRCode.toBuffer(shareUrl, {
             errorCorrectionLevel: 'H',
-            type: 'image/png',
-            quality: 1,
+            width: 300,
             margin: 2,
-            width: 512,
-            color: {
-                dark: '#FFFFFF',  // White QR code
-                light: '#000000'  //  Black background
-            }
+            type: 'png'
         });
 
-        // Convert data URL to buffer
-        const base64Data = qrDataUrl.replace(/^data:image\/png;base64,/, '');
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        // Return as PNG image
-        return new NextResponse(buffer, {
+        // Return as PNG image with proper Uint8Array conversion
+        return new NextResponse(new Uint8Array(qrBuffer), {
             headers: {
                 'Content-Type': 'image/png',
                 'Cache-Control': 'public, max-age=31536000, immutable',
