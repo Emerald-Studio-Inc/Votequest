@@ -87,6 +87,18 @@ const VoteQuestApp = () => {
     }
   }, [currentScreen]);
 
+  // Capture referral code from URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const refCode = params.get('ref');
+      if (refCode) {
+        localStorage.setItem('referralCode', refCode);
+        console.log('[REFERRAL] Captured referral code:', refCode);
+      }
+    }
+  }, []);
+
   const triggerAnimation = (key: string) => {
     setAnimations((prev: Record<string, boolean>) => ({ ...prev, [key]: true }));
     setTimeout(() => setAnimations((prev: Record<string, boolean>) => ({ ...prev, [key]: false })), 500);

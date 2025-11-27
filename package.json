@@ -33,6 +33,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.15.1",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
