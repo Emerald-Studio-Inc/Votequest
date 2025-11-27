@@ -2,6 +2,22 @@ import { NextResponse } from 'next/server';
 import QRCode from 'qrcode';
 
 /**
+ * Get base URL from request headers (auto-detects deployment URL)
+ */
+function getBaseUrl(request: Request): string {
+    const host = request.headers.get('host');
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+
+    // For local development
+    if (host?.includes('localhost')) {
+        return `http://${host}`;
+    }
+
+    // For production (Netlify, Vercel, etc.)
+    return `${protocol}://${host}`;
+}
+
+/**
  * Generate QR code for proposal sharing
  * GET /api/share/qr?code=ABC123&proposalId=uuid
  */
@@ -15,8 +31,8 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
         }
 
-        // Generate share URL
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        // Auto-detect base URL from request
+        const baseUrl = getBaseUrl(request);
         const shareUrl = `${baseUrl}/proposal/${proposalId}?ref=${code}`;
 
         // Generate QR code as buffer

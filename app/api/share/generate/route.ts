@@ -3,6 +3,22 @@ import { supabaseAdmin } from '@/lib/server-db';
 import { nanoid } from 'nanoid';
 
 /**
+ * Get base URL from request headers (auto-detects deployment URL)
+ */
+function getBaseUrl(request: Request): string {
+    const host = request.headers.get('host');
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+
+    // For local development
+    if (host?.includes('localhost')) {
+        return `http://${host}`;
+    }
+
+    // For production (Netlify, Vercel, etc.)
+    return `${protocol}://${host}`;
+}
+
+/**
  * Generate a shareable link with referral tracking
  * POST /api/share/generate
  */
@@ -67,8 +83,8 @@ export async function POST(request: Request) {
                 referral_code: referralCode
             });
 
-        // Generate shareable URL
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        // Auto-detect base URL from request
+        const baseUrl = getBaseUrl(request);
         const shareUrl = `${baseUrl}/proposal/${proposalId}?ref=${referralCode}`;
 
         return NextResponse.json({
