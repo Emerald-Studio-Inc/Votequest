@@ -40,9 +40,12 @@ interface UserData {
   globalRank: number;
   achievements: string[];
   votedProposals: string[];
+  coins: number;
 }
 
 const VoteQuestApp = () => {
+  // Always start with 'splash' to avoid hydration mismatch
+  // We'll check for returning users in useEffect
   const [currentScreen, setCurrentScreen] = useState('splash');
   const [activeDashboardTab, setActiveDashboardTab] = useState<'overview' | 'proposals' | 'analytics' | 'settings'>('overview');
   const [userData, setUserData] = useState<UserData>({
@@ -56,7 +59,8 @@ const VoteQuestApp = () => {
     votesCount: 47,
     globalRank: 247,
     achievements: ['first_vote', 'week_streak', 'level_5'],
-    votedProposals: []
+    votedProposals: [],
+    coins: 0
   });
   const [selectedProposal, setSelectedProposal] = useState<ProposalWithOptions | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -65,16 +69,49 @@ const VoteQuestApp = () => {
   const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
   const [animations, setAnimations] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
+  const [pendingProposalData, setPendingProposalData] = useState<any>(null);
+
+  // Hooks must come before effects that use them
+  const { address, isConnected } = useAccount();
 
   // Load achievements from database on mount
   useEffect(() => {
     loadAchievements();
   }, []);
 
+  // Check for returning user (client-side only, after mount)
+  useEffect(() => {
+    if (currentScreen === 'splash') {
+      const hasVisited = localStorage.getItem('votequest_visited');
+      if (hasVisited) {
+        // Skip splash for returning users
+        setCurrentScreen('checking');
+      }
+    }
+  }, []);
+
   const loadAchievements = async () => {
     const data = await getAchievements();
     setAchievements(data);
   };
+
+  // Check for wallet auto-reconnect on mount
+  useEffect(() => {
+    if (currentScreen === 'checking') {
+      // Give wagmi a moment to auto-reconnect
+      const timer = setTimeout(() => {
+        if (isConnected && address) {
+          // Wallet is connected, go to dashboard
+          setCurrentScreen('dashboard');
+        } else {
+          // No wallet connected, go to login
+          setCurrentScreen('login');
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentScreen, isConnected, address]);
 
   // Splash screen timer
   useEffect(() => {
@@ -89,9 +126,7 @@ const VoteQuestApp = () => {
     setTimeout(() => setAnimations(prev => ({ ...prev, [key]: false })), 500);
   };
 
-  const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
 
-  const { address, isConnected } = useAccount();
 
   // Contract Hooks
   const { data: proposalCount } = useReadContract({
@@ -200,12 +235,59 @@ const VoteQuestApp = () => {
           }, 1500);
         };
         finishVote();
+      } else if (pendingAction === 'create' && pendingProposalData && userData.userId && userData.address && hash) {
+        const syncProposalToDB = async () => {
+          try {
+            // Sync proposal to database
+            const response = await fetch('/api/proposal/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: pendingProposalData.title,
+                description: pendingProposalData.description,
+                endDate: pendingProposalData.end_date,
+                options: pendingProposalData.options,
+                creatorId: userData.userId,
+                walletAddress: userData.address,
+                txHash: hash,
+                category: 'Community'
+              }),
+            });
+
+            if (response.ok) {
+              console.log('Proposal synced to database successfully');
+              // Reload user data to get updated coins (50 VQC reward)
+              if (userData.address) {
+                const updatedUser = await getUserByWallet(userData.address);
+                if (updatedUser) {
+                  setUserData(prev => ({
+                    ...prev,
+                    coins: updatedUser.coins || 0
+                  }));
+                }
+              }
+            } else {
+              const errorData = await response.json();
+              console.error('Failed to sync proposal to database:', errorData);
+            }
+          } catch (error) {
+            console.error('Error syncing proposal to database:', error);
+          }
+
+          refetchProposals();
+          setLoading(false);
+          setPendingAction(null);
+          setPendingProposalData(null);
+          setCurrentScreen('dashboard');
+        };
+        syncProposalToDB();
       } else if (pendingAction === 'create') {
+        // Fallback: just refetch proposals if we don't have the data
         refetchProposals();
         setLoading(false);
         setPendingAction(null);
+        setPendingProposalData(null);
         setCurrentScreen('dashboard');
-        // Optional: Award XP for creating a proposal if desired
       }
     }
   }, [isConfirmed, pendingAction]);
@@ -251,10 +333,12 @@ const VoteQuestApp = () => {
               votesCount: user.votes_count,
               globalRank: user.global_rank,
               achievements: ['first_vote', 'week_streak', 'level_5'],
-              votedProposals: votedProposals
+              votedProposals: votedProposals,
+              coins: user.coins || 0
             });
 
             if (currentScreen === 'login') {
+              localStorage.setItem('votequest_visited', 'true');
               setCurrentScreen('dashboard');
               triggerAnimation('walletConnected');
             }
@@ -277,7 +361,8 @@ const VoteQuestApp = () => {
           votesCount: 47,
           globalRank: 247,
           achievements: [],
-          votedProposals: []
+          votedProposals: [],
+          coins: 0
         });
         setCurrentScreen('login');
       }
@@ -314,6 +399,7 @@ const VoteQuestApp = () => {
 
     setLoading(true);
     setPendingAction('create');
+    setPendingProposalData(data); // Store for later sync to DB
     try {
       const durationInMinutes = Math.max(1, Math.floor((new Date(data.end_date).getTime() - Date.now()) / (1000 * 60)));
       const optionTitles = data.options.map((o: any) => o.title);
@@ -333,6 +419,7 @@ const VoteQuestApp = () => {
       console.error('Error creating proposal:', error);
       setLoading(false);
       setPendingAction(null);
+      setPendingProposalData(null);
     }
   };
 
@@ -341,6 +428,17 @@ const VoteQuestApp = () => {
   };
 
   // Render based on current screen
+  if (currentScreen === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-center">
+          <div className="loading-spinner w-12 h-12 mx-auto mb-4"></div>
+          <p className="text-mono-60 text-sm">Connecting...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (currentScreen === 'splash') {
     return <SplashScreen />;
   }
@@ -396,8 +494,8 @@ const VoteQuestApp = () => {
 
         {/* Bottom Navigation - Shared across all tabs */}
         {/* Floating Bottom Navigation */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-          <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10">
+        <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
+          <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
             {[
               { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
               { label: 'Proposals', value: 'proposals' as const, icon: List },

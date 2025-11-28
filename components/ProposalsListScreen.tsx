@@ -98,7 +98,7 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
         <div className="min-h-screen pb-32 relative">
             {/* Header Section */}
             <div className="sticky top-0 z-40 border-b border-white/5 bg-black/60 backdrop-blur-xl">
-                <div className="max-w-[1400px] mx-auto px-8 py-6">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6">
                     <div className="mb-6">
                         <h1 className="text-display mb-2">All Proposals</h1>
                         <p className="text-body text-mono-60">
@@ -197,9 +197,9 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
             </div>
 
             {/* Proposals Grid */}
-            <div className="max-w-[1400px] mx-auto px-8 pt-8">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-6 md:pt-8">
                 {processedProposals.length > 0 ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                         {processedProposals.map((proposal, index) => {
                             const timeLeft = formatTimeLeft(proposal.end_date);
                             const voted = hasVoted(proposal.id);

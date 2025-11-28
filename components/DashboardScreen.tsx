@@ -73,7 +73,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
             {/* Header - Premium Minimal */}
             <div className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
-                <div className="max-w-[1400px] mx-auto px-8 py-5">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-5">
                     <div className="flex items-center justify-between">
                         {/* Logo & Brand */}
                         <div className="flex items-center gap-10">
@@ -85,7 +85,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             </div>
 
                             {/* Quick Stats - Inline */}
-                            <div className="hidden lg:flex items-center gap-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                            <div className="flex items-center gap-3 md:gap-6 lg:gap-8 text-xs md:text-sm animate-fade-in" style={{ animationDelay: '0.1s' }}>
                                 <Tooltip content="Current Level" position="bottom">
                                     <div className="flex items-center gap-2 text-sm">
                                         <Zap className="w-4 h-4 text-mono-60" strokeWidth={2} />
@@ -123,7 +123,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 className="btn btn-primary btn-sm group"
                             >
                                 <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={2.5} />
-                                <span>New Proposal</span>
+                                <span className="hidden sm:inline">New Proposal</span>
                             </button>
                         </div>
                     </div>
@@ -131,7 +131,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1400px] mx-auto px-8 pt-12 relative z-10">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-8 md:pt-12 relative z-10">
 
                 {/* Hero Section */}
                 <div className="mb-16 animate-slide-up">
@@ -245,7 +245,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     </div>
 
                     {/* Proposals Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                         {recentProposals.map((proposal, index) => {
                             const timeLeft = formatTimeLeft(proposal.end_date);
                             const voted = hasVoted(proposal.id);

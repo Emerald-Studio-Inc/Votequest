@@ -31,10 +31,10 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
 
     const addOption = () => {
         if (options.length < 10) {
-            setOptions([...options, { 
-                id: Date.now().toString(), 
-                title: '', 
-                description: '' 
+            setOptions([...options, {
+                id: Date.now().toString(),
+                title: '',
+                description: ''
             }]);
         }
     };
@@ -46,7 +46,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
     };
 
     const updateOption = (id: string, field: 'title' | 'description', value: string) => {
-        setOptions(options.map(opt => 
+        setOptions(options.map(opt =>
             opt.id === id ? { ...opt, [field]: value } : opt
         ));
         // Clear error for this field
@@ -85,7 +85,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
             const selectedDate = new Date(endDate);
             const now = new Date();
             const minDate = new Date(now.getTime() + 60 * 60 * 1000); // At least 1 hour from now
-            
+
             if (selectedDate < minDate) {
                 newErrors.endDate = 'End date must be at least 1 hour from now';
             }
@@ -131,7 +131,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
         return now.toISOString().slice(0, 16);
     };
 
-    const isFormValid = title.trim() && description.trim() && endDate && 
+    const isFormValid = title.trim() && description.trim() && endDate &&
         options.filter(opt => opt.title.trim()).length >= 2;
 
     const charCount = {
@@ -148,7 +148,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
 
             {/* Header */}
             <div className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
-                <div className="max-w-[900px] mx-auto px-8 py-5">
+                <div className="max-w-[900px] mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-5">
                     <div className="flex items-center justify-between">
                         <button
                             onClick={onBack}
@@ -190,8 +190,8 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[900px] mx-auto px-8 pt-12 relative z-10">
-                
+            <div className="max-w-[900px] mx-auto px-4 md:px-6 lg:px-8 pt-8 md:pt-12 relative z-10">
+
                 {/* Hero Section */}
                 <div className="mb-12 animate-slide-up">
                     <h1 className="text-display-xl mb-4">Create Proposal</h1>
@@ -202,7 +202,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
 
                 {/* Form */}
                 <div className="space-y-8">
-                    
+
                     {/* Title Section */}
                     <div className="card-elevated p-8 animate-slide-up" style={{ animationDelay: '0.05s' }}>
                         <div className="mb-6">
@@ -212,11 +212,10 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                     Proposal Title
                                     <span className="text-orange-400">*</span>
                                 </label>
-                                <span className={`text-caption ${
-                                    charCount.title > 200 ? 'text-orange-400' : 
-                                    charCount.title > 180 ? 'text-mono-50' : 
-                                    'text-mono-40'
-                                }`}>
+                                <span className={`text-caption ${charCount.title > 200 ? 'text-orange-400' :
+                                        charCount.title > 180 ? 'text-mono-50' :
+                                            'text-mono-40'
+                                    }`}>
                                     {charCount.title}/200
                                 </span>
                             </div>
@@ -260,11 +259,10 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                     Description
                                     <span className="text-orange-400">*</span>
                                 </label>
-                                <span className={`text-caption ${
-                                    charCount.description > 2000 ? 'text-orange-400' : 
-                                    charCount.description > 1800 ? 'text-mono-50' : 
-                                    'text-mono-40'
-                                }`}>
+                                <span className={`text-caption ${charCount.description > 2000 ? 'text-orange-400' :
+                                        charCount.description > 1800 ? 'text-mono-50' :
+                                            'text-mono-40'
+                                    }`}>
                                     {charCount.description}/2000
                                 </span>
                             </div>
@@ -361,15 +359,15 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
 
                         <div className="space-y-4">
                             {options.map((option, index) => (
-                                <div 
-                                    key={option.id} 
+                                <div
+                                    key={option.id}
                                     className="relative p-5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-fast group"
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-semibold text-mono-70 mt-2">
                                             {index + 1}
                                         </div>
-                                        
+
                                         <div className="flex-1 space-y-3">
                                             <div>
                                                 <input
