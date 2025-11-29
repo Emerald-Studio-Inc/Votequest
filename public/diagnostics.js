@@ -1,34 +1,54 @@
-// Add this to your browser console to check what's happening
+// VoteQuest System Diagnostic Tool
+// Run this in browser console to identify all issues
 
-console.log("=== VoteQuest Diagnostics ===");
-console.log("Contract Address:", "0xcf576bd6a1CC6b7dC4bcE1AF68540aFfD3aa3ef2");
-console.log("Expected Network: Sepolia (Chain ID: 11155111)");
-console.log("\nTo check your current network:");
-console.log("1. Open MetaMask");
-console.log("2. Look at the network name at the top");
-console.log("3. It should say 'Sepolia'");
-console.log("\nIf you see any other network (Ethereum Mainnet, Polygon, etc.),");
-console.log("then that's why the transaction is stuck!");
-console.log("\n=== Quick Fix ===");
-console.log("1. Click MetaMask extension");
-console.log("2. Click network dropdown");
-console.log("3. Select 'Sepolia Test Network'");
-console.log("4. Refresh this page");
-console.log("\n=== Check wallet connection ===");
-if (typeof window !== 'undefined' && window.ethereum) {
-    window.ethereum.request({ method: 'eth_chainId' })
-        .then((chainId) => {
-            const decimalChainId = parseInt(chainId, 16);
-            console.log(`\nCurrent Chain ID: ${decimalChainId}`);
-            if (decimalChainId === 11155111) {
-                console.log("✅ CORRECT! You're on Sepolia");
-            } else {
-                console.log("❌ WRONG NETWORK!");
-                console.log(`You're on chain ${decimalChainId}, but VoteQuest is deployed on Sepolia (11155111)`);
-                console.log("\nSwitch to Sepolia in MetaMask and try again!");
-            }
-        })
-        .catch(console.error);
-} else {
-    console.log("❌ No wallet detected");
-}
+console.log('🔍 VoteQuest System Diagnostic Starting...\n');
+
+// 1. Check CAPTCHA
+console.log('1️⃣ CAPTCHA Status:');
+const captchaWidgets = document.querySelectorAll('[data-turnstile]');
+console.log('  - CAPTCHA widgets found:', captchaWidgets.length);
+console.log('  - Site key configured:', !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+
+// 2. Check User Data
+console.log('\n2️⃣ User Data:');
+fetch('/api/user/me')
+    .then(r => r.json())
+    .then(data => {
+        console.log('  - User ID:', data.userId || 'NOT FOUND');
+        console.log('  - XP:', data.xp);
+        console.log('  - Coins:', data.coins);
+        console.log('  - Votes count:', data.votesCount);
+    })
+    .catch(e => console.error('  ❌ Failed to fetch user:', e));
+
+// 3. Check Proposals Synced to Database
+console.log('\n3️⃣ Checking Proposal Sync:');
+fetch('/api/proposal/list')
+    .then(r => r.json())
+    .then(data => {
+        console.log('  - Total proposals in DB:', data.length);
+        console.log('  - Blockchain IDs:', data.map(p => p.blockchain_id).filter(Boolean).length);
+    })
+    .catch(e => console.error('  ❌ Failed to fetch proposals:', e));
+
+// 4. Test Vote API
+console.log('\n4️⃣ Testing Vote API:');
+console.log('  To test, try voting and check Network tab for /api/vote');
+console.log('  Look for status codes:');
+console.log('    - 200 = Success');
+console.log('    - 400 = Bad request (missing CAPTCHA or invalid data)');
+console.log('    - 403 = Forbidden (CAPTCHA failed)');
+console.log('    - 404 = Proposal/option not found in DB');
+
+// 5. Check Notifications
+console.log('\n5️⃣ Notifications:');
+fetch('/api/notifications')
+    .then(r => r.json())
+    .then(data => {
+        console.log('  - Total notifications:', data.length);
+        console.log('  - Unread:', data.filter(n => !n.read).length);
+    })
+    .catch(e => console.error('  ❌ Failed to fetch notifications:', e));
+
+console.log('\n✅ Diagnostic complete! Check above for issues.');
+console.log('💡 Next: Try voting and check Network tab for errors');

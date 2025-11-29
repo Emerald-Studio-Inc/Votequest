@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/server-db';
 import { createPublicClient, http } from 'viem';
-import { sepolia } from 'viem/chains';
+import { polygonAmoy } from 'viem/chains';
 import { VOTE_QUEST_ABI } from '@/lib/contracts';
 import { rateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const publicClient = createPublicClient({
-    chain: sepolia,
+    chain: polygonAmoy,  // FIXED: Was sepolia, now correct chain
     transport: http(),
 });
 
