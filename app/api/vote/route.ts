@@ -74,7 +74,7 @@ export async function POST(request: Request) {
             // Handle duplicates: get most recent proposal with this blockchain_id
             const { data: dbProposals, error } = await supabaseAdmin
                 .from('proposals')
-                .select('id, proposal_options(id, option_text)')
+                .select('id, proposal_options(id, title)')
                 .eq('blockchain_id', blockchainId)
                 .order('created_at', { ascending: false })
                 .limit(1);
