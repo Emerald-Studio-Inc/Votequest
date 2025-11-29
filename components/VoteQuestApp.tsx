@@ -74,8 +74,6 @@ const VoteQuestApp = () => {
   const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
   const [pendingProposalData, setPendingProposalData] = useState<any>(null);
   const [captchaToken, setCaptchaToken] = useState<string>('');
-  const [showCaptchaModal, setShowCaptchaModal] = useState(false);
-  const [captchaValidated, setCaptchaValidated] = useState(false);
 
   // Hooks must come before effects that use them
   const { address, isConnected } = useAccount();
@@ -263,9 +261,54 @@ const VoteQuestApp = () => {
   useEffect(() => {
     if (isConfirmed) {
       if (pendingAction === 'vote' && selectedProposal && selectedOption && userData.userId) {
-        // Blockchain confirmed - record with hash (will award 10 VQC)
-        await recordDatabaseVote(hash || null);
-        setTimeout(() => setCurrentScreen('dashboard'), 1500);
+        const finishVote = async () => {
+          // Record in DB for gamification
+          await dbCastVote(
+            userData.userId!,
+            selectedProposal.id,
+            selectedOption,
+            hash,
+            userData.address!,
+            captchaToken
+          );
+
+          // Reset CAPTCHA after successful vote
+          setCaptchaToken('');
+
+          // Reload user data
+          if (userData.address) {
+            const updatedUser = await getUserByWallet(userData.address);
+            if (updatedUser) {
+              const votedProposals = await getUserVotedProposals(updatedUser.id);
+              const hasNewAchievements = await checkAndAwardAchievements(updatedUser.id);
+
+              if (hasNewAchievements) {
+                const updatedAchievements = await getUserAchievements(updatedUser.id);
+                setUserAchievements(updatedAchievements);
+                triggerAnimation('achievementUnlocked');
+              }
+
+              setUserData(prev => ({
+                ...prev,
+                xp: updatedUser.xp,
+                level: updatedUser.level,
+                votesCount: updatedUser.votes_count,
+                votingPower: updatedUser.voting_power,
+                votedProposals: votedProposals
+              }));
+            }
+          }
+
+          refetchProposals();
+          triggerAnimation('voteSuccess');
+          setLoading(false);
+          setPendingAction(null);
+          setTimeout(() => {
+            setSelectedOption(null);
+            setCurrentScreen('dashboard');
+          }, 1500);
+        };
+        finishVote();
       } else if (pendingAction === 'create' && pendingProposalData && userData.userId && userData.address && hash) {
         const syncProposalToDB = async () => {
           try {
@@ -405,18 +448,17 @@ const VoteQuestApp = () => {
   const castVote = async () => {
     if (!selectedOption || !selectedProposal || !userData.userId) return;
 
-    // Step 1: Show CAPTCHA modal FIRST (before blockchain)
-    if (!captchaValidated) {
-      console.log('[VOTE] Showing CAPTCHA modal first');
-      setShowCaptchaModal(true);
+    // Require CAPTCHA - with fallback
+    if (!captchaToken) {
+      console.warn('⚠️ Please complete the security check before voting');
+      alert('Please complete the security verification to vote');
       return;
     }
 
-    // Step 2: CAPTCHA validated, proceed to blockchain
+    // Find option index
     const option = selectedProposal.options.find(o => o.id === selectedOption);
     if (!option) return;
 
-    console.log('[VOTE] CAPTCHA validated, triggering MetaMask...');
     setLoading(true);
     setPendingAction('vote');
     try {
@@ -427,65 +469,10 @@ const VoteQuestApp = () => {
         args: [BigInt(selectedProposal.id), BigInt(option.option_number)],
       });
     } catch (error) {
-      console.error('[VOTE] Blockchain failed, falling back to database-only:', error);
-      // Fallback: Record in database only (no coins awarded)
-      await recordDatabaseVote(null);
+      console.error('Error casting vote:', error);
+      setLoading(false);
+      setPendingAction(null);
     }
-  };
-
-  // Handle CAPTCHA completion - triggers blockchain vote
-  const onCaptchaComplete = (token: string) => {
-    console.log('[CAPTCHA] Verified successfully');
-    setCaptchaToken(token);
-    setCaptchaValidated(true);
-    setShowCaptchaModal(false);
-    // Trigger blockchain vote after short delay
-    setTimeout(() => castVote(), 100);
-  };
-
-  // Record vote in database (with or without blockchain)
-  const recordDatabaseVote = async (txHash: string | null) => {
-    if (!selectedOption || !selectedProposal || !userData.userId) return;
-
-    console.log('[VOTE] Recording to database, txHash:', txHash ? 'present (10 VQC)' : 'none (0 VQC)');
-
-    const success = await dbCastVote(
-      userData.userId,
-      selectedProposal.id,
-      selectedOption,
-      txHash,
-      userData.address!,
-      captchaToken
-    );
-
-    if (success) {
-      // Reset state
-      setCaptchaToken('');
-      setCaptchaValidated(false);
-      setSelectedOption(null);
-
-      // Reload user data
-      if (userData.address) {
-        const updatedUser = await getUserByWallet(userData.address);
-        if (updatedUser) {
-          const votedProposals = await getUserVotedProposals(updatedUser.id);
-          setUserData(prev => ({
-            ...prev,
-            xp: updatedUser.xp,
-            level: updatedUser.level,
-            votesCount: updatedUser.votes_count,
-            coins: updatedUser.coins,
-            votedProposals
-          }));
-        }
-      }
-
-      refetchProposals();
-      triggerAnimation('voteSuccess');
-    }
-
-    setLoading(false);
-    setPendingAction(null);
   };
 
   const handleCreateProposal = async (data: any) => {
@@ -630,45 +617,21 @@ const VoteQuestApp = () => {
 
   if (currentScreen === 'proposal' && selectedProposal) {
     return (
-      <>
-        <ProposalDetailScreen
-          proposal={selectedProposal}
-          onBack={() => {
-            setCurrentScreen('dashboard');
-            setSelectedOption(null);
-          }}
-          onVote={castVote}
-          loading={loading}
-          hasVoted={hasVoted(selectedProposal.id)}
-          selectedOption={selectedOption}
-          setSelectedOption={setSelectedOption}
-          userId={userData.userId || ''}
-          captchaToken={captchaToken}
-          setCaptchaToken={setCaptchaToken}
-        />
-
-        {/* CAPTCHA Modal - Shows BEFORE blockchain transaction */}
-        {showCaptchaModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-            <div className="glass rounded-2xl p-8 max-w-md w-full border border-white/10 animate-fade-in">
-              <h3 className="text-xl font-bold mb-4">Security Verification</h3>
-              <p className="text-mono-60 text-sm mb-6">
-                Please complete the security check before voting
-              </p>
-              <VoteCaptcha onVerify={onCaptchaComplete} />
-              <button
-                onClick={() => {
-                  setShowCaptchaModal(false);
-                  setCaptchaValidated(false);
-                }}
-                className="btn btn-ghost btn-sm w-full mt-4"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </>
+      <ProposalDetailScreen
+        proposal={selectedProposal}
+        onBack={() => {
+          setCurrentScreen('dashboard');
+          setSelectedOption(null);
+        }}
+        onVote={castVote}
+        loading={loading}
+        hasVoted={hasVoted(selectedProposal.id)}
+        selectedOption={selectedOption}
+        setSelectedOption={setSelectedOption}
+        userId={userData.userId || ''}
+        captchaToken={captchaToken}
+        setCaptchaToken={setCaptchaToken}
+      />
     );
   }
 
