@@ -1,14 +1,3 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/server-db';
-import { createPublicClient, http } from 'viem';
-import { sepolia } from 'viem/chains';
-import { VOTE_QUEST_ABI } from '@/lib/contracts';
-import { rateLimit } from '@/lib/rate-limit';
-import { z } from 'zod';
-
-const publicClient = createPublicClient({
-    chain: sepolia,
-    transport: http(),
 });
 
 // Validation schema - allow both UUIDs and numeric blockchain IDs
@@ -115,21 +104,25 @@ export async function POST(request: Request) {
             console.log(`[API] ✅ Converted blockchain IDs - Proposal: ${blockchainId} -> ${proposalId}, Option: ${optionIndex} -> ${optionId}`);
         }
 
-        // SECURITY CHECK: Verify CAPTCHA (re-enabled with better error handling)
-        if (captchaToken) {
-            console.log('[API] Verifying CAPTCHA...');
-            const isValidCaptcha = await verifyTurnstile(captchaToken);
-            if (!isValidCaptcha) {
-                console.error('[API] CAPTCHA validation failed');
-                return NextResponse.json({
-                    error: 'Security verification failed',
-                    helpText: 'Please try again or refresh the page'
-                }, { status: 400 });
-            }
-            console.log('[API] CAPTCHA verified successfully');
-        } else {
-            console.log('[API] No CAPTCHA token provided, skipping verification');
+        // SECURITY CHECK: Verify CAPTCHA (MANDATORY)
+        if (!captchaToken) {
+            console.error('[API] ❌ CAPTCHA token missing');
+            return NextResponse.json({
+                error: 'CAPTCHA verification required',
+                helpText: 'Please complete the security verification'
+            }, { status: 400 });
         }
+
+        console.log('[API] Verifying CAPTCHA...');
+        const isValidCaptcha = await verifyTurnstile(captchaToken);
+        if (!isValidCaptcha) {
+            console.error('[API] CAPTCHA validation failed');
+            return NextResponse.json({
+                error: 'Security verification failed',
+                helpText: 'Please try again or refresh the page'
+            }, { status: 403 });
+        }
+        console.log('[API] ✅ CAPTCHA verified successfully');
 
         // If txHash provided, verify transaction on-chain
         if (txHash && walletAddress) {

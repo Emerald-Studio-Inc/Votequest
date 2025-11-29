@@ -257,6 +257,33 @@ const VoteQuestApp = () => {
     }
   }, [proposalsData]);
 
+  // REAL-TIME: Listen for new proposals in database → trigger blockchain refetch
+  useEffect(() => {
+    console.log('[REALTIME] Setting up proposal subscription...');
+
+    const channel = supabase
+      .channel('proposals-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'proposals'
+        },
+        (payload) => {
+          console.log('[REALTIME] ✅ New proposal detected!', payload.new);
+          // Trigger blockchain refetch to show new proposal
+          refetchProposals();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('[REALTIME] Cleaning up proposal subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [refetchProposals]);
+
   // Handle transaction success
   useEffect(() => {
     if (isConfirmed) {
