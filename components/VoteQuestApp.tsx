@@ -321,6 +321,7 @@ const VoteQuestApp = () => {
                 level: updatedUser.level,
                 votesCount: updatedUser.votes_count,
                 votingPower: updatedUser.voting_power,
+                coins: updatedUser.coins || 0,  // ADD THIS - critical for showing coin increments
                 votedProposals: votedProposals
               }));
             }
