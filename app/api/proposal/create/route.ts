@@ -93,45 +93,58 @@ export async function POST(request: Request) {
             .insert([
                 {
                     title,
-                    if(propError || !proposal) {
-                        console.error('Error creating proposal:', propError);
-        return NextResponse.json({ error: 'Database error' }, { status: 500 });
-    }
+                    description,
+                    end_date: endDate,
+                    created_by: creatorId,
+                    status: 'active',
+                    participants: 0,
+                    category: category || 'Community',
+                    onchain_id: onchainId, // Save the real ID
+                    tx_hash: txHash // Save the transaction hash for self-healing
+                }
+            ])
+            .select()
+            .single();
+
+        if (propError || !proposal) {
+            console.error('Error creating proposal:', propError);
+            return NextResponse.json({ error: 'Database error' }, { status: 500 });
+        }
 
         // 3. Create options in DB
         if (options && options.length > 0) {
-        const optionsToInsert = options.map((opt: any, index: number) => ({
-            proposal_id: proposal.id,
-            option_number: index,
-            title: opt.title,
-            description: opt.description || null,
-            votes: 0
-        }));
+            const optionsToInsert = options.map((opt: any, index: number) => ({
+                proposal_id: proposal.id,
+                option_number: index,
+                title: opt.title,
+                description: opt.description || null,
+                votes: 0
+            }));
 
-        const { error: optionsError } = await supabaseAdmin
-            .from('proposal_options')
-            .insert(optionsToInsert);
+            const { error: optionsError } = await supabaseAdmin
+                .from('proposal_options')
+                .insert(optionsToInsert);
 
-        if (optionsError) {
-            console.error('Error creating options:', optionsError);
+            if (optionsError) {
+                console.error('Error creating options:', optionsError);
+            }
         }
+
+        // 4. Award coins for creating proposal (50 VQC)
+        try {
+            const { awardCoins } = await import('@/lib/coins');
+            await awardCoins(creatorId, 50, 'proposal_created', proposal.id, {
+                proposalTitle: title
+            });
+            console.log('[API] Awarded 50 VQC for proposal creation');
+        } catch (coinError) {
+            console.error('[API] Error awarding coins:', coinError);
+        }
+
+        return NextResponse.json({ success: true, proposalId: proposal.id });
+
+    } catch (error: any) {
+        console.error('API Error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    // 4. Award coins for creating proposal (50 VQC)
-    try {
-        const { awardCoins } = await import('@/lib/coins');
-        await awardCoins(creatorId, 50, 'proposal_created', proposal.id, {
-            proposalTitle: title
-        });
-        console.log('[API] Awarded 50 VQC for proposal creation');
-    } catch (coinError) {
-        console.error('[API] Error awarding coins:', coinError);
-    }
-
-    return NextResponse.json({ success: true, proposalId: proposal.id });
-
-} catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-}
 }
