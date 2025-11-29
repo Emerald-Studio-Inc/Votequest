@@ -128,7 +128,8 @@ export async function castVote(
   proposalId: string,
   optionId: string,
   txHash?: string,
-  walletAddress?: string
+  walletAddress?: string,
+  captchaToken?: string
 ): Promise<boolean> {
   // Note: txHash and walletAddress are optional for database-only votes
   // Blockchain votes will provide both, Supabase-only votes will not
@@ -142,7 +143,8 @@ export async function castVote(
         proposalId,
         optionId,
         txHash: txHash || null,
-        walletAddress: walletAddress || null
+        walletAddress: walletAddress || null,
+        captchaToken: captchaToken || null
       }),
     });
 

@@ -1,0 +1,6 @@
+# Add this to your .env.local file
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACDfTY6mOuzeIkKB
+
+# You also need the secret key from Cloudflare Turnstile dashboard
+# Get it from: https://dash.cloudflare.com/turnstile
+# TURNSTILE_SECRET_KEY=your_secret_key_here

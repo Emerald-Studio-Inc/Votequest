@@ -30,6 +30,7 @@ export type Proposal = {
   created_by: string | null
   created_at: string
   updated_at: string
+  blockchain_id?: number | null
   onchain_id?: number | null
   tx_hash?: string | null
 }

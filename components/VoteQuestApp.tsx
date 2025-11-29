@@ -27,6 +27,7 @@ import ProposalsListScreen from './ProposalsListScreen';
 import AnalyticsScreen from './AnalyticsScreen';
 import SettingsScreen from './SettingsScreen';
 import Tooltip from './Tooltip';
+import VoteCaptcha from './VoteCaptcha';
 
 interface UserData {
   address: string | null;
@@ -71,6 +72,7 @@ const VoteQuestApp = () => {
   const [loading, setLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
   const [pendingProposalData, setPendingProposalData] = useState<any>(null);
+  const [captchaToken, setCaptchaToken] = useState<string>('');
 
   // Hooks must come before effects that use them
   const { address, isConnected } = useAccount();
@@ -96,6 +98,7 @@ const VoteQuestApp = () => {
     setAchievements(data);
   };
 
+
   // Check for wallet auto-reconnect on mount
   useEffect(() => {
     if (currentScreen === 'checking') {
@@ -113,6 +116,40 @@ const VoteQuestApp = () => {
     }
   }, [currentScreen, isConnected, address]);
 
+  // Handle referral links from QR codes / share links
+  useEffect(() => {
+    if (currentScreen === 'dashboard' && proposals.length > 0) {
+      const targetProposalId = localStorage.getItem('targetProposalId');
+      const referralCode = localStorage.getItem('referralCode');
+
+      if (targetProposalId) {
+        // Find the proposal
+        const proposal = proposals.find(p => p.id === targetProposalId);
+
+        if (proposal) {
+          console.log('[REFERRAL] Auto-navigating to proposal:', targetProposalId);
+
+          // Track the referral click
+          if (referralCode) {
+            fetch('/api/share/track-click', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ referralCode })
+            }).catch(err => console.error('Failed to track click:', err));
+          }
+
+          // Navigate to the proposal
+          setSelectedProposal(proposal);
+          setCurrentScreen('proposal');
+
+          // Clear localStorage
+          localStorage.removeItem('targetProposalId');
+          localStorage.removeItem('referralCode');
+        }
+      }
+    }
+  }, [currentScreen, proposals]);
+
   // Splash screen timer
   useEffect(() => {
     if (currentScreen === 'splash') {
@@ -120,6 +157,7 @@ const VoteQuestApp = () => {
       return () => clearTimeout(timer);
     }
   }, [currentScreen]);
+
 
   const triggerAnimation = (key: string) => {
     setAnimations(prev => ({ ...prev, [key]: true }));
@@ -186,6 +224,32 @@ const VoteQuestApp = () => {
       }).filter((p): p is ProposalWithOptions => p !== null);
 
       setProposals(formattedProposals);
+
+      // Auto-sync all blockchain proposals to database (non-blocking)
+      formattedProposals.forEach(async (proposal) => {
+        try {
+          await fetch('/api/proposal/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              blockchainId: parseInt(proposal.id),
+              title: proposal.title,
+              description: proposal.description,
+              endDate: proposal.end_date,
+              status: proposal.status,
+              participants: proposal.participants,
+              options: proposal.options.map(opt => ({
+                title: opt.title,
+                description: opt.description,
+                votes: opt.votes
+              }))
+            })
+          });
+        } catch (error) {
+          console.error(`Failed to sync proposal ${proposal.id} to database:`, error);
+          // Don't block UI on sync errors
+        }
+      });
     }
   }, [proposalsData]);
 
@@ -198,8 +262,14 @@ const VoteQuestApp = () => {
           await dbCastVote(
             userData.userId!,
             selectedProposal.id,
-            selectedOption
+            selectedOption,
+            hash,
+            userData.address!,
+            captchaToken
           );
+
+          // Reset CAPTCHA after successful vote
+          setCaptchaToken('');
 
           // Reload user data
           if (userData.address) {
@@ -373,6 +443,13 @@ const VoteQuestApp = () => {
 
   const castVote = async () => {
     if (!selectedOption || !selectedProposal || !userData.userId) return;
+
+    // Require CAPTCHA - with fallback
+    if (!captchaToken) {
+      console.warn('⚠️ Please complete the security check before voting');
+      alert('Please complete the security verification to vote');
+      return;
+    }
 
     // Find option index
     const option = selectedProposal.options.find(o => o.id === selectedOption);
@@ -548,6 +625,8 @@ const VoteQuestApp = () => {
         selectedOption={selectedOption}
         setSelectedOption={setSelectedOption}
         userId={userData.userId || ''}
+        captchaToken={captchaToken}
+        setCaptchaToken={setCaptchaToken}
       />
     );
   }

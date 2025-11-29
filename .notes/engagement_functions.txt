@@ -1,0 +1,50 @@
+import { supabase } from './supabase'
+import type { User, Proposal } from './supabase'
+
+// ... existing code stays the same ...
+
+// Engagement Tracking Functions (add these at the end)
+export async function trackProposalView(userId: string, proposalId: string): Promise<void> {
+  try {
+    await supabase
+      .from('proposal_views')
+      .upsert(
+        { user_id: userId, proposal_id: proposalId },
+        { onConflict: 'user_id,proposal_id', ignoreDuplicates: true }
+      );
+  } catch (error) {
+    // Silently fail - view tracking is not critical
+    console.warn('Failed to track proposal view:', error);
+  }
+}
+
+export async function checkProposalView(userId: string, proposalId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('proposal_views')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('proposal_id', proposalId)
+    .maybeSingle();
+  
+  return !!data && !error;
+}
+
+export async function markOnboardingComplete(userId: string): Promise<void> {
+  // Fetch current XP
+  const { data: user } = await supabase
+    .from('users')
+    .select('xp')
+    .eq('id', userId)
+    .single();
+  
+  if (!user) return;
+  
+  // Update onboarding status and award XP
+  await supabase
+    .from('users')
+    .update({ 
+      completed_onboarding: true,
+      xp: user.xp + 50
+    })
+    .eq('id', userId);
+}

@@ -1,5 +1,5 @@
 {
-  "address": "0xcf576bd6a1CC6b7dC4bcE1AF68540aFfD3aa3ef2",
+  "address": "0x77405d9D0a34D6eb59bC57dd5F434F8902CC5a5d",
   "abi": [
     {
       "anonymous": false,
@@ -225,6 +225,6 @@
       "type": "function"
     }
   ],
-  "network": "sepolia",
-  "chainId": 11155111
+  "network": "polygonAmoy",
+  "chainId": 80002
 }

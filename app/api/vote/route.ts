@@ -17,8 +17,32 @@ const voteSchema = z.object({
     proposalId: z.string().uuid('Invalid proposal ID format'),
     optionId: z.string().uuid('Invalid option ID format'),
     txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash').optional().nullable(),
-    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address').optional().nullable()
+    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address').optional().nullable(),
+    captchaToken: z.string().min(1, 'CAPTCHA token required').optional()
 });
+
+// CAPTCHA verification function
+async function verifyTurnstile(token: string): Promise<boolean> {
+    try {
+        const response = await fetch(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    secret: process.env.TURNSTILE_SECRET_KEY,
+                    response: token
+                })
+            }
+        );
+
+        const data = await response.json();
+        return data.success === true;
+    } catch (error) {
+        console.error('Turnstile verification error:', error);
+        return false;
+    }
+}
 
 export async function POST(request: Request) {
     try {
@@ -38,7 +62,18 @@ export async function POST(request: Request) {
             }, { status: 400 });
         }
 
-        const { userId, proposalId, optionId, txHash, walletAddress } = validationResult.data;
+        const { userId, proposalId, optionId, txHash, walletAddress, captchaToken } = validationResult.data;
+
+        // SECURITY CHECK: Verify CAPTCHA if provided (optional for now - make it required later)
+        if (captchaToken) {
+            const isValidCaptcha = await verifyTurnstile(captchaToken);
+            if (!isValidCaptcha) {
+                return NextResponse.json({
+                    error: 'Security verification failed',
+                    helpText: 'Please try again or refresh the page'
+                }, { status: 400 });
+            }
+        }
 
         // If txHash provided, verify transaction on-chain
         if (txHash && walletAddress) {

@@ -3,6 +3,7 @@ import { ArrowLeft, Clock, Users, Check, Shield, TrendingUp, Activity, AlertCirc
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import ShareModal from './ShareModal';
+import VoteCaptcha from './VoteCaptcha';
 
 interface ProposalDetailScreenProps {
     proposal: ProposalWithOptions;
@@ -13,6 +14,8 @@ interface ProposalDetailScreenProps {
     selectedOption: string | null;
     setSelectedOption: (optionId: string | null) => void;
     userId: string;
+    captchaToken: string;
+    setCaptchaToken: (token: string) => void;
 }
 
 const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
@@ -23,7 +26,9 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
     hasVoted,
     selectedOption,
     setSelectedOption,
-    userId
+    userId,
+    captchaToken,
+    setCaptchaToken
 }) => {
     const [hoveredOption, setHoveredOption] = useState<string | null>(null);
     const [showVoteAnimation, setShowVoteAnimation] = useState(false);
@@ -155,11 +160,29 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                 </p>
                             </div>
 
+                            {/* Security Check - Shows after selecting option */}
+                            {!hasVoted && selectedOption && !captchaToken && (
+                                <div className="mb-6 p-4 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl animate-slide-up">
+                                    <div className="flex items-start gap-3 mb-3">
+                                        <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-sm font-medium text-blue-100 mb-1">🔒 Security Verification Required</p>
+                                            <p className="text-xs text-blue-200/70">Complete this quick check to cast your vote</p>
+                                        </div>
+                                    </div>
+                                    <VoteCaptcha onVerify={setCaptchaToken} />
+                                </div>
+                            )}
+
                             {!hasVoted && selectedOption && (
                                 <button
                                     onClick={onVote}
-                                    disabled={loading || hasVoted || !selectedOption}
-                                    className="btn btn-primary btn-lg group relative overflow-hidden"
+                                    disabled={loading || hasVoted || !selectedOption || !captchaToken}
+                                    className={`btn btn-lg group relative overflow-hidden w-full transition-all duration-300 ${!captchaToken
+                                            ? 'bg-mono-10 text-mono-50 cursor-not-allowed opacity-60'
+                                            : 'btn-primary'
+                                        }`}
+                                    title={!captchaToken ? '⚠️ Complete security check above to enable voting' : 'Click to cast your vote'}
                                 >
                                     {loading ? (
                                         <>
@@ -168,9 +191,10 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                         </>
                                     ) : (
                                         <>
-                                            <Check className="w-5 h-5 transition-transform group-hover:scale-110" strokeWidth={2.5} />
-                                            <span>Confirm Vote</span>
-                                            <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={2.5} />
+                                            {!captchaToken && <Shield className="w-5 h-5" strokeWidth={2.5} />}
+                                            {captchaToken && <Check className="w-5 h-5 transition-transform group-hover:scale-110" strokeWidth={2.5} />}
+                                            <span>{!captchaToken ? 'Complete Security Check Above ↑' : 'Confirm Vote'}</span>
+                                            {captchaToken && <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={2.5} />}
                                         </>
                                     )}
                                 </button>

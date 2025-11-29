@@ -57,12 +57,36 @@ export async function POST(request: Request) {
             }, { status: 429 });
         }
 
-        // Create referral record
+        // Verify proposal exists in database
+        // IMPORTANT: proposalId from frontend is the blockchain ID (as a string like "1", "2")
+        console.log('[DEBUG] Received proposalId:', proposalId, 'Type:', typeof proposalId);
+
+        const { data: proposalData, error: proposalError } = await supabaseAdmin
+            .from('proposals')
+            .select('id, blockchain_id')
+            .eq('blockchain_id', parseInt(proposalId))
+            .single();
+
+        console.log('[DEBUG] Proposal query result:', { proposalData, proposalError });
+
+        if (proposalError || !proposalData) {
+            console.error('[DEBUG] Proposal not found. Error:', proposalError);
+            return NextResponse.json({
+                error: 'Proposal not found in database',
+                hint: 'This proposal may not be synced to the database yet. Only proposals created through the app can be shared.',
+                debug: {
+                    receivedId: proposalId,
+                    parsedId: parseInt(proposalId),
+                    errorDetails: proposalError?.message
+                }
+            }, { status: 404 });
+        }
+
         const { data: referral, error: referralError } = await supabaseAdmin
             .from('referrals')
             .insert({
                 referrer_id: userId,
-                proposal_id: proposalId,
+                proposal_id: proposalData.id, // Use database UUID
                 referral_code: referralCode
             })
             .select()
@@ -77,7 +101,7 @@ export async function POST(request: Request) {
         await supabaseAdmin
             .from('share_analytics')
             .insert({
-                proposal_id: proposalId,
+                proposal_id: proposalData.id, // Use database UUID
                 user_id: userId,
                 share_type: shareType || 'link',
                 referral_code: referralCode
