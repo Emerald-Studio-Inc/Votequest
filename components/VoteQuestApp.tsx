@@ -17,6 +17,7 @@ import {
   getUserAchievements,
   checkAndAwardAchievements
 } from '@/lib/database'
+import { useAutoReload } from '@/hooks/useAutoReload';
 import SplashScreen from './SplashScreen';
 import OnboardingScreen from './OnboardingScreen';
 import LoginScreen from './LoginScreen';
@@ -76,6 +77,9 @@ const VoteQuestApp = () => {
 
   // Hooks must come before effects that use them
   const { address, isConnected } = useAccount();
+
+  // Auto-reload on new deployment (production only)
+  useAutoReload();
 
   // Load achievements from database on mount
   useEffect(() => {
