@@ -11,11 +11,11 @@ const publicClient = createPublicClient({
     transport: http(),
 });
 
-// Validation schema
+// Validation schema - allow both UUIDs and numeric blockchain IDs
 const voteSchema = z.object({
     userId: z.string().uuid('Invalid user ID format'),
-    proposalId: z.string().uuid('Invalid proposal ID format'),
-    optionId: z.string().uuid('Invalid option ID format'),
+    proposalId: z.string().min(1, 'Proposal ID required'),  // Can be UUID or blockchain ID
+    optionId: z.string().min(1, 'Option ID required'),      // Can be UUID or blockchain ID
     txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash').optional().nullable(),
     walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address').optional().nullable(),
     captchaToken: z.string().min(1, 'CAPTCHA token required').optional()
@@ -62,7 +62,41 @@ export async function POST(request: Request) {
             }, { status: 400 });
         }
 
-        const { userId, proposalId, optionId, txHash, walletAddress, captchaToken } = validationResult.data;
+        let { userId, proposalId, optionId, txHash, walletAddress, captchaToken } = validationResult.data;
+
+        // CONVERT BLOCKCHAIN IDs TO DATABASE UUIDs
+        // If proposalId is a number (blockchain ID), look up the database UUID
+        const isBlockchainProposalId = !proposalId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+        if (isBlockchainProposalId) {
+            const blockchainId = parseInt(proposalId);
+            const { data: dbProposal } = await supabaseAdmin
+                .from('proposals')
+                .select('id, proposal_options(id, option_text)')
+                .eq('blockchain_id', blockchainId)
+                .single();
+
+            if (!dbProposal) {
+                return NextResponse.json({
+                    error: 'Proposal not found in database',
+                    hint: 'The proposal may not be synced yet. Please refresh and try again.'
+                }, { status: 404 });
+            }
+
+            // Map blockchain option ID to database option UUID
+            const optionIndex = parseInt(optionId);
+            const dbOption = (dbProposal.proposal_options as any[])[optionIndex];
+
+            if (!dbOption) {
+                return NextResponse.json({ error: 'Option not found' }, { status: 404 });
+            }
+
+            // Replace with database UUIDs
+            proposalId = dbProposal.id;
+            optionId = dbOption.id;
+
+            console.log(`[API] Converted blockchain IDs - Proposal: ${blockchainId} -> ${proposalId}, Option: ${optionIndex} -> ${optionId}`);
+        }
 
         // SECURITY CHECK: Verify CAPTCHA if provided (optional for now - make it required later)
         if (captchaToken) {
