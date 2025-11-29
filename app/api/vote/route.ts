@@ -66,22 +66,28 @@ export async function POST(request: Request) {
 
         // CONVERT BLOCKCHAIN IDs TO DATABASE UUIDs
         // If proposalId is a number (blockchain ID), look up the database UUID
-        const isBlockchainProposalId = !proposalId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        const isBlockchainProposalId = !proposalId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
         if (isBlockchainProposalId) {
             const blockchainId = parseInt(proposalId);
-            const { data: dbProposal } = await supabaseAdmin
+
+            // Handle duplicates: get most recent proposal with this blockchain_id
+            const { data: dbProposals, error } = await supabaseAdmin
                 .from('proposals')
                 .select('id, proposal_options(id, option_text)')
                 .eq('blockchain_id', blockchainId)
-                .single();
+                .order('created_at', { ascending: false })
+                .limit(1);
 
-            if (!dbProposal) {
+            if (error || !dbProposals || dbProposals.length === 0) {
+                console.error('[API] Proposal lookup failed:', error);
                 return NextResponse.json({
                     error: 'Proposal not found in database',
                     hint: 'The proposal may not be synced yet. Please refresh and try again.'
                 }, { status: 404 });
             }
+
+            const dbProposal = dbProposals[0];
 
             // Map blockchain option ID to database option UUID
             const optionIndex = parseInt(optionId);
