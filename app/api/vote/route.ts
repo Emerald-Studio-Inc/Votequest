@@ -64,23 +64,26 @@ export async function POST(request: Request) {
 
         let { userId, proposalId, optionId, txHash, walletAddress, captchaToken } = validationResult.data;
 
+        console.log('[API] Vote request:', { userId, proposalId, optionId, txHash: txHash ? 'present' : 'none' });
+
         // CONVERT BLOCKCHAIN IDs TO DATABASE UUIDs
         // If proposalId is a number (blockchain ID), look up the database UUID
         const isBlockchainProposalId = !proposalId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
         if (isBlockchainProposalId) {
             const blockchainId = parseInt(proposalId);
+            console.log(`[API] Converting blockchain ID ${blockchainId} to database UUID...`);
 
             // Handle duplicates: get most recent proposal with this blockchain_id
             const { data: dbProposals, error } = await supabaseAdmin
                 .from('proposals')
-                .select('id, proposal_options(id, title)')
+                .select('id, proposal_options(id, title, option_number)')
                 .eq('blockchain_id', blockchainId)
                 .order('created_at', { ascending: false })
                 .limit(1);
 
             if (error || !dbProposals || dbProposals.length === 0) {
-                console.error('[API] Proposal lookup failed:', error);
+                console.error('[API] Proposal lookup failed:', { blockchainId, error, dbProposals });
                 return NextResponse.json({
                     error: 'Proposal not found in database',
                     hint: 'The proposal may not be synced yet. Please refresh and try again.'
@@ -88,6 +91,7 @@ export async function POST(request: Request) {
             }
 
             const dbProposal = dbProposals[0];
+            console.log(`[API] Found proposal:`, { id: dbProposal.id, options: dbProposal.proposal_options });
 
             // Map blockchain option ID to database option UUID
             // Find option by option_number, not array index (options might not be ordered)
@@ -97,6 +101,7 @@ export async function POST(request: Request) {
             );
 
             if (!dbOption) {
+                console.error(`[API] Option ${optionIndex} not found. Available options:`, dbProposal.proposal_options);
                 return NextResponse.json({
                     error: 'Option not found',
                     hint: `Option number ${optionIndex} not found for this proposal`
@@ -107,18 +112,23 @@ export async function POST(request: Request) {
             proposalId = dbProposal.id;
             optionId = dbOption.id;
 
-            console.log(`[API] Converted blockchain IDs - Proposal: ${blockchainId} -> ${proposalId}, Option: ${optionIndex} -> ${optionId}`);
+            console.log(`[API] ✅ Converted blockchain IDs - Proposal: ${blockchainId} -> ${proposalId}, Option: ${optionIndex} -> ${optionId}`);
         }
 
-        // SECURITY CHECK: Verify CAPTCHA if provided (optional for now - make it required later)
+        // SECURITY CHECK: Verify CAPTCHA (re-enabled with better error handling)
         if (captchaToken) {
+            console.log('[API] Verifying CAPTCHA...');
             const isValidCaptcha = await verifyTurnstile(captchaToken);
             if (!isValidCaptcha) {
+                console.error('[API] CAPTCHA validation failed');
                 return NextResponse.json({
                     error: 'Security verification failed',
                     helpText: 'Please try again or refresh the page'
                 }, { status: 400 });
             }
+            console.log('[API] CAPTCHA verified successfully');
+        } else {
+            console.log('[API] No CAPTCHA token provided, skipping verification');
         }
 
         // If txHash provided, verify transaction on-chain
