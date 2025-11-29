@@ -1,15 +1,14 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { polygonAmoy, sepolia } from 'viem/chains';
+import { polygonAmoy } from 'viem/chains';
 import { createConfig, http } from 'wagmi';
 import { mock } from 'wagmi/connectors';
 
 // Export config based on environment
 export const config = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
     ? createConfig({
-        chains: [polygonAmoy, sepolia],
+        chains: [polygonAmoy],
         transports: {
             [polygonAmoy.id]: http(),
-            [sepolia.id]: http(),
         },
         connectors: [
             mock({
@@ -23,6 +22,7 @@ export const config = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
     : getDefaultConfig({
         appName: 'VoteQuest',
         projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '01b4f422f856bbd18cb7cca5595d0df0',
-        chains: [polygonAmoy, sepolia],
+        chains: [polygonAmoy],  // ONLY Polygon Amoy - removed Sepolia
         ssr: true,
     });
+
