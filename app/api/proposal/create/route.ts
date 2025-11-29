@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/server-db';
 import { createPublicClient, http, decodeEventLog } from 'viem';
 import { polygonAmoy } from 'viem/chains';
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
                     status: 'active',
                     participants: 0,
                     category: category || 'Community',
-                    onchain_id: onchainId, // Save the real ID
+                    blockchain_id: onchainId, // FIXED: Was onchain_id, now blockchain_id to match DB schema
                     tx_hash: txHash // Save the transaction hash for self-healing
                 }
             ])
