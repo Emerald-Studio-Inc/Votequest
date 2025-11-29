@@ -90,11 +90,17 @@ export async function POST(request: Request) {
             const dbProposal = dbProposals[0];
 
             // Map blockchain option ID to database option UUID
+            // Find option by option_number, not array index (options might not be ordered)
             const optionIndex = parseInt(optionId);
-            const dbOption = (dbProposal.proposal_options as any[])[optionIndex];
+            const dbOption = (dbProposal.proposal_options as any[]).find(
+                (opt: any) => opt.option_number === optionIndex
+            );
 
             if (!dbOption) {
-                return NextResponse.json({ error: 'Option not found' }, { status: 404 });
+                return NextResponse.json({
+                    error: 'Option not found',
+                    hint: `Option number ${optionIndex} not found for this proposal`
+                }, { status: 404 });
             }
 
             // Replace with database UUIDs
