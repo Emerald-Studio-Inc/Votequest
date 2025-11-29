@@ -264,8 +264,10 @@ const VoteQuestApp = () => {
     if (isConfirmed) {
       if (pendingAction === 'vote' && selectedProposal && selectedOption && userData.userId) {
         // Blockchain confirmed - record with hash (will award 10 VQC)
-        await recordDatabaseVote(hash || null);
-        setTimeout(() => setCurrentScreen('dashboard'), 1500);
+        (async () => {
+          await recordDatabaseVote(hash || null);
+          setTimeout(() => setCurrentScreen('dashboard'), 1500);
+        })();
       } else if (pendingAction === 'create' && pendingProposalData && userData.userId && userData.address && hash) {
         const syncProposalToDB = async () => {
           try {
