@@ -27,6 +27,8 @@ import CreateProposalScreen from './CreateProposalScreen';
 import ProposalsListScreen from './ProposalsListScreen';
 import AnalyticsScreen from './AnalyticsScreen';
 import SettingsScreen from './SettingsScreen';
+import ReceiptsScreen from './ReceiptsScreen';
+import AdminDashboard from './AdminDashboard';
 import Tooltip from './Tooltip';
 import VoteCaptcha from './VoteCaptcha';
 
@@ -101,6 +103,28 @@ const VoteQuestApp = () => {
     const data = await getAchievements();
     setAchievements(data);
   };
+
+  // Admin access via Konami code (↑ ↑ ↓ ↓ ← → ← → A)
+  useEffect(() => {
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'a'];
+    let konamiIndex = 0;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === konamiCode[konamiIndex]) {
+        konamiIndex++;
+        if (konamiIndex === konamiCode.length) {
+          console.log('🔓 Admin access granted');
+          setCurrentScreen('admin');
+          konamiIndex = 0;
+        }
+      } else {
+        konamiIndex = 0;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
 
   // Check for wallet auto-reconnect on mount
@@ -608,6 +632,7 @@ const VoteQuestApp = () => {
         {activeDashboardTab === 'settings' && (
           <SettingsScreen
             userData={userData}
+            onNavigate={setCurrentScreen}
           />
         )}
 
@@ -649,6 +674,24 @@ const VoteQuestApp = () => {
         onBack={() => setCurrentScreen('dashboard')}
         onSubmit={handleCreateProposal}
         loading={loading}
+      />
+    );
+  }
+
+  if (currentScreen === 'receipts') {
+    return (
+      <ReceiptsScreen
+        userId={userData.userId || ''}
+        onBack={() => setCurrentScreen('dashboard')}
+      />
+    );
+  }
+
+  // Admin dashboard - accessed via Konami code or /admin URL
+  if (currentScreen === 'admin') {
+    return (
+      <AdminDashboard
+        onBack={() => setCurrentScreen('dashboard')}
       />
     );
   }

@@ -13,9 +13,10 @@ interface SettingItem {
 
 interface SettingsScreenProps {
     userData: any;
+    onNavigate?: (screen: string) => void;
 }
 
-const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData }) => {
+const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate }) => {
     const { disconnect } = useDisconnect();
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [notifications, setNotifications] = useState({
@@ -224,103 +225,90 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData }) => {
                                                     </button>
                                                 </Tooltip>
                                             )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* Links Section */}
-                <div className="card-elevated p-8 my-8 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                            <Globe className="w-5 h-5 text-mono-70" strokeWidth={2} />
                         </div>
                         <h3 className="text-heading">Resources</h3>
                     </div>
 
-                    <div className="space-y-3">
-                        {[
-                            { label: 'Documentation', url: '#' },
-                            { label: 'Terms of Service', url: '#' },
-                            { label: 'Privacy Policy', url: '#' },
-                            { label: 'Support', url: '#' }
-                        ].map((link, index) => (
-                            <a
-                                key={index}
-                                href={link.url}
-                                className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-fast group"
+                                <div className="space-y-3">
+                                    {[
+                                        { label: 'Documentation', url: '#' },
+                                        { label: 'Terms of Service', url: '#' },
+                                        { label: 'Privacy Policy', url: '#' },
+                                        { label: 'Support', url: '#' }
+                                    ].map((link, index) => (
+                                        <a
+                                            key={index}
+                                            href={link.url}
+                                            className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-fast group"
+                                        >
+                                            <span className="text-sm font-medium text-mono-95">{link.label}</span>
+                                            <ExternalLink className="w-4 h-4 text-mono-50 group-hover:text-mono-95 transition-fast" strokeWidth={2} />
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+
+                {/* Danger Zone */ }
+                        <div className="card p-8 border-red-500/20 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                            <div className="flex items-start gap-4 mb-6">
+                                <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                                    <AlertCircle className="w-5 h-5 text-red-400" strokeWidth={2} />
+                                </div>
+                                <div>
+                                    <h3 className="text-heading text-red-400 mb-2">Disconnect Wallet</h3>
+                                    <p className="text-body-small text-mono-60">
+                                        Disconnecting will log you out and remove your session. Your blockchain data remains secure and unchanged.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setShowDisconnectConfirm(true)}
+                                className="btn btn-danger w-full"
                             >
-                                <span className="text-sm font-medium text-mono-95">{link.label}</span>
-                                <ExternalLink className="w-4 h-4 text-mono-50 group-hover:text-mono-95 transition-fast" strokeWidth={2} />
-                            </a>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Danger Zone */}
-                <div className="card p-8 border-red-500/20 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                    <div className="flex items-start gap-4 mb-6">
-                        <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                            <AlertCircle className="w-5 h-5 text-red-400" strokeWidth={2} />
+                                <LogOut className="w-4 h-4" strokeWidth={2} />
+                                <span>Disconnect Wallet</span>
+                            </button>
                         </div>
-                        <div>
-                            <h3 className="text-heading text-red-400 mb-2">Disconnect Wallet</h3>
-                            <p className="text-body-small text-mono-60">
-                                Disconnecting will log you out and remove your session. Your blockchain data remains secure and unchanged.
-                            </p>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={() => setShowDisconnectConfirm(true)}
-                        className="btn btn-danger w-full"
-                    >
-                        <LogOut className="w-4 h-4" strokeWidth={2} />
-                        <span>Disconnect Wallet</span>
-                    </button>
-                </div>
             </div>
 
-            {/* Disconnect Confirmation Modal */}
-            {showDisconnectConfirm && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center px-6 animate-fade-in">
-                    <div className="card-elevated p-8 max-w-md w-full animate-scale-bounce">
-                        <div className="flex items-start gap-4 mb-6">
-                            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                                <AlertCircle className="w-6 h-6 text-red-400" strokeWidth={2} />
+                {/* Disconnect Confirmation Modal */}
+                {showDisconnectConfirm && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center px-6 animate-fade-in">
+                        <div className="card-elevated p-8 max-w-md w-full animate-scale-bounce">
+                            <div className="flex items-start gap-4 mb-6">
+                                <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                                    <AlertCircle className="w-6 h-6 text-red-400" strokeWidth={2} />
+                                </div>
+                                <div>
+                                    <h3 className="text-heading mb-2">Disconnect Wallet?</h3>
+                                    <p className="text-body text-mono-60">
+                                        Are you sure you want to disconnect your wallet? You'll need to reconnect to access your account.
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-heading mb-2">Disconnect Wallet?</h3>
-                                <p className="text-body text-mono-60">
-                                    Are you sure you want to disconnect your wallet? You'll need to reconnect to access your account.
-                                </p>
-                            </div>
-                        </div>
 
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setShowDisconnectConfirm(false)}
-                                className="btn btn-secondary flex-1"
-                            >
-                                <X className="w-4 h-4" strokeWidth={2} />
-                                <span>Cancel</span>
-                            </button>
-                            <button
-                                onClick={handleDisconnect}
-                                className="btn btn-danger flex-1"
-                            >
-                                <Check className="w-4 h-4" strokeWidth={2} />
-                                <span>Disconnect</span>
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setShowDisconnectConfirm(false)}
+                                    className="btn btn-secondary flex-1"
+                                >
+                                    <X className="w-4 h-4" strokeWidth={2} />
+                                    <span>Cancel</span>
+                                </button>
+                                <button
+                                    onClick={handleDisconnect}
+                                    className="btn btn-danger flex-1"
+                                >
+                                    <Check className="w-4 h-4" strokeWidth={2} />
+                                    <span>Disconnect</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
-    );
+                )}
+            </div>
+            );
 };
 
-export default SettingsScreen;
+            export default SettingsScreen;

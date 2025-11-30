@@ -130,13 +130,15 @@ export async function POST(request: Request) {
             }
         }
 
-        // 4. Award coins for creating proposal (50 VQC)
+        // 4. Award coins for creating proposal with receipt metadata (50 VQC)
         try {
             const { awardCoins } = await import('@/lib/coins');
             await awardCoins(creatorId, 50, 'proposal_created', proposal.id, {
-                proposalTitle: title
+                proposalId: proposal.id,
+                title,
+                category: category || 'Community'
             });
-            console.log('[API] Awarded 50 VQC for proposal creation');
+            console.log('[API] ✅ Awarded 50 VQC for proposal creation with receipt');
         } catch (coinError) {
             console.error('[API] Error awarding coins:', coinError);
         }

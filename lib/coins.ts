@@ -1,4 +1,5 @@
 import { supabaseAdmin } from './server-db';
+import { generateReceipt, type ReceiptMetadata } from './receipts';
 
 /**
  * Award coins to a user and create a transaction record
@@ -8,10 +9,24 @@ export async function awardCoins(
     amount: number,
     reason: string,
     proposalId?: string,
-    metadata?: any
+    receiptMetadata?: ReceiptMetadata
 ): Promise<boolean> {
     try {
-        // 1. Update user's coin balance
+        // 1. Generate cryptographic receipt for proof-of-work
+        let action: 'vote' | 'proposal' | 'achievement' = 'achievement';
+        if (reason.includes('vote')) action = 'vote';
+        if (reason.includes('proposal')) action = 'proposal';
+
+        const receipt = await generateReceipt(
+            userId,
+            action,
+            amount,
+            receiptMetadata || {}
+        );
+
+        console.log(`📝 Generated receipt ${receipt.hash.slice(0, 12)}... for ${action}`);
+
+        // 2. Update user's coin balance
         const { data: user, error: userError } = await supabaseAdmin
             .from('users')
             .select('coins')
@@ -35,7 +50,7 @@ export async function awardCoins(
             return false;
         }
 
-        // 2. Create transaction record
+        // 3. Create transaction record with receipt
         const { error: txError } = await supabaseAdmin
             .from('coin_transactions')
             .insert({
@@ -43,7 +58,9 @@ export async function awardCoins(
                 amount,
                 reason,
                 proposal_id: proposalId || null,
-                metadata: metadata || null
+                receipt_hash: receipt.hash,
+                action_metadata: receipt.metadata,
+                verified: true
             });
 
         if (txError) {
@@ -51,7 +68,7 @@ export async function awardCoins(
             return false;
         }
 
-        // 3. Create notification for coin reward
+        // 4. Create notification for coin reward
         await createNotification(
             userId,
             'coins_earned',
