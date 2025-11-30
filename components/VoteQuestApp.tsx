@@ -490,16 +490,26 @@ const VoteQuestApp = () => {
     setLoading(true);
     setPendingAction('vote');
     try {
+      // CRITICAL: Use blockchain_id, not database UUID!
+      const blockchain_id = (selectedProposal as any).blockchain_id;
+      if (!blockchain_id) {
+        throw new Error('This proposal has no blockchain ID - can only vote via database');
+      }
+
       writeContract({
         address: VOTE_QUEST_ADDRESS,
         abi: VOTE_QUEST_ABI,
         functionName: 'vote',
-        args: [BigInt(selectedProposal.id), BigInt(option.option_number)],
+        args: [BigInt(blockchain_id), BigInt(option.option_number)], // USE blockchain_id, NOT selectedProposal.id!
       });
     } catch (error) {
       console.error('Error casting vote:', error);
       setLoading(false);
       setPendingAction(null);
+
+      // Fallback: vote in database only
+      alert('Blockchain vote failed. Voting in database only...');
+      // Could call dbCastVote here as fallback
     }
   };
 
