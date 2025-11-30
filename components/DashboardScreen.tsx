@@ -61,7 +61,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
     const progressPercent = (userData.xp / userData.nextLevelXP) * 100;
     const activeProposals = proposals.filter(p => p.status === 'active');
-    const recentProposals = activeProposals.slice(0, 5);
+    const recentProposals = activeProposals; // Show all active proposals
 
     return (
         <div className="min-h-screen pb-32 relative overflow-hidden">
