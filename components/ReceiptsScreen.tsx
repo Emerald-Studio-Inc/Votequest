@@ -1,7 +1,7 @@
 import { Download, CheckCircle, FileText, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { getReceiptSummary, exportReceiptsCSV, exportReceiptsJSON } from '@/lib/receipts';
+import { getReceiptSummary, exportReceiptsCSV } from '@/lib/receipts';
 
 interface Receipt {
     id: string;
@@ -40,12 +40,14 @@ export default function ReceiptsScreen({ userId, onBack }: ReceiptsScreenProps) 
         setLoading(false);
     };
 
-    const handleExportJSON = () => {
-        exportReceiptsJSON(receipts);
-    };
-
     const handleExportCSV = () => {
-        exportReceiptsCSV(receipts);
+        const csv = exportReceiptsCSV(receipts as any);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `votequest-receipts-${new Date().toISOString()}.csv`;
+        a.click();
     };
 
     const formatDate = (dateString: string) => {
@@ -87,18 +89,11 @@ export default function ReceiptsScreen({ userId, onBack }: ReceiptsScreenProps) 
 
                         <div className="flex gap-2">
                             <button
-                                onClick={handleExportJSON}
-                                className="btn btn-secondary flex items-center gap-2"
-                            >
-                                <Download className="w-4 h-4" />
-                                JSON
-                            </button>
-                            <button
                                 onClick={handleExportCSV}
                                 className="btn btn-secondary flex items-center gap-2"
                             >
                                 <Download className="w-4 h-4" />
-                                CSV
+                                Export CSV
                             </button>
                         </div>
                     </div>
@@ -137,7 +132,7 @@ export default function ReceiptsScreen({ userId, onBack }: ReceiptsScreenProps) 
 
                         {/* Receipt List */}
                         {receipts.map((receipt) => {
-                            const summary = getReceiptSummary(receipt);
+                            const summary = getReceiptSummary(receipt as any);
 
                             return (
                                 <div key={receipt.id} className="card p-6 hover:border-white/20 transition-colors">

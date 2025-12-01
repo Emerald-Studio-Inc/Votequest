@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Mail, ArrowRight, Loader2, CheckCircle, Sparkles } from 'lucide-react';
 import { signInWithMagicLink } from '@/lib/supabase-auth';
 
-const LoginScreen = () => {
+interface LoginScreenProps {
+    loading?: boolean;
+}
+
+const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);

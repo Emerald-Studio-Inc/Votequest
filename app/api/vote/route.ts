@@ -18,7 +18,7 @@ const voteSchema = z.object({
     optionId: z.string().min(1, 'Option ID required'),      // Can be UUID or blockchain ID
     txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash').optional().nullable(),
     walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address').optional().nullable(),
-    captchaToken: z.string().min(1, 'CAPTCHA token required').optional()
+    captchaToken: z.string().min(1, 'CAPTCHA token required')
 });
 
 // CAPTCHA verification function
@@ -115,21 +115,17 @@ export async function POST(request: Request) {
             console.log(`[API] ✅ Converted blockchain IDs - Proposal: ${blockchainId} -> ${proposalId}, Option: ${optionIndex} -> ${optionId}`);
         }
 
-        // SECURITY CHECK: Verify CAPTCHA (re-enabled with better error handling)
-        if (captchaToken) {
-            console.log('[API] Verifying CAPTCHA...');
-            const isValidCaptcha = await verifyTurnstile(captchaToken);
-            if (!isValidCaptcha) {
-                console.error('[API] CAPTCHA validation failed');
-                return NextResponse.json({
-                    error: 'Security verification failed',
-                    helpText: 'Please try again or refresh the page'
-                }, { status: 400 });
-            }
-            console.log('[API] CAPTCHA verified successfully');
-        } else {
-            console.log('[API] No CAPTCHA token provided, skipping verification');
+        // SECURITY CHECK: Verify CAPTCHA (MANDATORY)
+        console.log('[API] Verifying CAPTCHA...');
+        const isValidCaptcha = await verifyTurnstile(captchaToken);
+        if (!isValidCaptcha) {
+            console.error('[API] CAPTCHA validation failed');
+            return NextResponse.json({
+                error: 'Security verification failed. Please complete the CAPTCHA challenge.',
+                helpText: 'Refresh the page and try again'
+            }, { status: 400 });
         }
+        console.log('[API] ✅ CAPTCHA verified successfully');
 
         // If txHash provided, verify transaction on-chain
         if (txHash && walletAddress) {

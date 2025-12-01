@@ -8,7 +8,7 @@ import VoteCaptcha from './VoteCaptcha';
 interface ProposalDetailScreenProps {
     proposal: ProposalWithOptions;
     onBack: () => void;
-    onVote: () => void;
+    onVote: (proposalId: string, optionId: string, captchaToken: string) => Promise<any>;
     loading: boolean;
     hasVoted: boolean;
     selectedOption: string | null;
@@ -176,11 +176,15 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 
                             {!hasVoted && selectedOption && (
                                 <button
-                                    onClick={onVote}
+                                    onClick={async () => {
+                                        if (selectedOption && captchaToken) {
+                                            await onVote(proposal.id, selectedOption, captchaToken);
+                                        }
+                                    }}
                                     disabled={loading || hasVoted || !selectedOption || !captchaToken}
                                     className={`btn btn-lg group relative overflow-hidden w-full transition-all duration-300 ${!captchaToken
-                                            ? 'bg-mono-10 text-mono-50 cursor-not-allowed opacity-60'
-                                            : 'btn-primary'
+                                        ? 'bg-mono-10 text-mono-50 cursor-not-allowed opacity-60'
+                                        : 'btn-primary'
                                         }`}
                                     title={!captchaToken ? '⚠️ Complete security check above to enable voting' : 'Click to cast your vote'}
                                 >

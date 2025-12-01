@@ -1,0 +1,72 @@
+﻿
+> votequest@1.0.0 build
+> next build
+
+  Γû▓ Next.js 14.2.33
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" "C:\Us
+ers\USER\AppData\Roaming\n 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Failed   
+  to compile.:String) [],    
+ RemoteException
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+
+./components/VoteQuestApp.tsx
+Error: 
+  [31mx[0m Unexpected 
+token `div`. Expected jsx 
+identifier
+     ,-[[36;1;4mC:\Users\USE
+R\Documents\Votequest\compone
+nts\VoteQuestApp.tsx[0m:651:
+1]
+ [2m651[0m |       )}
+ [2m652[0m | 
+ [2m653[0m |       {/* 
+Bottom Navigation - Shared 
+across all tabs */}
+ [2m654[0m | <div 
+className="fixed bottom-6 
+left-0 right-0 z-50 flex 
+justify-center px-6 
+animate-slide-up" style={{ 
+animationDelay: '0.8s' }}>
+     : [31;1m ^^^[0m
+ [2m655[0m |   <div 
+className="glass rounded-2xl 
+p-2 flex items-center 
+justify-between shadow-2xl 
+shadow-black/50 
+backdrop-blur-xl border 
+border-white/10 w-full 
+max-w-sm">
+ [2m656[0m |     {[
+ [2m657[0m |       { 
+label: 'Overview', value: 
+'overview' as const, icon: 
+LayoutGrid },
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested 
+module:
+./components/VoteQuestApp.tsx
+./app/page.tsx
+
+
+> Build failed because of 
+webpack errors

@@ -7,7 +7,6 @@ export const metadata: Metadata = {
 }
 
 import { Providers } from './providers'
-import ContextualHints from '@/components/ContextualHints'
 
 export default function RootLayout({
   children,
@@ -20,7 +19,6 @@ export default function RootLayout({
       <body className="font-sans" suppressHydrationWarning>
         <Providers>
           {children}
-          <ContextualHints />
         </Providers>
       </body>
     </html>

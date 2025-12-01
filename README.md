@@ -1,57 +1,111 @@
-# VoteQuest - Decentralized Governance Platform
+# VoteQuest - Decentralized Voting Platform
 
-A modern, gamified blockchain voting application built with Next.js and TypeScript.
+A modern, gamified voting platform built with Next.js, Supabase, and TypeScript.
 
-## Features
+## 🚀 Features
 
-- 🗳️ Decentralized voting system
-- 🎮 Gamification with XP, levels, and achievements
-- 🏆 Merit-based reputation system
-- 📊 Real-time voting analytics
-- 🔒 Cryptographic security (ready for Web3 integration)
+- **Email Authentication** - Secure login with Supabase Auth
+- **Proposal Creation & Voting** - Create and vote on proposals
+- **Gamification** - XP, levels, achievements, and coins
+- **Leaderboards** - Compete with other voters
+- **Real-time Updates** - Live proposal updates
+- **Proof-of-Work Receipts** - Cryptographic voting receipts
+- **Share & Referrals** - Share proposals and earn rewards
+- **Analytics** - Track your voting history and trends
 
-## Getting Started
+## 🛠️ Tech Stack
 
-### Installation
+- **Frontend:** Next.js 14, React, TypeScript
+- **Backend:** Supabase (PostgreSQL, Auth, Realtime)
+- **Styling:** Tailwind CSS
+- **Security:** Cloudflare Turnstile CAPTCHA
+- **Deployment:** Netlify
+
+## 📦 Installation
+
 ```bash
+# Install dependencies
 npm install
-```
-```bash
-npm install @supabase/supabase-js
-```
 
-### Development
-```bash
+# Set up environment variables
+cp .env.local.example .env.local
+# Edit .env.local with your Supabase and Turnstile keys
+
+# Run development server
 npm run dev
-```
 
-Open [http://localhost:3000](http://localhost:3000)
-
-### Build
-```bash
+# Build for production
 npm run build
 ```
 
-### Deploy
+## 🔧 Environment Variables
 
-This app is optimized for deployment on Netlify, Vercel, or any static hosting platform.
+Required variables in `.env.local`:
 
-## Tech Stack
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+```
 
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Zustand (State Management)
-- Lucide Icons
+## 🗄️ Database Setup
 
-## Roadmap
+1. Create a Supabase project
+2. Run the migrations in `migrations/` folder in order
+3. Run `supabase_setup.sql` for initial schema
+4. Run `supabase_seed.sql` for sample data (optional)
 
-- [ ] Web3 wallet integration
-- [ ] Smart contract deployment
-- [ ] On-chain voting
-- [ ] NFT achievement badges
-- [ ] DAO governance features
+## 📁 Project Structure
 
-## License
+```
+votequest/
+├── app/              # Next.js app router pages
+├── components/       # React components
+├── lib/              # Utilities and helpers
+├── migrations/       # Database migrations
+├── public/           # Static assets
+└── styles/           # Global styles
+```
+
+## 🎮 Key Features
+
+### Voting System
+- Create proposals with custom options
+- Vote with CAPTCHA verification
+- View real-time vote counts
+- Earn coins and XP for voting
+
+### Gamification
+- Level up by earning XP
+- Unlock achievements
+- Earn coins for activities
+- Spend coins on power-ups
+
+### Social Features
+- Share proposals via QR codes
+- Referral rewards
+- Leaderboards
+- Activity feed
+
+## 🚢 Deployment
+
+### Netlify Deployment
+
+1. Connect your GitHub repository
+2. Set build command: `npm run build`
+3. Set publish directory: `.next`
+4. Add environment variables
+5. Deploy!
+
+## 📝 License
 
 MIT
+
+## 🤝 Contributing
+
+Contributions welcome! Please open an issue or PR.
+
+---
+
+Built with ❤️ for transparent, gamified voting
