@@ -1,24 +1,22 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, List, BarChart2, Settings, Plus, ArrowLeft, Check, X, Bell } from 'lucide-react';
-import { supabase } from '@/lib/supabase'
-import type { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase'
-// Blockchain imports removed - app uses database-only voting now
-// import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-// import { VOTE_QUEST_ADDRESS, VOTE_QUEST_ABI } from '@/lib/contracts';
+import { LayoutGrid, List, BarChart2, Settings } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import type { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase';
 import {
-  getUserByWallet,
-  createUser,
-  getActiveProposals,
-  castVote as dbCastVote,
-  getUserVotedProposals,
-  createProposal,
-  getAchievements,
-  getUserAchievements,
-  checkAndAwardAchievements
-} from '@/lib/database'
+    getUserByWallet,
+    createUser,
+    getActiveProposals,
+    castVote as dbCastVote,
+    getUserVotedProposals,
+    getAchievements,
+    getUserAchievements,
+    checkAndAwardAchievements
+} from '@/lib/database';
 import { useAutoReload } from '@/hooks/useAutoReload';
+
+// Screen Components
 import SplashScreen from './SplashScreen';
 import OnboardingScreen from './OnboardingScreen';
 import LoginScreen from './LoginScreen';
@@ -29,741 +27,351 @@ import ProposalsListScreen from './ProposalsListScreen';
 import AnalyticsScreen from './AnalyticsScreen';
 import SettingsScreen from './SettingsScreen';
 import ReceiptsScreen from './ReceiptsScreen';
-import AdminDashboard from './AdminDashboard';
-import HelpButton from './HelpButton';
 import AchievementsScreen from './AchievementsScreen';
-import NotificationCenter from './NotificationCenter';
 import ProfileEditScreen from './ProfileEditScreen';
 import LeaderboardScreen from './LeaderboardScreen';
+import AdminDashboard from './AdminDashboard';
 import Tooltip from './Tooltip';
-import VoteCaptcha from './VoteCaptcha';
 
 interface UserData {
-  address: string | null;
-  userId: string | null;
-  level: number;
-  xp: number;
-  nextLevelXP: number;
-  streak: number;
-  votingPower: number;
-  votesCount: number;
-  globalRank: number;
-  achievements: string[];
-  votedProposals: string[];
-  coins: number;
+    address: string | null;
+    userId: string | null;
+    level: number;
+    xp: number;
+    nextLevelXP: number;
+    streak: number;
+    votingPower: number;
+    votesCount: number;
+    globalRank: number;
+    achievements: string[];
+    votedProposals: string[];
+    coins: number;
 }
 
 const VoteQuestApp = () => {
-  // Always start with 'splash' to avoid hydration mismatch
-  // We'll check for returning users in useEffect
-  const [currentScreen, setCurrentScreen] = useState('splash');
-  const [activeDashboardTab, setActiveDashboardTab] = useState<'overview' | 'proposals' | 'analytics' | 'settings'>('overview');
-  const [userData, setUserData] = useState<UserData>({
-    address: null,
-    userId: null,
-    level: 5,
-    xp: 3420,
-    nextLevelXP: 5000,
-    streak: 12,
-    votingPower: 2847,
-    votesCount: 47,
-    globalRank: 247,
-    achievements: ['first_vote', 'week_streak', 'level_5'],
-    votedProposals: [],
-    coins: 0
-  });
-  const [selectedProposal, setSelectedProposal] = useState<ProposalWithOptions | null>(null);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [proposals, setProposals] = useState<ProposalWithOptions[]>([]);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
-  const [animations, setAnimations] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'vote' | 'create' | null>(null);
-  const [pendingProposalData, setPendingProposalData] = useState<any>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string>('');
-  // Blockchain hooks removed - app uses Supabase auth instead
-  // Stub values for removed wagmi hooks
-  const address = null;
-  const isConnected = false;
+    const [currentScreen, setCurrentScreen] = useState('splash');
+    const [activeDashboardTab, setActiveDashboardTab] = useState<'overview' | 'proposals' | 'analytics' | 'settings'>('overview');
+    const [userData, setUserData] = useState<UserData>({
+        address: null,
+        userId: null,
+        level: 5,
+        xp: 3420,
+        nextLevelXP: 5000,
+        streak: 12,
+        votingPower: 2847,
+        votesCount: 47,
+        globalRank: 247,
+        achievements: ['first_vote', 'week_streak', 'level_5'],
+        votedProposals: [],
+        coins: 0
+    });
+    const [selectedProposal, setSelectedProposal] = useState<ProposalWithOptions | null>(null);
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [proposals, setProposals] = useState<ProposalWithOptions[]>([]);
+    const [achievements, setAchievements] = useState<Achievement[]>([]);
+    const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
+    const [animations, setAnimations] = useState<Record<string, boolean>>({});
+    const [loading, setLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string>('');
 
-  // Auto-reload on new deployment (production only)
-  useAutoReload();
+    // Blockchain removed - using database only
+    const address = null;
+    const isConnected = false;
 
-  // Load achievements from database on mount
-  useEffect(() => {
-    loadAchievements();
-  }, []);
+    useAutoReload();
 
-  // Check for returning user (client-side only, after mount)
-  useEffect(() => {
-    if (currentScreen === 'splash') {
-      const hasVisited = localStorage.getItem('votequest_visited');
-      if (hasVisited) {
-        // Skip splash for returning users
-        setCurrentScreen('checking');
-      }
-    }
-  }, []);
-
-  const loadAchievements = async () => {
-    const data = await getAchievements();
-    setAchievements(data);
-  };
-
-  // Admin access via Konami code (↑ ↑ ↓ ↓ ← → ← → A)
-  useEffect(() => {
-    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'a'];
-    let konamiIndex = 0;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === konamiCode[konamiIndex]) {
-        konamiIndex++;
-        if (konamiIndex === konamiCode.length) {
-          console.log('🔓 Admin access granted');
-          setCurrentScreen('admin');
-          konamiIndex = 0;
-        }
-      } else {
-        konamiIndex = 0;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-
-  // Check for wallet auto-reconnect on mount
-  useEffect(() => {
-    if (currentScreen === 'checking') {
-      // Give wagmi a moment to auto-reconnect
-      const timer = setTimeout(() => {
-        if (isConnected && address) {
-          // Wallet is connected, go to dashboard
-          setCurrentScreen('dashboard');
-        } else {
-          // No wallet connected, go to login
-          setCurrentScreen('login');
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [currentScreen, isConnected, address]);
-
-  // Handle referral links from QR codes / share links
-  useEffect(() => {
-    if (currentScreen === 'dashboard' && proposals.length > 0) {
-      const targetProposalId = localStorage.getItem('targetProposalId');
-      const referralCode = localStorage.getItem('referralCode');
-
-      if (targetProposalId) {
-        // Find the proposal
-        const proposal = proposals.find(p => p.id === targetProposalId);
-
-        if (proposal) {
-          console.log('[REFERRAL] Auto-navigating to proposal:', targetProposalId);
-
-          // Track the referral click
-          if (referralCode) {
-            fetch('/api/share/track-click', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ referralCode })
-            }).catch(err => console.error('Failed to track click:', err));
-          }
-
-          // Navigate to the proposal
-          setSelectedProposal(proposal);
-          setCurrentScreen('proposal');
-
-          // Clear localStorage
-          localStorage.removeItem('targetProposalId');
-          localStorage.removeItem('referralCode');
-        }
-      }
-    }
-  }, [currentScreen, proposals]);
-
-  // Splash screen timer
-  useEffect(() => {
-    if (currentScreen === 'splash') {
-      const timer = setTimeout(() => setCurrentScreen('onboarding1'), 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [currentScreen]);
-
-
-  const triggerAnimation = (key: string) => {
-    setAnimations(prev => ({ ...prev, [key]: true }));
-    setTimeout(() => setAnimations(prev => ({ ...prev, [key]: false })), 500);
-  };
-
-
-
-  // Contract Hooks - Commented out (blockchain functionality removed)
-  /*
-  const { data: proposalCount } = useReadContract({
-    address: VOTE_QUEST_ADDRESS,
-    abi: VOTE_QUEST_ABI,
-    functionName: 'proposalCount',
-  });
-
-  const proposalIds = proposalCount ? Array.from({ length: Number(proposalCount) }, (_, i) => BigInt(i + 1)) : [];
-
-  const { data: proposalsData, refetch: refetchProposals } = useReadContracts({
-    contracts: proposalIds.map(id => ({
-      address: VOTE_QUEST_ADDRESS,
-      abi: VOTE_QUEST_ABI,
-      functionName: 'getProposal',
-      args: [id]
-    }))
-  });
-
-  const { writeContract, data: hash, error: writeError } = useWriteContract();
-
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash,
-  });
-  */
-
-  // Stub values for removed blockchain hooks
-  const hash = null;
-  const isConfirming = false;
-  const isConfirmed = false;
-
-  // Blockchain sync effect - Commented out (no longer needed)
-  /*
-  useEffect(() => {
-    if (proposalsData) {
-      const formattedProposals = proposalsData.map((result: any) => {
-        if (result.status === 'success' && result.result) {
-          const p = result.result as any;
-          const totalVotes = p.voteCounts.reduce((a: number, b: bigint) => a + Number(b), 0);
-          return {
-            id: p.id.toString(),
-            title: p.title,
-            description: p.description,
-            status: (Date.now() < Number(p.deadline) * 1000 ? 'active' : 'closed') as 'active' | 'closed' | 'pending',
-            participants: totalVotes,
-            end_date: new Date(Number(p.deadline) * 1000).toISOString(),
-            created_by: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            options: p.options.map((opt: string, idx: number) => ({
-              id: `${p.id}-${idx}`,
-              proposal_id: p.id.toString(),
-              option_number: idx,
-              title: opt,
-              description: null,
-              allocation: null,
-              percentage: totalVotes > 0 ? Math.round((Number(p.voteCounts[idx]) / totalVotes) * 100).toString() : '0',
-              votes: Number(p.voteCounts[idx]),
-              created_at: new Date().toISOString()
-            }))
-          } as ProposalWithOptions;
-        }
-        return null;
-      }).filter((p: ProposalWithOptions | null): p is ProposalWithOptions => p !== null);
-
-      setProposals(formattedProposals);
-
-      // Auto-sync all blockchain proposals to database (non-blocking)
-      formattedProposals.forEach(async (proposal: ProposalWithOptions) => {
-        try {
-          await fetch('/api/proposal/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              blockchainId: parseInt(proposal.id),
-              title: proposal.title,
-              description: proposal.description,
-              endDate: proposal.end_date,
-              status: proposal.status,
-              participants: proposal.participants,
-              options: proposal.options.map((opt: any) => ({
-                title: opt.title,
-                description: opt.description,
-                votes: opt.votes
-              }))
-            })
-          });
-        } catch (error) {
-          console.error(`Failed to sync proposal ${proposal.id} to database:`, error);
-          // Don't block UI on sync errors
-        }
-
-  useEffect(() => {
-    console.log('[REALTIME] Setting up proposal subscription...');
-
-    const channel = supabase
-      .channel('proposals-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'proposals'
-        },
-        (payload) => {
-          console.log('[REALTIME] ✅ New proposal detected!', payload.new);
-          // Reload proposals from database
-          loadProposals();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('[REALTIME] Cleaning up proposal subscription');
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-
-  // Handle transaction success
-  useEffect(() => {
-    if (isConfirmed) {
-      if (pendingAction === 'vote' && selectedProposal && selectedOption && userData.userId) {
-        const finishVote = async () => {
-          // Record in DB for gamification
-          await dbCastVote(
-            userData.userId!,
-            selectedProposal.id,
-            selectedOption,
-            hash,
-            userData.address!,
-            captchaToken
-          );
-
-          // Reset CAPTCHA after successful vote
-          setCaptchaToken('');
-
-          // Reload user data
-          if (userData.address) {
-            const updatedUser = await getUserByWallet(userData.address);
-            if (updatedUser) {
-              const votedProposals = await getUserVotedProposals(updatedUser.id);
-              const hasNewAchievements = await checkAndAwardAchievements(updatedUser.id);
-
-              if (hasNewAchievements) {
-                const updatedAchievements = await getUserAchievements(updatedUser.id);
-                setUserAchievements(updatedAchievements);
-                triggerAnimation('achievementUnlocked');
-              }
-
-              setUserData(prev => ({
-                ...prev,
-                xp: updatedUser.xp,
-                level: updatedUser.level,
-                votesCount: updatedUser.votes_count,
-                votingPower: updatedUser.voting_power,
-                coins: updatedUser.coins || 0,  // ADD THIS - critical for showing coin increments
-                votedProposals: votedProposals
-              }));
-            }
-          }
-
-          loadProposals();
-          triggerAnimation('voteSuccess');
-          setLoading(false);
-          setPendingAction(null);
-          setTimeout(() => {
-            setSelectedOption(null);
-            setCurrentScreen('dashboard');
-          }, 1500);
-        };
-        finishVote();
-      } else if (pendingAction === 'create' && pendingProposalData && userData.userId && userData.address && hash) {
-        const syncProposalToDB = async () => {
-          try {
-            // Sync proposal to database
-            const response = await fetch('/api/proposal/create', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                title: pendingProposalData.title,
-                description: pendingProposalData.description,
-                endDate: pendingProposalData.end_date,
-                options: pendingProposalData.options,
-                creatorId: userData.userId,
-                walletAddress: userData.address,
-                txHash: hash,
-                category: 'Community'
-              }),
-            });
-
-            if (response.ok) {
-              console.log('Proposal synced to database successfully');
-              // Reload user data to get updated coins (50 VQC reward)
-              if (userData.address) {
-                const updatedUser = await getUserByWallet(userData.address);
-                if (updatedUser) {
-                  setUserData(prev => ({
-                    ...prev,
-                    coins: updatedUser.coins || 0
-                  }));
-                }
-              }
-            } else {
-              const errorData = await response.json();
-              console.error('Failed to sync proposal to database:', errorData);
-            }
-          } catch (error) {
-            console.error('Error syncing proposal to database:', error);
-          }
-
-          loadProposals();
-          setLoading(false);
-          setPendingAction(null);
-          setPendingProposalData(null);
-          setCurrentScreen('dashboard');
-        };
-        syncProposalToDB();
-      } else if (pendingAction === 'create') {
-        // Fallback: just refetch proposals if we don't have the data
+    // Load data on mount
+    useEffect(() => {
+        loadAchievements();
         loadProposals();
-        setLoading(false);
-        setPendingAction(null);
-        setPendingProposalData(null);
-        setCurrentScreen('dashboard');
-      }
-    }
-  }, [isConfirmed, pendingAction]);
+    }, []);
 
-  // Handle write error
-  useEffect(() => {
-    if (writeError) {
-      console.error("Transaction error:", writeError);
-      setLoading(false);
-      setPendingAction(null);
-    }
-  }, [writeError]);
-
-  // Handle wallet connection and user data syncing
-  useEffect(() => {
-    const syncUser = async () => {
-      if (isConnected && address) {
-        setLoading(true);
-        try {
-          // Check if user exists in database
-          let user = await getUserByWallet(address);
-
-          // If not, create new user
-          if (!user) {
-            user = await createUser(address);
-          }
-
-          if (user) {
-            // Load user's voted proposals
-            const votedProposals = await getUserVotedProposals(user.id);
-            const myAchievements = await getUserAchievements(user.id);
-            setUserAchievements(myAchievements);
-
-            // Set user data
-            setUserData({
-              address: user.wallet_address,
-              userId: user.id,
-              level: user.level,
-              xp: user.xp,
-              nextLevelXP: 5000,
-              streak: user.streak,
-              votingPower: user.voting_power,
-              votesCount: user.votes_count,
-              globalRank: user.global_rank,
-              achievements: ['first_vote', 'week_streak', 'level_5'],
-              votedProposals: votedProposals,
-              coins: user.coins || 0
-            });
-
-            if (currentScreen === 'login') {
-              localStorage.setItem('votequest_visited', 'true');
-              setCurrentScreen('dashboard');
-              triggerAnimation('walletConnected');
+    // Check for returning user
+    useEffect(() => {
+        if (currentScreen === 'splash') {
+            const hasVisited = localStorage.getItem('votequest_visited');
+            if (hasVisited) {
+                setCurrentScreen('checking');
             }
-          }
-        } catch (error) {
-          console.error('Error syncing user:', error);
-        } finally {
-          setLoading(false);
         }
-      } else if (!isConnected && currentScreen !== 'splash' && !currentScreen.startsWith('onboarding')) {
-        // Handle disconnect
-        setUserData({
-          address: null,
-          userId: null,
-          level: 5,
-          xp: 3420,
-          nextLevelXP: 5000,
-          streak: 12,
-          votingPower: 2847,
-          votesCount: 47,
-          globalRank: 247,
-          achievements: [],
-          votedProposals: [],
-          coins: 0
-        });
-        setCurrentScreen('login');
-      }
+    }, []);
+
+    // Auto-reconnect check
+    useEffect(() => {
+        if (currentScreen === 'checking') {
+            const timer = setTimeout(() => {
+                setCurrentScreen(isConnected ? 'dashboard' : 'login');
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [currentScreen, isConnected]);
+
+    // Splash timer
+    useEffect(() => {
+        if (currentScreen === 'splash') {
+            const timer = setTimeout(() => setCurrentScreen('onboarding1'), 1800);
+            return () => clearTimeout(timer);
+        }
+    }, [currentScreen]);
+
+    // Konami code for admin
+    useEffect(() => {
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'a'];
+        let konamiIndex = 0;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiCode.length) {
+                    setCurrentScreen('admin');
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Realtime subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('proposals-realtime')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'proposals'
+            }, () => {
+                loadProposals();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
+    const loadAchievements = async () => {
+        const data = await getAchievements();
+        setAchievements(data);
     };
 
-    syncUser();
-  }, [isConnected, address]);
+    const loadProposals = async () => {
+        try {
+            const data = await getActiveProposals();
+            setProposals(data);
+        } catch (error) {
+            console.error('Error loading proposals:', error);
+        }
+    };
 
-  // Helper function to check if user voted on a proposal
-  const hasVoted = (proposalId: string) => {
-    return userData.votedProposals.includes(proposalId);
-  };
+    const triggerAnimation = (key: string) => {
+        setAnimations(prev => ({ ...prev, [key]: true }));
+        setTimeout(() => setAnimations(prev => ({ ...prev, [key]: false })), 500);
+    };
 
-  // Cast vote function
-  const castVote = async (proposalId: string, optionId: string, captchaToken: string) => {
-    try {
-      const response = await fetch('/api/vote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: userData.userId,
-          proposalId,
-          optionId,
-          captchaToken,
-          walletAddress: userData.address
-        })
-      });
+    const hasVoted = (proposalId: string) => {
+        return userData.votedProposals.includes(proposalId);
+    };
 
-      const data = await response.json();
+    const castVote = async (proposalId: string, optionId: string, captchaToken: string) => {
+        try {
+            const response = await fetch('/api/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: userData.userId,
+                    proposalId,
+                    optionId,
+                    captchaToken,
+                    walletAddress: userData.address
+                })
+            });
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Vote failed');
-      }
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Vote failed');
 
-      // Update local state
-      setUserData(prev => ({
-        ...prev,
-        votesCount: prev.votesCount + 1,
-        coins: prev.coins + (data.coinsEarned || 10),
-        votedProposals: [...prev.votedProposals, proposalId]
-      }));
+            setUserData(prev => ({
+                ...prev,
+                votesCount: prev.votesCount + 1,
+                coins: prev.coins + (data.coinsEarned || 10),
+                votedProposals: [...prev.votedProposals, proposalId]
+            }));
 
-      return data;
-    } catch (error) {
-      console.error('Error voting:', error);
-      throw error;
-    }
-  };
+            return data;
+        } catch (error) {
+            console.error('Error voting:', error);
+            throw error;
+        }
+    };
 
-  // Create proposal function
-  const handleCreateProposal = async (proposalData: any) => {
-    try {
-      const response = await fetch('/api/proposals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...proposalData,
-          createdBy: userData.userId
-        })
-      });
+    const handleCreateProposal = async (proposalData: any) => {
+        try {
+            const response = await fetch('/api/proposals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...proposalData,
+                    createdBy: userData.userId
+                })
+            });
 
-      const data = await response.json();
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Failed to create proposal');
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create proposal');
-      }
+            setUserData(prev => ({
+                ...prev,
+                coins: prev.coins + (data.coinsEarned || 50)
+            }));
 
-      // Update local state
-      setUserData(prev => ({
-        ...prev,
-        coins: prev.coins + (data.coinsEarned || 50)
-      }));
+            setCurrentScreen('dashboard');
+            return data;
+        } catch (error) {
+            console.error('Error creating proposal:', error);
+            throw error;
+        }
+    };
 
-      setCurrentScreen('dashboard');
-      return data;
-    } catch (error) {
-      console.error('Error creating proposal:', error);
-      throw error;
-    }
-  };
-
-  // Render based on current screen
-  if (currentScreen === 'checking') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center">
-          <div className="loading-spinner w-12 h-12 mx-auto mb-4"></div>
-          <p className="text-mono-60 text-sm">Connecting...</p>
+    // Navigation Component
+    const BottomNavigation = () => (
+        <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
+            <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
+                {[
+                    { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
+                    { label: 'Proposals', value: 'proposals' as const, icon: List },
+                    { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
+                    { label: 'Settings', value: 'settings' as const, icon: Settings }
+                ].map((item) => {
+                    const isActive = activeDashboardTab === item.value;
+                    const Icon = item.icon;
+                    return (
+                        <Tooltip key={item.value} content={item.label} position="top">
+                            <button
+                                onClick={() => setActiveDashboardTab(item.value)}
+                                className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                                    }`}
+                            >
+                                <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
+                                {isActive && (
+                                    <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
+                                )}
+                            </button>
+                        </Tooltip>
+                    );
+                })}
+            </div>
         </div>
-      </div>
     );
-  }
 
-if (currentScreen === 'splash') {
-  return <SplashScreen />;
-}
+    // Render screens
+    if (currentScreen === 'checking') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black">
+                <div className="text-center">
+                    <div className="loading-spinner w-12 h-12 mx-auto mb-4"></div>
+                    <p className="text-mono-60 text-sm">Connecting...</p>
+                </div>
+            </div>
+        );
+    }
 
-if (currentScreen.startsWith('onboarding')) {
-  return <OnboardingScreen currentScreen={currentScreen} onNext={setCurrentScreen} />;
-}
+    if (currentScreen === 'splash') return <SplashScreen />;
+    if (currentScreen.startsWith('onboarding')) return <OnboardingScreen currentScreen={currentScreen} onNext={setCurrentScreen} />;
+    if (currentScreen === 'login') return <LoginScreen loading={loading} />;
 
-if (currentScreen === 'login') {
-  return <LoginScreen loading={loading} />;
-}
+    if (currentScreen === 'dashboard') {
+        return (
+            <>
+                {activeDashboardTab === 'overview' && (
+                    <DashboardScreen
+                        userData={userData}
+                        proposals={proposals}
+                        achievements={achievements}
+                        userAchievements={userAchievements}
+                        onSelectProposal={(proposal) => {
+                            setSelectedProposal(proposal);
+                            setCurrentScreen('proposal');
+                        }}
+                        onNavigate={setCurrentScreen}
+                        activeTab={activeDashboardTab}
+                        onTabChange={setActiveDashboardTab}
+                        animations={animations}
+                    />
+                )}
+                {activeDashboardTab === 'proposals' && (
+                    <ProposalsListScreen
+                        proposals={proposals}
+                        onSelectProposal={(proposal) => {
+                            setSelectedProposal(proposal);
+                            setCurrentScreen('proposal');
+                        }}
+                        hasVoted={hasVoted}
+                    />
+                )}
+                {activeDashboardTab === 'analytics' && (
+                    <AnalyticsScreen userData={userData} proposals={proposals} />
+                )}
+                {activeDashboardTab === 'settings' && (
+                    <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
+                )}
+                <BottomNavigation />
+            </>
+        );
+    }
 
-if (currentScreen === 'dashboard') {
-  return (
-    <>
-      {activeDashboardTab === 'overview' && (
-        <DashboardScreen
-          userData={userData}
-          proposals={proposals}
-          achievements={achievements}
-          userAchievements={userAchievements}
-          onSelectProposal={(proposal) => {
-            setSelectedProposal(proposal);
-            setCurrentScreen('proposal');
-          }}
-          onNavigate={setCurrentScreen}
-          activeTab={activeDashboardTab}
-          onTabChange={setActiveDashboardTab}
-          animations={animations}
-        />
-      )}
-      {activeDashboardTab === 'proposals' && (
-        <ProposalsListScreen
-          proposals={proposals}
-          onSelectProposal={(proposal) => {
-            setSelectedProposal(proposal);
-            setCurrentScreen('proposal');
-          }}
-          hasVoted={hasVoted}
-        />
-      )}
-      {activeDashboardTab === 'analytics' && (
-        <AnalyticsScreen
-          userData={userData}
-          proposals={proposals}
-        />
-      )}
-      {activeDashboardTab === 'settings' && (
-        <SettingsScreen
-          userData={userData}
-          onNavigate={setCurrentScreen}
-        />
-      )}
+    if (currentScreen === 'create-proposal') {
+        return <CreateProposalScreen onBack={() => setCurrentScreen('dashboard')} onSubmit={handleCreateProposal} loading={loading} />;
+    }
 
+    if (currentScreen === 'receipts') {
+        return <ReceiptsScreen userId={userData.userId || ''} onBack={() => setCurrentScreen('dashboard')} />;
+    }
 
-      {/* Bottom Navigation - Shared across all tabs */}
-      <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-        <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
-          {[
-            { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
-            { label: 'Proposals', value: 'proposals' as const, icon: List },
-            { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
-            { label: 'Settings', value: 'settings' as const, icon: Settings }
-          ].map((item) => {
-            const isActive = activeDashboardTab === item.value;
-            return (
-              <Tooltip key={item.value} content={item.label} position="top">
-                <button
-                  onClick={() => setActiveDashboardTab(item.value)}
-                  className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
-                    }`}
-                >
-                  <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
-                  {isActive && (
-                    <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
-                  )}
-                </button>
-              </Tooltip>
-            );
-          })}
-        </div>
-      </div>
-    </>
-  );
-}
+    if (currentScreen === 'achievements') {
+        return <AchievementsScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
+    }
 
-  if (currentScreen === 'create-proposal') {
-    return (
-    <CreateProposalScreen
-      onBack={() => setCurrentScreen('dashboard')}
-      onSubmit={handleCreateProposal}
-      loading={loading}
-    />
-  );
-}
+    if (currentScreen === 'profile-edit') {
+        return (
+            <ProfileEditScreen
+                userData={userData}
+                onBack={() => setCurrentScreen('dashboard')}
+                onSave={(updated) => setUserData(prev => ({ ...prev, ...updated }))}
+            />
+        );
+    }
 
-        if (currentScreen === 'receipts') {
-    return (
-    <ReceiptsScreen
-      userId={userData.userId || ''}
-      onBack={() => setCurrentScreen('dashboard')}
-    />
-  );
-}
+    if (currentScreen === 'leaderboard') {
+        return <LeaderboardScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
+    }
 
-// Achievements screen
-        if (currentScreen === 'achievements') {
-    return (
-    <AchievementsScreen
-      userData={userData}
-      onBack={() => setCurrentScreen('dashboard')}
-    />
-  );
-}
+    if (currentScreen === 'admin') {
+        return <AdminDashboard onBack={() => setCurrentScreen('dashboard')} />;
+    }
 
-// Profile edit screen
-        if (currentScreen === 'profile-edit') {
-    return (
-    <ProfileEditScreen
-      userData={userData}
-      onBack={() => setCurrentScreen('dashboard')}
-      onSave={(updated) => {
-        setUserData(prev => ({ ...prev, ...updated }));
-      }}
-    />
-  );
-}
+    if (currentScreen === 'proposal' && selectedProposal) {
+        return (
+            <ProposalDetailScreen
+                proposal={selectedProposal}
+                onBack={() => {
+                    setCurrentScreen('dashboard');
+                    setSelectedOption(null);
+                }}
+                onVote={castVote}
+                loading={loading}
+                hasVoted={hasVoted(selectedProposal.id)}
+                selectedOption={selectedOption}
+                setSelectedOption={setSelectedOption}
+                userId={userData.userId || ''}
+                captchaToken={captchaToken}
+                setCaptchaToken={setCaptchaToken}
+            />
+        );
+    }
 
-// Leaderboard screen
-        if (currentScreen === 'leaderboard') {
-    return (
-    <LeaderboardScreen
-      userData={userData}
-      onBack={() => setCurrentScreen('dashboard')}
-    />
-  );
-}
-
-// Admin dashboard - accessed via Konami code or /admin URL
-        if (currentScreen === 'admin') {
-    return (
-    <AdminDashboard
-      onBack={() => setCurrentScreen('dashboard')}
-    />
-  );
-}
-
-        if (currentScreen === 'proposal' && selectedProposal) {
-    return (
-    <ProposalDetailScreen
-      proposal={selectedProposal}
-      onBack={() => {
-        setCurrentScreen('dashboard');
-        setSelectedOption(null);
-      }}
-      onVote={castVote}
-      loading={loading}
-      hasVoted={hasVoted(selectedProposal.id)}
-      selectedOption={selectedOption}
-      setSelectedOption={setSelectedOption}
-      userId={userData.userId || ''}
-      captchaToken={captchaToken}
-      setCaptchaToken={setCaptchaToken}
-    />
-  );
-}
-
-  return null;
+    return null;
 };
 
 export default VoteQuestApp;
