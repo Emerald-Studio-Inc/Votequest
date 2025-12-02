@@ -7,10 +7,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Auth functions
 export async function signInWithMagicLink(email: string) {
+    // Use production URL from env var, or fallback to current origin
+    const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+
     const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-            emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+            emailRedirectTo: `${redirectUrl}/auth/callback`,
         },
     });
     return { error };
