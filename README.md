@@ -109,3 +109,4 @@ Contributions welcome! Please open an issue or PR.
 ---
 
 Built with ❤️ for transparent, gamified voting
+# Build: 2025-12-02 23:41:12
