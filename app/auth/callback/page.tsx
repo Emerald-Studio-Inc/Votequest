@@ -34,6 +34,38 @@ export default function AuthCallbackPage() {
           }
 
           if (data?.session) {
+            // Check if user profile exists, create if not
+            const userId = data.session.user.id;
+            const userEmail = data.session.user.email || '';
+
+            try {
+              // Check if profile exists
+              const { data: profile } = await supabase
+                .from('users')
+                .select('id')
+                .eq('auth_id', userId)
+                .single();
+
+              // Create profile if it doesn't exist
+              if (!profile) {
+                await supabase.from('users').insert({
+                  auth_id: userId,
+                  email: userEmail,
+                  username: userEmail.split('@')[0],
+                  age_verified: true,
+                  xp: 0,
+                  level: 1,
+                  coins: 0,
+                  votes_count: 0,
+                  voting_power: 100,
+                  streak: 0,
+                  global_rank: 0
+                });
+              }
+            } catch (err) {
+              console.error('Error checking/creating profile:', err);
+            }
+
             if (mounted) setMessage('Sign-in successful. Redirecting...');
             setTimeout(() => router.replace('/'), 600);
             return;
