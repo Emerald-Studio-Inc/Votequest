@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, ArrowRight, Loader2, CheckCircle, Sparkles } from 'lucide-react';
 import { signInWithMagicLink } from '@/lib/supabase-auth';
-import VoteCaptcha from './VoteCaptcha';
 
 interface LoginScreenProps {
     loading?: boolean;
@@ -12,11 +11,10 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
     const [error, setError] = useState('');
-    const [captchaToken, setCaptchaToken] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email || !captchaToken) return;
+        if (!email) return;
 
         setLoading(true);
         setError('');
@@ -26,7 +24,6 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
         if (authError) {
             setError(authError.message);
             setLoading(false);
-            setCaptchaToken(''); // Reset captcha on error
         } else {
             setSent(true);
             setLoading(false);
@@ -91,7 +88,44 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                             Email address
                         </label>
                         <div className="relative">
-                        </button>
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-mono-50" />
+                            <input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="you@example.com"
+                                className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-mono-50 focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
+                                required
+                                disabled={loading}
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-shake">
+                            <p className="text-red-400 text-sm">{error}</p>
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading || !email}
+                        className="w-full btn btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Sending magic link...
+                            </>
+                        ) : (
+                            <>
+                                Continue with email
+                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </>
+                        )}
+                    </button>
                 </form>
 
                 {/* Info */}
