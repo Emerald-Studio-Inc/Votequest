@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { User, Bell, Shield, Palette, Globe, LogOut, ChevronRight, Check, X, AlertCircle, ExternalLink } from 'lucide-react';
-import { useDisconnect } from 'wagmi';
 import Tooltip from './Tooltip';
 
 interface SettingItem {
@@ -17,7 +16,6 @@ interface SettingsScreenProps {
 }
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate }) => {
-    const { disconnect } = useDisconnect();
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [notifications, setNotifications] = useState({
         proposals: true,
@@ -27,7 +25,9 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
     });
 
     const handleDisconnect = () => {
-        disconnect();
+        // Clear local storage and reload
+        localStorage.clear();
+        window.location.reload();
         setShowDisconnectConfirm(false);
     };
 

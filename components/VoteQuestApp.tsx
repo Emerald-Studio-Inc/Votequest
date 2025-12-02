@@ -54,14 +54,14 @@ const VoteQuestApp = () => {
     const [userData, setUserData] = useState<UserData>({
         address: null,
         userId: null,
-        level: 5,
-        xp: 3420,
-        nextLevelXP: 5000,
-        streak: 12,
-        votingPower: 2847,
-        votesCount: 47,
-        globalRank: 247,
-        achievements: ['first_vote', 'week_streak', 'level_5'],
+        level: 1,
+        xp: 0,
+        nextLevelXP: 100,
+        streak: 0,
+        votingPower: 100,
+        votesCount: 0,
+        globalRank: 0,
+        achievements: [],
         votedProposals: [],
         coins: 0
     });

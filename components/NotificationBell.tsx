@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
-import { useAccount } from 'wagmi';
 
 interface Notification {
     id: string;
@@ -15,8 +14,11 @@ interface Notification {
     metadata?: any;
 }
 
-const NotificationBell: React.FC = () => {
-    const { address } = useAccount();
+interface NotificationBellProps {
+    address?: string | null;
+}
+
+const NotificationBell: React.FC<NotificationBellProps> = ({ address }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showDropdown, setShowDropdown] = useState(false);
