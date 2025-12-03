@@ -252,7 +252,50 @@ const VoteQuestApp = () => {
                 console.log('[AUTH] User data set successfully. userId:', profile.id);
             } else {
                 console.warn('[AUTH] No profile found for authId:', authId);
-                console.warn('[AUTH] User might not have a profile in the database yet');
+                console.log('[AUTH] Attempting to create profile...');
+
+                // Create profile
+                const user = await getCurrentUser();
+                if (user?.email) {
+                    const { data: newProfile, error } = await supabase
+                        .from('users')
+                        .insert({
+                            auth_id: authId,
+                            email: user.email,
+                            username: user.email.split('@')[0],
+                            age_verified: true,
+                            xp: 0,
+                            level: 1,
+                            coins: 0,
+                            votes_count: 0,
+                            voting_power: 100,
+                            streak: 0,
+                            global_rank: 0
+                        })
+                        .select()
+                        .single();
+
+                    if (!error && newProfile) {
+                        const nextLevelXP = newProfile.level * 1000;
+                        setUserData({
+                            address: newProfile.email,
+                            userId: newProfile.id,
+                            level: newProfile.level,
+                            xp: newProfile.xp,
+                            nextLevelXP: nextLevelXP,
+                            streak: newProfile.streak,
+                            votingPower: newProfile.voting_power,
+                            votesCount: newProfile.votes_count,
+                            globalRank: newProfile.global_rank,
+                            achievements: [],
+                            votedProposals: [],
+                            coins: newProfile.coins
+                        });
+                        console.log('[AUTH] Profile created! userId:', newProfile.id);
+                    } else {
+                        console.error('[AUTH] Failed to create profile:', error);
+                    }
+                }
             }
         } catch (error) {
             console.error('[AUTH] Error loading user profile:', error);
