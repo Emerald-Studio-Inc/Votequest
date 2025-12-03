@@ -409,7 +409,7 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
             <ShareModal
                 isOpen={showShareModal}
                 onClose={() => setShowShareModal(false)}
-                proposalId={proposal.blockchain_id.toString()}
+                proposalId={(proposal.blockchain_id ?? proposal.id).toString()}
                 proposalTitle={proposal.title}
                 userId={userId}
             />
