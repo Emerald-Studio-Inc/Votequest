@@ -148,6 +148,28 @@ const VoteQuestApp = () => {
         }
     }, []);
 
+    // Auto-open target proposal from share link
+    useEffect(() => {
+        if (currentScreen === 'dashboard' && proposals.length > 0) {
+            const targetProposalId = localStorage.getItem('targetProposalId');
+            if (targetProposalId) {
+                console.log('[SHARE LINK] Auto-opening proposal:', targetProposalId);
+
+                // Find proposal by blockchain_id
+                const proposal = proposals.find(p => p.blockchain_id.toString() === targetProposalId);
+
+                if (proposal) {
+                    setSelectedProposal(proposal);
+                    setCurrentScreen('proposal');
+                    localStorage.removeItem('targetProposalId'); // Clear after use
+                } else {
+                    console.warn('[SHARE LINK] Proposal not found:', targetProposalId);
+                    localStorage.removeItem('targetProposalId');
+                }
+            }
+        }
+    }, [currentScreen, proposals]);
+
     // Auto-reconnect check
     useEffect(() => {
         if (currentScreen === 'checking') {
