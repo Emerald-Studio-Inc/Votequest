@@ -335,7 +335,7 @@ const VoteQuestApp = () => {
                     proposalId,
                     optionId,
                     captchaToken,
-                    walletAddress: userData.address
+                    walletAddress: null  // Magic link auth - no wallet
                 })
             });
 
