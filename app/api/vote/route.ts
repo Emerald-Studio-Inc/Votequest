@@ -237,54 +237,46 @@ export async function POST(request: Request) {
         }
 
 
-        // 5. Award coins for voting ONLY if blockchain transaction succeeded (10 VQC)
+        // 5. Award coins for voting (10 VQC for all votes)
         try {
             const { awardCoins, createNotification } = await import('@/lib/coins');
 
-            // Only award coins if vote was recorded on blockchain
-            if (txHash) {
-                // Fetch proposal and option details for receipt metadata
-                const { data: proposal } = await supabaseAdmin
-                    .from('proposals')
-                    .select('title')
-                    .eq('id', proposalId)
-                    .single();
-
-                const { data: option } = await supabaseAdmin
-                    .from('proposal_options')
-                    .select('title')
-                    .eq('id', optionId)
-                    .single();
-
-                // Award coins with cryptographic receipt
-                await awardCoins(userId, 10, 'vote_cast', proposalId, {
-                    proposalId,
-                    proposalTitle: proposal?.title || 'Unknown Proposal',
-                    optionId,
-                    optionTitle: option?.title || 'Unknown Option'
-                });
-                console.log('[API] ✅ Awarded 10 VQC for blockchain vote with receipt');
-            } else {
-                console.log('[API] No coins awarded - vote was database-only (no blockchain tx)');
-            }
-
-            // Notify proposal creator
-
+            // Fetch proposal and option details for receipt metadata
             const { data: proposal } = await supabaseAdmin
                 .from('proposals')
-                .select('created_by, title')
+                .select('title, created_by')
                 .eq('id', proposalId)
                 .single();
 
-            // Notify proposal creator (only if we have wallet address)
-            if (proposal && proposal.created_by && proposal.created_by !== userId && walletAddress) {
+            const { data: option } = await supabaseAdmin
+                .from('proposal_options')
+                .select('title')
+                .eq('id', optionId)
+                .single();
+
+            // Award coins for voting (works with or without blockchain)
+            await awardCoins(userId, 10, 'vote_cast', proposalId, {
+                proposalId,
+                proposalTitle: proposal?.title || 'Unknown Proposal',
+                optionId,
+                optionTitle: option?.title || 'Unknown Option',
+                voteType: txHash ? 'blockchain' : 'database'
+            });
+            console.log(`[API] ✅ Awarded 10 VQC for voting (${txHash ? 'blockchain' : 'database'} vote)`);
+
+            // Notify proposal creator (only if different user)
+            if (proposal && proposal.created_by && proposal.created_by !== userId) {
+                const notificationText = walletAddress
+                    ? `${walletAddress.substring(0, 8)}... voted on "${proposal.title}"`
+                    : `Someone voted on "${proposal.title}"`;
+
                 await createNotification(
                     proposal.created_by,
                     'proposal_voted',
                     'New vote on your proposal!',
-                    `Someone voted on "${proposal.title}"`,
+                    notificationText,
                     proposalId,
-                    { voterAddress: walletAddress.substring(0, 8) + '...' }
+                    { voterAddress: walletAddress?.substring(0, 8) }
                 );
             }
         } catch (coinError) {
