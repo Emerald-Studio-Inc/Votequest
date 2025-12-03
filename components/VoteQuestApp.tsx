@@ -228,8 +228,11 @@ const VoteQuestApp = () => {
     }, []);
 
     const loadUserProfile = async (authId: string) => {
+        console.log('[AUTH] Loading user profile for authId:', authId);
         try {
             const profile = await getUserProfile(authId);
+            console.log('[AUTH] Profile loaded:', profile);
+
             if (profile) {
                 const nextLevelXP = profile.level * 1000;
                 setUserData({
@@ -246,9 +249,13 @@ const VoteQuestApp = () => {
                     votedProposals: [],
                     coins: profile.coins
                 });
+                console.log('[AUTH] User data set successfully. userId:', profile.id);
+            } else {
+                console.warn('[AUTH] No profile found for authId:', authId);
+                console.warn('[AUTH] User might not have a profile in the database yet');
             }
         } catch (error) {
-            console.error('Error loading user profile:', error);
+            console.error('[AUTH] Error loading user profile:', error);
         }
     };
 
