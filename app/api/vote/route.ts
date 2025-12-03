@@ -68,7 +68,8 @@ export async function POST(request: Request) {
 
         // CONVERT BLOCKCHAIN IDs TO DATABASE UUIDs
         // If proposalId is a number (blockchain ID), look up the database UUID
-        const isBlockchainProposalId = !proposalId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        const isBlockchainProposalId = !proposalId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        const isUuidOptionId = optionId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
         if (isBlockchainProposalId) {
             const blockchainId = parseInt(proposalId);
@@ -113,6 +114,41 @@ export async function POST(request: Request) {
             optionId = dbOption.id;
 
             console.log(`[API] ✅ Converted blockchain IDs - Proposal: ${blockchainId} -> ${proposalId}, Option: ${optionIndex} -> ${optionId}`);
+        } else if (!isUuidOptionId) {
+            // ProposalId is UUID but optionId is a number - need to look up the option
+            console.log(`[API] ProposalId is UUID, converting option number ${optionId}...`);
+
+            const { data: dbProposal, error } = await supabaseAdmin
+                .from('proposals')
+                .select('id, proposal_options(id, title, option_number)')
+                .eq('id', proposalId)
+                .single();
+
+            if (error || !dbProposal) {
+                console.error('[API] Proposal lookup failed:', { proposalId, error });
+                return NextResponse.json({
+                    error: 'Proposal not found in database'
+                }, { status: 404 });
+            }
+
+            const optionIndex = parseInt(optionId);
+            const dbOption = (dbProposal.proposal_options as any[]).find(
+                (opt: any) => opt.option_number === optionIndex
+            );
+
+            if (!dbOption) {
+                console.error(`[API] Option ${optionIndex} not found.`);
+                return NextResponse.json({
+                    error: 'Option not found',
+                    hint: `Option number ${optionIndex} not found for this proposal`
+                }, { status: 404 });
+            }
+
+            optionId = dbOption.id;
+            console.log(`[API] ✅ Converted option number ${optionIndex} -> ${optionId}`);
+        } else {
+            // Both are UUIDs - use them directly
+            console.log('[API] Both proposalId and optionId are UUIDs - using directly');
         }
 
         // SECURITY CHECK: Verify CAPTCHA (MANDATORY)
