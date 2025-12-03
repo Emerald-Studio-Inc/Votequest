@@ -33,6 +33,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
     }, [isOpen]);
 
     const generateShareLink = async () => {
+        // Validate userId before making API call
+        if (!userId || userId === '') {
+            alert('You must be logged in to share proposals');
+            return;
+        }
+
         setLoading(true);
         try {
             const response = await fetch('/api/share/generate', {
@@ -125,8 +131,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
                                 key={tab.value}
                                 onClick={() => setActiveTab(tab.value)}
                                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-fast ${activeTab === tab.value
-                                        ? 'bg-white/10 text-white'
-                                        : 'text-mono-60 hover:text-white hover:bg-white/5'
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-mono-60 hover:text-white hover:bg-white/5'
                                     }`}
                             >
                                 <tab.icon className="w-4 h-4" strokeWidth={2} />
