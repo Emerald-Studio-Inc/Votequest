@@ -104,7 +104,7 @@ const VoteQuestApp = () => {
 
     // Listen for auth changes
     useEffect(() => {
-        const { data: authListener } = onAuthStateChange(async (user) => {
+        const authListener = onAuthStateChange(async (user) => {
             setAuthUser(user);
             if (user) {
                 await loadUserProfile(user.id);
