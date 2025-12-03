@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutGrid, List, BarChart2, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { getCurrentUser, onAuthStateChange, getUserProfile } from '@/lib/supabase-auth';
 import type { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase';
 import {
     getUserByWallet,
@@ -73,12 +74,63 @@ const VoteQuestApp = () => {
     const [animations, setAnimations] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string>('');
+    const [authUser, setAuthUser] = useState<any>(null);
+    const [authLoading, setAuthLoading] = useState(true);
 
     // Blockchain removed - using database only
     const address = null;
     const isConnected = false;
 
     useAutoReload();
+
+    // Check auth on mount
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const user = await getCurrentUser();
+                setAuthUser(user);
+                if (user) {
+                    await loadUserProfile(user.id);
+                    setCurrentScreen('dashboard');
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+            } finally {
+                setAuthLoading(false);
+            }
+        };
+        checkAuth();
+    }, []);
+
+    // Listen for auth changes
+    useEffect(() => {
+        const { data: authListener } = onAuthStateChange(async (user) => {
+            setAuthUser(user);
+            if (user) {
+                await loadUserProfile(user.id);
+                setCurrentScreen('dashboard');
+            } else {
+                setCurrentScreen('login');
+                setUserData({
+                    address: null,
+                    userId: null,
+                    level: 1,
+                    xp: 0,
+                    nextLevelXP: 100,
+                    streak: 0,
+                    votingPower: 100,
+                    votesCount: 0,
+                    globalRank: 0,
+                    achievements: [],
+                    votedProposals: [],
+                    coins: 0
+                });
+            }
+        });
+        return () => {
+            authListener.then(({ data: { subscription } }) => subscription.unsubscribe());
+        };
+    }, []);
 
     // Load data on mount
     useEffect(() => {
@@ -152,6 +204,31 @@ const VoteQuestApp = () => {
             supabase.removeChannel(channel);
         };
     }, []);
+
+    const loadUserProfile = async (authId: string) => {
+        try {
+            const profile = await getUserProfile(authId);
+            if (profile) {
+                const nextLevelXP = profile.level * 1000;
+                setUserData({
+                    address: profile.email,
+                    userId: profile.id,
+                    level: profile.level,
+                    xp: profile.xp,
+                    nextLevelXP: nextLevelXP,
+                    streak: profile.streak,
+                    votingPower: profile.voting_power,
+                    votesCount: profile.votes_count,
+                    globalRank: profile.global_rank,
+                    achievements: [],
+                    votedProposals: [],
+                    coins: profile.coins
+                });
+            }
+        } catch (error) {
+            console.error('Error loading user profile:', error);
+        }
+    };
 
     const loadAchievements = async () => {
         const data = await getAchievements();
