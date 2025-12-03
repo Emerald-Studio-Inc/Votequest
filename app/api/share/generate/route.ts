@@ -58,14 +58,38 @@ export async function POST(request: Request) {
         }
 
         // Verify proposal exists in database
-        // IMPORTANT: proposalId from frontend is the blockchain ID (as a string like "1", "2")
+        // Handle both UUID (database id) and blockchain_id (number)
         console.log('[DEBUG] Received proposalId:', proposalId, 'Type:', typeof proposalId);
 
-        const { data: proposalData, error: proposalError } = await supabaseAdmin
-            .from('proposals')
-            .select('id, blockchain_id')
-            .eq('blockchain_id', parseInt(proposalId))
-            .single();
+        let proposalData;
+        let proposalError;
+
+        // Check if proposalId looks like a UUID (contains hyphens)
+        const isUUID = proposalId.includes('-');
+
+        if (isUUID) {
+            // Query by database UUID
+            console.log('[DEBUG] Querying by UUID:', proposalId);
+            const result = await supabaseAdmin
+                .from('proposals')
+                .select('id, blockchain_id')
+                .eq('id', proposalId)
+                .single();
+
+            proposalData = result.data;
+            proposalError = result.error;
+        } else {
+            // Query by blockchain_id (number)
+            console.log('[DEBUG] Querying by blockchain_id:', proposalId);
+            const result = await supabaseAdmin
+                .from('proposals')
+                .select('id, blockchain_id')
+                .eq('blockchain_id', parseInt(proposalId))
+                .single();
+
+            proposalData = result.data;
+            proposalError = result.error;
+        }
 
         console.log('[DEBUG] Proposal query result:', { proposalData, proposalError });
 
@@ -73,10 +97,10 @@ export async function POST(request: Request) {
             console.error('[DEBUG] Proposal not found. Error:', proposalError);
             return NextResponse.json({
                 error: 'Proposal not found in database',
-                hint: 'This proposal may not be synced to the database yet. Only proposals created through the app can be shared.',
+                hint: 'This proposal may not exist or has been deleted.',
                 debug: {
                     receivedId: proposalId,
-                    parsedId: parseInt(proposalId),
+                    isUUID: isUUID,
                     errorDetails: proposalError?.message
                 }
             }, { status: 404 });
@@ -109,13 +133,15 @@ export async function POST(request: Request) {
 
         // Auto-detect base URL from request
         const baseUrl = getBaseUrl(request);
-        const shareUrl = `${baseUrl}/proposal/${proposalId}?ref=${referralCode}`;
+        // Use blockchain_id for URL if available, otherwise use database id
+        const urlId = proposalData.blockchain_id ?? proposalData.id;
+        const shareUrl = `${baseUrl}/proposal/${urlId}?ref=${referralCode}`;
 
         return NextResponse.json({
             success: true,
             shareUrl,
             referralCode,
-            qrCodeUrl: `/api/share/qr?code=${referralCode}&proposalId=${proposalId}`
+            qrCodeUrl: `/api/share/qr?code=${referralCode}&proposalId=${urlId}`
         });
 
     } catch (error: any) {
