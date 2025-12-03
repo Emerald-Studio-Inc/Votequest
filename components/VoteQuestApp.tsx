@@ -156,7 +156,7 @@ const VoteQuestApp = () => {
                 console.log('[SHARE LINK] Auto-opening proposal:', targetProposalId);
 
                 // Find proposal by blockchain_id
-                const proposal = proposals.find(p => p.blockchain_id.toString() === targetProposalId);
+                const proposal = proposals.find(p => p.blockchain_id?.toString() === targetProposalId);
 
                 if (proposal) {
                     setSelectedProposal(proposal);
