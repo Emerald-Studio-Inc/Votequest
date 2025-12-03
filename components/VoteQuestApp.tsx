@@ -15,7 +15,8 @@ import {
     getUserAchievements,
     checkAndAwardAchievements
 } from '@/lib/database';
-import { useAutoReload } from '@/hooks/useAutoReload';
+// Auto-reload disabled - was causing annoying mid-task refreshes
+// import { useAutoReload } from '@/hooks/useAutoReload';
 
 // Screen Components
 import SplashScreen from './SplashScreen';
@@ -81,7 +82,8 @@ const VoteQuestApp = () => {
     const address = null;
     const isConnected = false;
 
-    useAutoReload();
+    // Auto-reload disabled - users can manually refresh if needed
+    // useAutoReload();
 
     // Check auth on mount
     useEffect(() => {
