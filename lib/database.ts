@@ -81,6 +81,7 @@ export async function getActiveProposals() {
       )
     `)
     .eq('status', 'active')
+    .gt('end_date', new Date().toISOString())  // Only proposals that haven't ended
     .order('created_at', { ascending: false })
 
   if (error) {
