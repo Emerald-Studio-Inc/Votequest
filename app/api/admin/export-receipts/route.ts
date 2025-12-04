@@ -31,7 +31,7 @@ export async function GET() {
         return NextResponse.json({
             count: receipts.length,
             receipts,
-            totalValue: receipts.reduce((sum, r) => sum + r.amount, 0)
+            totalValue: receipts.reduce((sum: number, r: any) => sum + r.amount, 0)
         });
 
     } catch (error: any) {
