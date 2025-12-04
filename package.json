@@ -26,7 +26,6 @@
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    
     "viem": "^2.41.2",
     "zod": "^4.1.13",
     "zustand": "^4.5.5"
@@ -45,7 +44,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
-    "eslint": "^8.50.0",
+    "eslint": "^9.0.0",
     "eslint-config-next": "16.0.3",
     "hardhat": "^2.19.0",
     "jest": "^30.2.0",
