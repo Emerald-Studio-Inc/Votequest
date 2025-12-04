@@ -200,6 +200,8 @@ const VoteQuestApp = () => {
 
     // Konami code for admin (gated behind env flag for safety)
     const [showAdminModal, setShowAdminModal] = useState(false);
+    const [adminSessionStart, setAdminSessionStart] = useState<number | null>(null);
+    const ADMIN_SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
     useEffect(() => {
         const enabled = typeof process !== 'undefined' && (process.env.NEXT_PUBLIC_ENABLE_ADMIN_BACKDOOR === 'true');
@@ -227,6 +229,78 @@ const VoteQuestApp = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
+
+    // Admin session timeout - auto-logout after 5 minutes
+    useEffect(() => {
+        if (currentScreen === 'admin' && adminSessionStart) {
+            const checkTimeout = setInterval(() => {
+                const elapsed = Date.now() - adminSessionStart;
+                if (elapsed >= ADMIN_SESSION_TIMEOUT) {
+                    console.log('[ADMIN] Session timeout - logging out');
+                    setCurrentScreen('dashboard');
+                    setAdminSessionStart(null);
+                    alert('Admin session expired after 5 minutes. Please re-authenticate.');
+                }
+            }, 30000); // Check every 30 seconds
+
+            return () => clearInterval(checkTimeout);
+        }
+    }, [currentScreen, adminSessionStart]);
+
+    // Admin access handler with security checks
+    const handleAdminAccess = async (passphrase: string) => {
+        let passphraseAttempts = 1;
+
+        try {
+            // 1. Verify passphrase
+            const correctPassphrase = process.env.NEXT_PUBLIC_ADMIN_PASSPHRASE;
+            if (!correctPassphrase || passphrase !== correctPassphrase) {
+                // Log failed attempt
+                await fetch('/api/admin/log-access', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ granted: false, passphrase_attempts: passphraseAttempts })
+                });
+                alert('Invalid passphrase. Access denied.');
+                setShowAdminModal(false);
+                return;
+            }
+
+            // 2. Verify IP whitelist
+            const ipCheck = await fetch('/api/admin/verify-ip');
+            const ipData = await ipCheck.json();
+
+            if (!ipData.allowed) {
+                // Log rejected IP
+                await fetch('/api/admin/log-access', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ granted: false, passphrase_attempts: 1 })
+                });
+                alert(`Access denied. Your IP (${ipData.clientIp}) is not whitelisted.`);
+                setShowAdminModal(false);
+                return;
+            }
+
+            // 3. Log successful access
+            await fetch('/api/admin/log-access', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ granted: true, passphrase_attempts: 1 })
+            });
+
+            // 4. Grant access and start session timer
+            setAdminSessionStart(Date.now());
+            setCurrentScreen('admin');
+            setShowAdminModal(false);
+
+            console.log('[ADMIN] Access granted. Session will expire in 5 minutes.');
+        } catch (error) {
+            console.error('[ADMIN] Error during access check:', error);
+            alert('Error verifying admin access. Please try again.');
+            setShowAdminModal(false);
+        }
+    };
 
     // Realtime subscription
     useEffect(() => {
@@ -488,10 +562,7 @@ const VoteQuestApp = () => {
                 <AdminPassphraseModal
                     open={showAdminModal}
                     onClose={() => setShowAdminModal(false)}
-                    onSuccess={() => {
-                        setShowAdminModal(false);
-                        setCurrentScreen('admin');
-                    }}
+                    onSubmit={handleAdminAccess}
                 />
             </>
         );

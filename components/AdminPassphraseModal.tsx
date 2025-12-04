@@ -5,38 +5,18 @@ import React, { useState } from 'react';
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSubmit: (passphrase: string) => void;
 }
 
-export default function AdminPassphraseModal({ open, onClose, onSuccess }: Props) {
+export default function AdminPassphraseModal({ open, onClose, onSubmit }: Props) {
   const [passphrase, setPassphrase] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   if (!open) return null;
 
   const submit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/admin/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ passphrase }),
-      });
-      const json = await res.json();
-      if (res.ok && json?.ok) {
-        onSuccess();
-      } else {
-        setError(json?.error || 'Invalid passphrase');
-      }
-    } catch (err) {
-      setError('Network error');
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(passphrase);
+    setPassphrase(''); // Clear for next time
   };
 
   return (
@@ -54,12 +34,10 @@ export default function AdminPassphraseModal({ open, onClose, onSuccess }: Props
           autoFocus
         />
 
-        {error && <p className="text-sm text-red-400 mb-2">{error}</p>}
-
         <div className="flex gap-3 justify-end">
           <button type="button" onClick={onClose} className="px-3 py-2 rounded-xl text-mono-60 hover:text-white">Cancel</button>
-          <button type="submit" disabled={loading || !passphrase} className="btn btn-primary px-4 py-2 disabled:opacity-60">
-            {loading ? 'Checking...' : 'Unlock'}
+          <button type="submit" disabled={!passphrase} className="btn btn-primary px-4 py-2 disabled:opacity-60">
+            Unlock
           </button>
         </div>
       </form>
