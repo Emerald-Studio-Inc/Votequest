@@ -35,7 +35,7 @@ export const useToastStore = create<ToastStore>((set) => ({
         set((state) => ({ toasts: [...state.toasts, newToast] }));
 
         // Auto-dismiss
-        if (newToast.duration > 0) {
+        if (newToast.duration && newToast.duration > 0) {
             setTimeout(() => {
                 set((state) => ({
                     toasts: state.toasts.filter((t) => t.id !== id),
