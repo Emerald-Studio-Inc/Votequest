@@ -59,8 +59,6 @@ export async function POST(request: Request) {
 
         // Verify proposal exists in database
         // Handle both UUID (database id) and blockchain_id (number)
-        console.log('[DEBUG] Received proposalId:', proposalId, 'Type:', typeof proposalId);
-
         let proposalData;
         let proposalError;
 
@@ -69,7 +67,6 @@ export async function POST(request: Request) {
 
         if (isUUID) {
             // Query by database UUID
-            console.log('[DEBUG] Querying by UUID:', proposalId);
             const result = await supabaseAdmin
                 .from('proposals')
                 .select('id, blockchain_id')
@@ -80,7 +77,6 @@ export async function POST(request: Request) {
             proposalError = result.error;
         } else {
             // Query by blockchain_id (number)
-            console.log('[DEBUG] Querying by blockchain_id:', proposalId);
             const result = await supabaseAdmin
                 .from('proposals')
                 .select('id, blockchain_id')
@@ -91,10 +87,8 @@ export async function POST(request: Request) {
             proposalError = result.error;
         }
 
-        console.log('[DEBUG] Proposal query result:', { proposalData, proposalError });
-
         if (proposalError || !proposalData) {
-            console.error('[DEBUG] Proposal not found. Error:', proposalError);
+            console.error('[SHARE] Proposal not found:', proposalError?.message);
             return NextResponse.json({
                 error: 'Proposal not found in database',
                 hint: 'This proposal may not exist or has been deleted.',

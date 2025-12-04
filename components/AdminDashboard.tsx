@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Download, Users, Coins, FileText, TrendingUp, Calendar } from 'lucide-react';
+import { Download, Users, Coins, FileText, TrendingUp, Calendar, Upload } from 'lucide-react';
 
 interface AdminDashboardProps {
     onBack: () => void;
@@ -17,9 +17,12 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
     const [receipts, setReceipts] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [exportLoading, setExportLoading] = useState(false);
+    const [exportStats, setExportStats] = useState({ count: 0, totalValue: 0 });
 
     useEffect(() => {
         loadAdminData();
+        loadExportStats();
     }, []);
 
     const loadAdminData = async () => {
@@ -114,6 +117,68 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
         a.click();
     };
 
+    // Load blockchain export statistics
+    const loadExportStats = async () => {
+        try {
+            const response = await fetch('/api/admin/export-receipts');
+            const data = await response.json();
+            setExportStats({ count: data.count, totalValue: data.totalValue });
+        } catch (error) {
+            console.error('Error loading export stats:', error);
+        }
+    };
+
+    // Export receipts to blockchain (manual download for now)
+    const exportToBlockchain = async () => {
+        setExportLoading(true);
+        try {
+            // 1. Get unexported receipts
+            const response = await fetch('/api/admin/export-receipts');
+            const data = await response.json();
+
+            if (data.count === 0) {
+                alert('No receipts to export. All receipts have been exported!');
+                setExportLoading(false);
+                return;
+            }
+
+            // 2. Download receipts as JSON for manual blockchain submission
+            const exportData = {
+                exported_at: new Date().toISOString(),
+                batch_size: data.count,
+                total_value: data.totalValue,
+                receipts: data.receipts
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                type: 'application/json'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `blockchain-receipts-${Date.now()}.json`;
+            a.click();
+
+            alert(
+                `✅ Downloaded ${data.count} receipts for blockchain export!\n\n` +
+                `Total Value: ${data.totalValue} VQC\n\n` +
+                `Next Steps:\n` +
+                `1. Review the JSON file\n` +
+                `2. Submit to blockchain contract\n` +
+                `3. Mark as exported with transaction hash`
+            );
+
+            // Optional: Refresh stats after download
+            setTimeout(loadExportStats, 1000);
+
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Export failed: ' + error);
+        } finally {
+            setExportLoading(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
@@ -198,6 +263,49 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
                         </div>
                         <p className="text-3xl font-bold text-white">{stats.totalVotes}</p>
                     </div>
+                </div>
+
+                {/* Blockchain Export Section */}
+                <div className="card p-6 mb-8">
+                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <Upload className="w-5 h-5" />
+                        Blockchain Export
+                    </h2>
+
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div className="p-4 bg-white/5 rounded-lg">
+                            <p className="text-sm text-mono-60 mb-1">Unexported Receipts</p>
+                            <p className="text-3xl font-bold text-white">{exportStats.count}</p>
+                            <p className="text-xs text-mono-50 mt-1">Ready for blockchain</p>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-lg">
+                            <p className="text-sm text-mono-60 mb-1">Total Value</p>
+                            <p className="text-3xl font-bold text-yellow-400">{exportStats.totalValue.toLocaleString()} VQC</p>
+                            <p className="text-xs text-mono-50 mt-1">Combined coin value</p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={exportToBlockchain}
+                        disabled={exportLoading || exportStats.count === 0}
+                        className="btn btn-primary w-full flex items-center justify-center gap-2"
+                    >
+                        {exportLoading ? (
+                            <>
+                                <div className="loading-spinner w-4 h-4" />
+                                Downloading...
+                            </>
+                        ) : (
+                            <>
+                                <Download className="w-4 h-4" />
+                                Export {exportStats.count} Receipts to Blockchain
+                            </>
+                        )}
+                    </button>
+
+                    <p className="text-xs text-mono-60 mt-3 text-center">
+                        Downloads receipts as JSON. Submit to blockchain contract manually, then mark as exported.
+                    </p>
                 </div>
 
                 {/* Top Users */}

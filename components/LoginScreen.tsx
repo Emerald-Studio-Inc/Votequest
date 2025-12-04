@@ -11,6 +11,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
     const [error, setError] = useState('');
+    const [lastSentAt, setLastSentAt] = useState<number | null>(null);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,6 +27,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
             setLoading(false);
         } else {
             setSent(true);
+            setLastSentAt(Date.now());
             setLoading(false);
         }
     };
@@ -33,7 +35,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
     if (sent) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-black px-4">
-                <div className="max-w-md w-full space-y-8 text-center animate-fade-in">
+                <div className="max-w-md w-full space-y-8 text-center animate-fade-in" role="status" aria-live="polite">
                     <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto">
                         <Mail className="w-10 h-10 text-white" />
                     </div>
@@ -49,12 +51,31 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                         </p>
                     </div>
 
-                    <button
-                        onClick={() => { setSent(false); setEmail(''); }}
-                        className="text-mono-60 hover:text-white text-sm transition-colors"
-                    >
-                        Use a different email
-                    </button>
+                    <div className="flex items-center justify-center gap-4">
+                        <button
+                            onClick={() => { setSent(false); setEmail(''); }}
+                            className="text-mono-60 hover:text-white text-sm transition-colors"
+                            aria-label="Use a different email"
+                        >
+                            Use a different email
+                        </button>
+
+                        <a href={`mailto:${email}`} className="text-sm text-mono-60 hover:text-white underline">Open email app</a>
+
+                        {/* Resend cooldown */}
+                        <div>
+                            {lastSentAt && Date.now() - lastSentAt < 30000 ? (
+                                <button disabled className="text-sm text-mono-50">Resend ({Math.ceil((30000 - (Date.now() - lastSentAt))/1000)}s)</button>
+                            ) : (
+                                <button
+                                    onClick={handleLogin}
+                                    className="text-sm text-white underline"
+                                >
+                                    Resend link
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         );

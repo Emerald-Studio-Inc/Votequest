@@ -26,14 +26,22 @@ import DashboardScreen from './DashboardScreen';
 import ProposalDetailScreen from './ProposalDetailScreen';
 import CreateProposalScreen from './CreateProposalScreen';
 import ProposalsListScreen from './ProposalsListScreen';
-import AnalyticsScreen from './AnalyticsScreen';
 import SettingsScreen from './SettingsScreen';
 import ReceiptsScreen from './ReceiptsScreen';
 import AchievementsScreen from './AchievementsScreen';
 import ProfileEditScreen from './ProfileEditScreen';
 import LeaderboardScreen from './LeaderboardScreen';
-import AdminDashboard from './AdminDashboard';
+import dynamic from 'next/dynamic';
+
+const AnalyticsScreen = dynamic(() => import('./AnalyticsScreen'), {
+    ssr: false,
+});
+
+const AdminDashboard = dynamic(() => import('./AdminDashboard'), {
+    ssr: false,
+});
 import Tooltip from './Tooltip';
+import AdminPassphraseModal from './AdminPassphraseModal';
 
 interface UserData {
     address: string | null;
@@ -190,8 +198,16 @@ const VoteQuestApp = () => {
         }
     }, [currentScreen]);
 
-    // Konami code for admin
+    // Konami code for admin (gated behind env flag for safety)
+    const [showAdminModal, setShowAdminModal] = useState(false);
+
     useEffect(() => {
+        const enabled = typeof process !== 'undefined' && (process.env.NEXT_PUBLIC_ENABLE_ADMIN_BACKDOOR === 'true');
+        if (!enabled) {
+            // Backdoor disabled in this environment — do nothing
+            return;
+        }
+
         const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'a'];
         let konamiIndex = 0;
 
@@ -199,7 +215,8 @@ const VoteQuestApp = () => {
             if (e.key === konamiCode[konamiIndex]) {
                 konamiIndex++;
                 if (konamiIndex === konamiCode.length) {
-                    setCurrentScreen('admin');
+                    // Instead of immediately opening admin, show passphrase modal
+                    setShowAdminModal(true);
                     konamiIndex = 0;
                 }
             } else {
@@ -468,6 +485,14 @@ const VoteQuestApp = () => {
                     <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                 )}
                 <BottomNavigation />
+                <AdminPassphraseModal
+                    open={showAdminModal}
+                    onClose={() => setShowAdminModal(false)}
+                    onSuccess={() => {
+                        setShowAdminModal(false);
+                        setCurrentScreen('admin');
+                    }}
+                />
             </>
         );
     }
