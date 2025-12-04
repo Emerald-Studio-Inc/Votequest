@@ -435,6 +435,7 @@ const VoteQuestApp = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Vote failed');
 
+            // Update user data
             setUserData(prev => ({
                 ...prev,
                 votesCount: prev.votesCount + 1,
@@ -442,9 +443,30 @@ const VoteQuestApp = () => {
                 votedProposals: [...prev.votedProposals, proposalId]
             }));
 
+            // Import toast dynamically
+            const { toast } = await import('@/lib/toast');
+
+            // Show success toast
+            toast.success(
+                'Vote cast successfully!',
+                `+${data.coinsEarned || 10} VQC earned`,
+                {
+                    label: 'View Receipt',
+                    onClick: () => setCurrentScreen('receipts')
+                }
+            );
+
             return data;
         } catch (error) {
             console.error('Error voting:', error);
+
+            // Show error toast
+            const { toast } = await import('@/lib/toast');
+            toast.error(
+                'Vote failed',
+                error instanceof Error ? error.message : 'Please try again'
+            );
+
             throw error;
         }
     };
@@ -463,162 +485,185 @@ const VoteQuestApp = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Failed to create proposal');
 
-            setUserData(prev => ({
+            // Update coins            setUserData(prev => ({
                 ...prev,
-                coins: prev.coins + (data.coinsEarned || 50)
+    coins: prev.coins + (data.coinsEarned || 50)
             }));
 
-            setCurrentScreen('dashboard');
-            return data;
-        } catch (error) {
-            console.error('Error creating proposal:', error);
-            throw error;
+// Import toast dynamically
+const { toast } = await import('@/lib/toast');
+
+// Show success toast
+toast.success(
+    'Proposal created!',
+    `+${data.coinsEarned || 50} VQC earned`,
+    {
+        label: 'Share Proposal',
+        onClick: () => {
+            // TODO: Open share modal
         }
+    }
+);
+
+setCurrentScreen('dashboard');
+return data;
+        } catch (error) {
+    console.error('Error creating proposal:', error);
+
+    // Show error toast
+    const { toast } = await import('@/lib/toast');
+    toast.error(
+        'Failed to create proposal',
+        error instanceof Error ? error.message : 'Please try again'
+    );
+
+    throw error;
+}
     };
 
-    // Navigation Component
-    const BottomNavigation = () => (
-        <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-            <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
-                {[
-                    { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
-                    { label: 'Proposals', value: 'proposals' as const, icon: List },
-                    { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
-                    { label: 'Settings', value: 'settings' as const, icon: Settings }
-                ].map((item) => {
-                    const isActive = activeDashboardTab === item.value;
-                    const Icon = item.icon;
-                    return (
-                        <Tooltip key={item.value} content={item.label} position="top">
-                            <button
-                                onClick={() => setActiveDashboardTab(item.value)}
-                                className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
-                                    }`}
-                            >
-                                <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
-                                {isActive && (
-                                    <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
-                                )}
-                            </button>
-                        </Tooltip>
-                    );
-                })}
+// Navigation Component
+const BottomNavigation = () => (
+    <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
+        <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
+            {[
+                { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
+                { label: 'Proposals', value: 'proposals' as const, icon: List },
+                { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
+                { label: 'Settings', value: 'settings' as const, icon: Settings }
+            ].map((item) => {
+                const isActive = activeDashboardTab === item.value;
+                const Icon = item.icon;
+                return (
+                    <Tooltip key={item.value} content={item.label} position="top">
+                        <button
+                            onClick={() => setActiveDashboardTab(item.value)}
+                            className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                                }`}
+                        >
+                            <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
+                            {isActive && (
+                                <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
+                            )}
+                        </button>
+                    </Tooltip>
+                );
+            })}
+        </div>
+    </div>
+);
+
+// Render screens
+if (currentScreen === 'checking') {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-black">
+            <div className="text-center">
+                <div className="loading-spinner w-12 h-12 mx-auto mb-4"></div>
+                <p className="text-mono-60 text-sm">Connecting...</p>
             </div>
         </div>
     );
+}
 
-    // Render screens
-    if (currentScreen === 'checking') {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-black">
-                <div className="text-center">
-                    <div className="loading-spinner w-12 h-12 mx-auto mb-4"></div>
-                    <p className="text-mono-60 text-sm">Connecting...</p>
-                </div>
-            </div>
-        );
-    }
+if (currentScreen === 'splash') return <SplashScreen />;
+if (currentScreen.startsWith('onboarding')) return <OnboardingScreen currentScreen={currentScreen} onNext={setCurrentScreen} />;
+if (currentScreen === 'login') return <LoginScreen loading={loading} />;
 
-    if (currentScreen === 'splash') return <SplashScreen />;
-    if (currentScreen.startsWith('onboarding')) return <OnboardingScreen currentScreen={currentScreen} onNext={setCurrentScreen} />;
-    if (currentScreen === 'login') return <LoginScreen loading={loading} />;
-
-    if (currentScreen === 'dashboard') {
-        return (
-            <>
-                {activeDashboardTab === 'overview' && (
-                    <DashboardScreen
-                        userData={userData}
-                        proposals={proposals}
-                        achievements={achievements}
-                        userAchievements={userAchievements}
-                        onSelectProposal={(proposal) => {
-                            setSelectedProposal(proposal);
-                            setCurrentScreen('proposal');
-                        }}
-                        onNavigate={setCurrentScreen}
-                        activeTab={activeDashboardTab}
-                        onTabChange={setActiveDashboardTab}
-                        animations={animations}
-                    />
-                )}
-                {activeDashboardTab === 'proposals' && (
-                    <ProposalsListScreen
-                        proposals={proposals}
-                        onSelectProposal={(proposal) => {
-                            setSelectedProposal(proposal);
-                            setCurrentScreen('proposal');
-                        }}
-                        hasVoted={hasVoted}
-                    />
-                )}
-                {activeDashboardTab === 'analytics' && (
-                    <AnalyticsScreen userData={userData} proposals={proposals} />
-                )}
-                {activeDashboardTab === 'settings' && (
-                    <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
-                )}
-                <BottomNavigation />
-                <AdminPassphraseModal
-                    open={showAdminModal}
-                    onClose={() => setShowAdminModal(false)}
-                    onSubmit={handleAdminAccess}
+if (currentScreen === 'dashboard') {
+    return (
+        <>
+            {activeDashboardTab === 'overview' && (
+                <DashboardScreen
+                    userData={userData}
+                    proposals={proposals}
+                    achievements={achievements}
+                    userAchievements={userAchievements}
+                    onSelectProposal={(proposal) => {
+                        setSelectedProposal(proposal);
+                        setCurrentScreen('proposal');
+                    }}
+                    onNavigate={setCurrentScreen}
+                    activeTab={activeDashboardTab}
+                    onTabChange={setActiveDashboardTab}
+                    animations={animations}
                 />
-            </>
-        );
-    }
-
-    if (currentScreen === 'create-proposal') {
-        return <CreateProposalScreen onBack={() => setCurrentScreen('dashboard')} onSubmit={handleCreateProposal} loading={loading} />;
-    }
-
-    if (currentScreen === 'receipts') {
-        return <ReceiptsScreen userId={userData.userId || ''} onBack={() => setCurrentScreen('dashboard')} />;
-    }
-
-    if (currentScreen === 'achievements') {
-        return <AchievementsScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
-    }
-
-    if (currentScreen === 'profile-edit') {
-        return (
-            <ProfileEditScreen
-                userData={userData}
-                onBack={() => setCurrentScreen('dashboard')}
-                onSave={(updated) => setUserData(prev => ({ ...prev, ...updated }))}
+            )}
+            {activeDashboardTab === 'proposals' && (
+                <ProposalsListScreen
+                    proposals={proposals}
+                    onSelectProposal={(proposal) => {
+                        setSelectedProposal(proposal);
+                        setCurrentScreen('proposal');
+                    }}
+                    hasVoted={hasVoted}
+                />
+            )}
+            {activeDashboardTab === 'analytics' && (
+                <AnalyticsScreen userData={userData} proposals={proposals} />
+            )}
+            {activeDashboardTab === 'settings' && (
+                <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
+            )}
+            <BottomNavigation />
+            <AdminPassphraseModal
+                open={showAdminModal}
+                onClose={() => setShowAdminModal(false)}
+                onSubmit={handleAdminAccess}
             />
-        );
-    }
+        </>
+    );
+}
 
-    if (currentScreen === 'leaderboard') {
-        return <LeaderboardScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
-    }
+if (currentScreen === 'create-proposal') {
+    return <CreateProposalScreen onBack={() => setCurrentScreen('dashboard')} onSubmit={handleCreateProposal} loading={loading} />;
+}
 
-    if (currentScreen === 'admin') {
-        return <AdminDashboard onBack={() => setCurrentScreen('dashboard')} />;
-    }
+if (currentScreen === 'receipts') {
+    return <ReceiptsScreen userId={userData.userId || ''} onBack={() => setCurrentScreen('dashboard')} />;
+}
 
-    if (currentScreen === 'proposal' && selectedProposal) {
-        return (
-            <ProposalDetailScreen
-                proposal={selectedProposal}
-                onBack={() => {
-                    setCurrentScreen('dashboard');
-                    setSelectedOption(null);
-                }}
-                onVote={castVote}
-                loading={loading}
-                hasVoted={hasVoted(selectedProposal.id)}
-                selectedOption={selectedOption}
-                setSelectedOption={setSelectedOption}
-                userId={userData.userId || ''}
-                captchaToken={captchaToken}
-                setCaptchaToken={setCaptchaToken}
-            />
-        );
-    }
+if (currentScreen === 'achievements') {
+    return <AchievementsScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
+}
 
-    return null;
+if (currentScreen === 'profile-edit') {
+    return (
+        <ProfileEditScreen
+            userData={userData}
+            onBack={() => setCurrentScreen('dashboard')}
+            onSave={(updated) => setUserData(prev => ({ ...prev, ...updated }))}
+        />
+    );
+}
+
+if (currentScreen === 'leaderboard') {
+    return <LeaderboardScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
+}
+
+if (currentScreen === 'admin') {
+    return <AdminDashboard onBack={() => setCurrentScreen('dashboard')} />;
+}
+
+if (currentScreen === 'proposal' && selectedProposal) {
+    return (
+        <ProposalDetailScreen
+            proposal={selectedProposal}
+            onBack={() => {
+                setCurrentScreen('dashboard');
+                setSelectedOption(null);
+            }}
+            onVote={castVote}
+            loading={loading}
+            hasVoted={hasVoted(selectedProposal.id)}
+            selectedOption={selectedOption}
+            setSelectedOption={setSelectedOption}
+            userId={userData.userId || ''}
+            captchaToken={captchaToken}
+            setCaptchaToken={setCaptchaToken}
+        />
+    );
+}
+
+return null;
 };
 
 export default VoteQuestApp;
