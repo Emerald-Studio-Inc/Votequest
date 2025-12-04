@@ -19,7 +19,7 @@ export async function GET() {
         if (error) throw error;
 
         // Format for blockchain
-        const receipts = transactions?.map(tx => ({
+        const receipts = transactions?.map((tx: any) => ({
             hash: tx.receipt_hash,
             userId: tx.user_id,
             amount: tx.amount,
