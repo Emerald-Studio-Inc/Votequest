@@ -328,6 +328,11 @@ const VoteQuestApp = () => {
 
             if (profile) {
                 const nextLevelXP = profile.level * 1000;
+
+                // Load user's voted proposals from database
+                const votedProposalIds = await getUserVotedProposals(profile.id);
+                console.log('[AUTH] Loaded voted proposals:', votedProposalIds.length);
+
                 setUserData({
                     address: profile.email,
                     userId: profile.id,
@@ -339,7 +344,7 @@ const VoteQuestApp = () => {
                     votesCount: profile.votes_count,
                     globalRank: profile.global_rank,
                     achievements: [],
-                    votedProposals: [],
+                    votedProposals: votedProposalIds, // Now loaded from database!
                     coins: profile.coins
                 });
                 console.log('[AUTH] User data set successfully. userId:', profile.id);
@@ -381,7 +386,7 @@ const VoteQuestApp = () => {
                             votesCount: newProfile.votes_count,
                             globalRank: newProfile.global_rank,
                             achievements: [],
-                            votedProposals: [],
+                            votedProposals: [], // New profile, no votes yet
                             coins: newProfile.coins
                         });
                         console.log('[AUTH] Profile created! userId:', newProfile.id);
@@ -393,6 +398,10 @@ const VoteQuestApp = () => {
                             const existingProfile = await getUserProfile(authId);
                             if (existingProfile) {
                                 const nextLevelXP = existingProfile.level * 1000;
+
+                                // Load voted proposals for existing profile
+                                const votedProposalIds = await getUserVotedProposals(existingProfile.id);
+
                                 setUserData({
                                     address: existingProfile.email,
                                     userId: existingProfile.id,
@@ -404,7 +413,7 @@ const VoteQuestApp = () => {
                                     votesCount: existingProfile.votes_count,
                                     globalRank: existingProfile.global_rank,
                                     achievements: [],
-                                    votedProposals: [],
+                                    votedProposals: votedProposalIds, // Load from database
                                     coins: existingProfile.coins
                                 });
                                 console.log('[AUTH] Using existing profile! userId:', existingProfile.id);
