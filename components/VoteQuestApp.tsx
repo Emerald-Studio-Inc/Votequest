@@ -386,7 +386,34 @@ const VoteQuestApp = () => {
                         });
                         console.log('[AUTH] Profile created! userId:', newProfile.id);
                     } else {
-                        console.error('[AUTH] Failed to create profile:', error);
+                        // Check if error is due to unique constraint violation (duplicate profile)
+                        if (error?.code === '23505') {
+                            console.log('[AUTH] Profile already exists (unique constraint), fetching existing profile...');
+                            // Try to fetch the existing profile by email or auth_id
+                            const existingProfile = await getUserProfile(authId);
+                            if (existingProfile) {
+                                const nextLevelXP = existingProfile.level * 1000;
+                                setUserData({
+                                    address: existingProfile.email,
+                                    userId: existingProfile.id,
+                                    level: existingProfile.level,
+                                    xp: existingProfile.xp,
+                                    nextLevelXP: nextLevelXP,
+                                    streak: existingProfile.streak,
+                                    votingPower: existingProfile.voting_power,
+                                    votesCount: existingProfile.votes_count,
+                                    globalRank: existingProfile.global_rank,
+                                    achievements: [],
+                                    votedProposals: [],
+                                    coins: existingProfile.coins
+                                });
+                                console.log('[AUTH] Using existing profile! userId:', existingProfile.id);
+                            } else {
+                                console.error('[AUTH] Unique constraint error but could not fetch existing profile');
+                            }
+                        } else {
+                            console.error('[AUTH] Failed to create profile:', error);
+                        }
                     }
                 }
             }

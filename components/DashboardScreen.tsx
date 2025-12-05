@@ -118,13 +118,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <CoinBadge coins={userData.coins || 0} size="md" />
                             <NotificationBell />
 
-                            <button
-                                onClick={() => onNavigate('create-proposal')}
-                                className="btn btn-primary btn-sm group"
-                            >
-                                <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={2.5} />
-                                <span className="hidden sm:inline">New Proposal</span>
-                            </button>
+                            <Tooltip content="Create New Proposal" position="bottom">
+                                <button
+                                    onClick={() => onNavigate('create-proposal')}
+                                    className="btn btn-primary btn-sm group flex items-center justify-center min-w-[44px]"
+                                    aria-label="Create new proposal"
+                                >
+                                    <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={2.5} />
+                                    <span className="hidden sm:inline ml-2">New Proposal</span>
+                                </button>
+                            </Tooltip>
                         </div>
                     </div>
                 </div>
