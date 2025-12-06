@@ -42,6 +42,7 @@ const AdminDashboard = dynamic(() => import('./AdminDashboard'), {
 });
 import Tooltip from './Tooltip';
 import AdminPassphraseModal from './AdminPassphraseModal';
+import AdminSetup2FA from './AdminSetup2FA';
 
 interface UserData {
     address: string | null;
@@ -200,6 +201,8 @@ const VoteQuestApp = () => {
 
     // Konami code for admin (gated behind env flag for safety)
     const [showAdminModal, setShowAdminModal] = useState(false);
+    const [showSetup2FA, setShowSetup2FA] = useState(false);
+    const [setup2FAPassphrase, setSetup2FAPassphrase] = useState('');
     const [adminSessionStart, setAdminSessionStart] = useState<number | null>(null);
     const ADMIN_SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -214,6 +217,18 @@ const VoteQuestApp = () => {
         let konamiIndex = 0;
 
         const handleKeyDown = (e: KeyboardEvent) => {
+            // Ctrl+Shift+A for 2FA setup
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                const passphrase = prompt('Enter admin passphrase to access 2FA setup:');
+                if (passphrase) {
+                    setSetup2FAPassphrase(passphrase);
+                    setShowSetup2FA(true);
+                }
+                return;
+            }
+
+            // Konami code for admin login
             if (e.key === konamiCode[konamiIndex]) {
                 konamiIndex++;
                 if (konamiIndex === konamiCode.length) {
@@ -247,8 +262,8 @@ const VoteQuestApp = () => {
         }
     }, [currentScreen, adminSessionStart]);
 
-    // Admin access handler with security checks
-    const handleAdminAccess = async (passphrase: string) => {
+    // Admin access handler with 2FA security
+    const handleAdminAccess = async (passphrase: string, code: string) => {
         let passphraseAttempts = 1;
 
         try {
@@ -266,18 +281,22 @@ const VoteQuestApp = () => {
                 return;
             }
 
-            // 2. Verify IP whitelist
-            const ipCheck = await fetch('/api/admin/verify-ip');
-            const ipData = await ipCheck.json();
+            // 2. Verify 2FA code
+            const tfaCheck = await fetch('/api/admin/verify-2fa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const tfaData = await tfaCheck.json();
 
-            if (!ipData.allowed) {
-                // Log rejected IP
+            if (!tfaData.valid) {
+                // Log rejected 2FA
                 await fetch('/api/admin/log-access', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ granted: false, passphrase_attempts: 1 })
                 });
-                alert(`Access denied. Your IP (${ipData.clientIp}) is not whitelisted.`);
+                alert('Invalid 2FA code. Access denied.');
                 setShowAdminModal(false);
                 return;
             }
@@ -294,7 +313,7 @@ const VoteQuestApp = () => {
             setCurrentScreen('admin');
             setShowAdminModal(false);
 
-            console.log('[ADMIN] Access granted. Session will expire in 5 minutes.');
+            console.log('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes.');
         } catch (error) {
             console.error('[ADMIN] Error during access check:', error);
             alert('Error verifying admin access. Please try again.');
@@ -646,6 +665,15 @@ const VoteQuestApp = () => {
                     onClose={() => setShowAdminModal(false)}
                     onSubmit={handleAdminAccess}
                 />
+                {showSetup2FA && (
+                    <AdminSetup2FA
+                        onClose={() => {
+                            setShowSetup2FA(false);
+                            setSetup2FAPassphrase('');
+                        }}
+                        passphrase={setup2FAPassphrase}
+                    />
+                )}
             </>
         );
     }
