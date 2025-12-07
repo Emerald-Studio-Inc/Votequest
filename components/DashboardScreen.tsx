@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Users, Clock, Plus, Activity, TrendingUp, Zap, Award, Flame, ChevronRight, BarChart3, Vote, ArrowUpRight, Check } from 'lucide-react';
+import { ArrowRight, Users, Clock, Plus, Activity, TrendingUp, Zap, Award, Flame, ChevronRight, BarChart3, Vote, ArrowUpRight, Check, Building2 } from 'lucide-react';
 import { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import CoinBadge from './CoinBadge';
@@ -126,6 +126,27 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 >
                                     <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={2.5} />
                                     <span className="hidden sm:inline ml-2">New Proposal</span>
+                                </button>
+                            </Tooltip>
+
+                            <Tooltip content="Institutional Voting" position="bottom">
+                                <button
+                                    onClick={() => onNavigate('organization')}
+                                    className="btn btn-secondary btn-sm group flex items-center justify-center min-w-[44px]"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #F4D58D 0%, #FFE999 100%)',
+                                        border: '2px solid #F4D58D',
+                                        boxShadow: '0 0 20px rgba(244, 213, 141, 0.6)',
+                                        color: '#000000'
+                                    }}
+                                    aria-label="Organizations"
+                                >
+                                    <Building2 className="w-4 h-4" strokeWidth={2.5} style={{ color: '#000000' }} />
+                                    <span className="hidden sm:inline ml-2" style={{
+                                        color: '#000000',
+                                        fontWeight: '700',
+                                        textShadow: '0 1px 2px rgba(255, 255, 255, 0.3)'
+                                    }}>Organizations</span>
                                 </button>
                             </Tooltip>
                         </div>

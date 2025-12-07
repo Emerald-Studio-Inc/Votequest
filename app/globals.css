@@ -48,6 +48,31 @@
     --border-strong: rgba(255, 255, 255, 0.15);
     --border-accent: rgba(255, 255, 255, 0.25);
 
+    /* Molten Gold System - Premium Accent (Softer Brightness) */
+    --gold-50: #F5F3E8;
+    --gold-100: #EBE6CC;
+    --gold-200: #D9CC99;
+    --gold-300: #C7B366;
+    --gold-400: #B59A33;
+    --gold-500: #D4B877;
+    /* Primary gold - reduced brightness */
+    --gold-600: #C2A663;
+    --gold-700: #B09450;
+    --gold-800: #9E823D;
+    --gold-900: #8C702A;
+
+    /* Gold Functional Colors */
+    --gold-primary: #D4B877;
+    --gold-light: #E6D199;
+    --gold-dark: #9E823D;
+    --gold-glow: rgba(212, 184, 119, 0.25);
+    --gold-glow-intense: rgba(212, 184, 119, 0.4);
+    --gold-border: rgba(212, 184, 119, 0.35);
+
+    /* Gold Gradients */
+    --gold-gradient: linear-gradient(135deg, #D4B877 0%, #E6D199 50%, #C2A663 100%);
+    --gold-gradient-subtle: linear-gradient(135deg, rgba(212, 184, 119, 0.1) 0%, rgba(230, 209, 153, 0.05) 100%);
+
     /* Shadow System - Dramatic Depth */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);

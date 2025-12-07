@@ -1,0 +1,175 @@
+/* ==============================================
+   MOLTEN GOLD UI - MAXIMUM THEME
+   ============================================== */
+
+/* Screen Edge Glow - Visible on all screens */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 9999;
+    border: 3px solid transparent;
+    border-image: var(--gold-gradient) 1;
+    box-shadow: inset 0 0 60px rgba(244, 213, 141, 0.15);
+    animation: goldScreenPulse 4s ease-in-out infinite;
+}
+
+@keyframes goldScreenPulse {
+
+    0%,
+    100% {
+        box-shadow: inset 0 0 60px rgba(244, 213, 141, 0.15);
+        opacity: 0.8;
+    }
+
+    50% {
+        box-shadow: inset 0 0 100px rgba(244, 213, 141, 0.25);
+        opacity: 1;
+    }
+}
+
+/* Gold Text */
+.gold-text {
+    color: var(--gold-primary) !important;
+    text-shadow: 0 0 10px rgba(244, 213, 141, 0.3);
+}
+
+/* ALL Buttons Gold */
+.btn,
+button:not(.unstyled),
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
+    background: var(--gold-gradient) !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    border: 1px solid var(--gold-border) !important;
+    box-shadow: 0 4px 12px rgba(244, 213, 141, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn:hover,
+button:hover:not(.unstyled),
+.btn-primary:hover,
+.btn-secondary:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgba(244, 213, 141, 0.6) !important;
+    background: var(--gold-light) !important;
+}
+
+/* Gold Borders Everywhere */
+.gold-border,
+.border {
+    border-color: var(--gold-border) !important;
+}
+
+.gold-border-animated,
+.card,
+.card-elevated,
+.card-interactive {
+    border: 1px solid var(--gold-border) !important;
+    animation: goldBorderPulse 3s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(244, 213, 141, 0.1) !important;
+}
+
+@keyframes goldBorderPulse {
+
+    0%,
+    100% {
+        border-color: var(--gold-border);
+        box-shadow: 0 0 15px rgba(244, 213, 141, 0.1);
+    }
+
+    50% {
+        border-color: var(--gold-primary);
+        box-shadow: 0 0 30px rgba(244, 213, 141, 0.3);
+    }
+}
+
+/* Gold Glows - Much Stronger */
+.gold-glow {
+    box-shadow: 0 0 30px var(--gold-glow), 0 0 60px rgba(244, 213, 141, 0.2) !important;
+}
+
+.gold-glow-intense {
+    box-shadow: 0 0 50px var(--gold-glow-intense), 0 0 100px rgba(244, 213, 141, 0.4) !important;
+}
+
+/* Universal Card Glow */
+.card:hover,
+.card-elevated:hover,
+.card-interactive:hover {
+    border-color: var(--gold-primary) !important;
+    box-shadow: 0 0 40px rgba(244, 213, 141, 0.4) !important;
+    transform: translateY(-2px);
+}
+
+/* Gold Selection */
+::selection {
+    background: var(--gold-primary);
+    color: #000000;
+    text-shadow: none;
+}
+
+/* All Links Gold on Hover */
+a {
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--gold-primary) !important;
+    text-shadow: 0 0 10px rgba(244, 213, 141, 0.5);
+}
+
+/* Input Focus Gold */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--gold-primary) !important;
+    box-shadow: 0 0 0 3px var(--gold-glow) !important;
+    outline: none !important;
+}
+
+/* Dividers Gold */
+hr,
+.divider {
+    background: var(--gold-gradient) !important;
+    height: 2px;
+    border: none;
+    box-shadow: 0 0 10px rgba(244, 213, 141, 0.5);
+}
+
+/* Scrollbar Gold */
+::-webkit-scrollbar-thumb {
+    background: var(--gold-gradient) !important;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(244, 213, 141, 0.1);
+}
+
+/* Progress Bars Gold */
+progress::-webkit-progress-value {
+    background: var(--gold-gradient) !important;
+}
+
+/* Badges Gold */
+.badge {
+    background: var(--gold-gradient) !important;
+    color: #000000 !important;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(244, 213, 141, 0.5);
+}
+
+/* Tooltips Gold */
+.tooltip {
+    background: var(--gold-gradient) !important;
+    color: #000000 !important;
+    border: 1px solid var(--gold-primary);
+    box-shadow: 0 0 20px rgba(244, 213, 141, 0.5);
+}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import './gold.css'
 
 export const metadata: Metadata = {
   title: 'VoteQuest - Decentralized Governance',

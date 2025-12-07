@@ -43,6 +43,12 @@ const AdminDashboard = dynamic(() => import('./AdminDashboard'), {
 import Tooltip from './Tooltip';
 import AdminPassphraseModal from './AdminPassphraseModal';
 import AdminSetup2FA from './AdminSetup2FA';
+import OrganizationListScreen from './OrganizationListScreen';
+import OrganizationDashboard from './OrganizationDashboard';
+import OrganizationSetup from './OrganizationSetup';
+import RoomDetailScreen from './RoomDetailScreen';
+import AdminVerificationDashboard from './AdminVerificationDashboard';
+import BottomNavigation from './BottomNavigation';
 
 interface UserData {
     address: string | null;
@@ -84,6 +90,9 @@ const VoteQuestApp = () => {
     const [animations, setAnimations] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string>('');
+    const [currentOrganization, setCurrentOrganization] = useState<string | null>(null);
+    const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+    const [showCreateRoom, setShowCreateRoom] = useState(false);
     const [authUser, setAuthUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
 
@@ -659,21 +668,10 @@ const VoteQuestApp = () => {
                 {activeDashboardTab === 'settings' && (
                     <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                 )}
-                <BottomNavigation />
-                <AdminPassphraseModal
-                    open={showAdminModal}
-                    onClose={() => setShowAdminModal(false)}
-                    onSubmit={handleAdminAccess}
+                <BottomNavigation
+                    activeTab={activeDashboardTab}
+                    onTabChange={setActiveDashboardTab}
                 />
-                {showSetup2FA && (
-                    <AdminSetup2FA
-                        onClose={() => {
-                            setShowSetup2FA(false);
-                            setSetup2FAPassphrase('');
-                        }}
-                        passphrase={setup2FAPassphrase}
-                    />
-                )}
             </>
         );
     }
@@ -724,6 +722,84 @@ const VoteQuestApp = () => {
                 userId={userData.userId || ''}
                 captchaToken={captchaToken}
                 setCaptchaToken={setCaptchaToken}
+            />
+        );
+    }
+
+    // Organization navigation
+    if (currentScreen === 'organization') {
+        return (
+            <OrganizationListScreen
+                userId={userData.userId || ''}
+                onSelectOrganization={(orgId) => {
+                    localStorage.setItem('votequest_current_org', orgId);
+                    setCurrentOrganization(orgId);
+                    setCurrentScreen('organization-dashboard');
+                }}
+                onCreateNew={() => setCurrentScreen('organization-setup')}
+                onBack={() => setCurrentScreen('dashboard')}
+            />
+        );
+    }
+
+    // Organization setup
+    if (currentScreen === 'organization-setup') {
+        return (
+            <OrganizationSetup
+                userId={userData.userId || ''}
+                onComplete={(orgId) => {
+                    localStorage.setItem('votequest_current_org', orgId);
+                    setCurrentOrganization(orgId);
+                    setCurrentScreen('organization-dashboard');
+                }}
+                onCancel={() => setCurrentScreen('organization')}
+            />
+        );
+    }
+
+    // Organization dashboard
+    if (currentScreen === 'organization-dashboard' && currentOrganization) {
+        return (
+            <OrganizationDashboard
+                organizationId={currentOrganization}
+                userId={userData.userId || ''}
+                onNavigate={(screen, data) => {
+                    if (screen === 'create-room') setShowCreateRoom(true);
+                    if (screen === 'room' && data) {
+                        setCurrentRoom(data);
+                        setCurrentScreen('room-detail');
+                    }
+                    if (screen === 'organization-list') {
+                        setCurrentOrganization(null);
+                        setCurrentScreen('organization');
+                    }
+                    if (screen === 'dashboard') {
+                        setCurrentOrganization(null);
+                        localStorage.removeItem('votequest_current_org');
+                        setCurrentScreen('dashboard');
+                    }
+                }}
+            />
+        );
+    }
+
+    // Room detail screen
+    if (currentScreen === 'room-detail' && currentRoom) {
+        return (
+            <RoomDetailScreen
+                roomId={currentRoom}
+                organizationId={currentOrganization}
+                userId={userData.userId || ''}
+                onBack={() => setCurrentScreen('organization-dashboard')}
+            />
+        );
+    }
+
+    // Admin verification dashboard
+    if (currentScreen === 'admin-verification') {
+        return (
+            <AdminVerificationDashboard
+                onBack={() => setCurrentScreen('dashboard')}
             />
         );
     }
