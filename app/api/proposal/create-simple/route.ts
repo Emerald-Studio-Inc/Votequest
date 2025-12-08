@@ -7,7 +7,7 @@ import { z } from 'zod';
 const proposalSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters').max(200, 'Title too long'),
     description: z.string().max(2000, 'Description too long').optional(),
-    endDate: z.string().refine((date) => new Date(date) > new Date(), 'End date must be in the future'),
+    end_date: z.string().refine((date) => new Date(date) > new Date(), 'End date must be in the future'),
     options: z.array(z.object({
         title: z.string().min(1, 'Option title required').max(100, 'Option title too long'),
         description: z.string().max(500, 'Option description too long').nullable().optional()
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
             }, { status: 400 });
         }
 
-        const { title, description, endDate, options, userId, category } = validationResult.data;
+        const { title, description, end_date, options, userId, category } = validationResult.data;
         const txHash = body.txHash || null;
         const walletAddress = body.walletAddress || null;
 
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
                 {
                     title,
                     description,
-                    end_date: endDate,
+                    end_date: end_date,
                     created_by: userId,
                     status: 'active',
                     participants: 0,
@@ -90,20 +90,16 @@ export async function POST(request: Request) {
             }
         }
 
-        // Award coins for creating proposal ONLY if on blockchain (50 VQC)
-        // For now, proposals are database-only, so no coins awarded yet
-        // Once blockchain proposal creation is implemented, check for tx_hash here
+        // Award coins for creating proposal (50 VQC + receipt)
         try {
-            // Check if proposal was created on blockchain
-            if (proposal.tx_hash) {
-                const { awardCoins } = await import('@/lib/coins');
-                await awardCoins(userId, 50, 'proposal_created', proposal.id, {
-                    proposalTitle: title
-                });
-                console.log('[API] Awarded 50 VQC for blockchain proposal creation');
-            } else {
-                console.log('[API] No coins awarded - proposal is database-only (no blockchain tx)');
-            }
+            const { awardCoins } = await import('@/lib/coins');
+            await awardCoins(userId, 50, 'proposal_created', proposal.id, {
+                proposalId: proposal.id,
+                proposalTitle: title,
+                category: category || 'Community',
+                hasBlockchainTx: !!proposal.tx_hash
+            });
+            console.log('[API] ✅ Awarded 50 VQC for proposal creation with receipt');
         } catch (coinError) {
             console.error('[API] Error awarding coins:', coinError);
         }

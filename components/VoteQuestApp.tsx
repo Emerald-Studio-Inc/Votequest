@@ -537,17 +537,21 @@ const VoteQuestApp = () => {
 
     const handleCreateProposal = async (proposalData: any) => {
         try {
-            const response = await fetch('/api/proposals', {
+            const response = await fetch('/api/proposal/create-simple', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...proposalData,
-                    createdBy: userData.userId
+                    userId: userData.userId  // Changed from createdBy to userId
                 })
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to create proposal');
+            if (!response.ok) {
+                console.error('Proposal creation failed:', data);
+                const errorMsg = data.details ? data.details.join(', ') : data.error;
+                throw new Error(errorMsg || 'Failed to create proposal');
+            }
 
             // Update coins
             setUserData(prev => ({
@@ -585,37 +589,6 @@ const VoteQuestApp = () => {
             throw error;
         }
     };
-
-    // Navigation Component
-    const BottomNavigation = () => (
-        <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-            <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
-                {[
-                    { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
-                    { label: 'Proposals', value: 'proposals' as const, icon: List },
-                    { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
-                    { label: 'Settings', value: 'settings' as const, icon: Settings }
-                ].map((item) => {
-                    const isActive = activeDashboardTab === item.value;
-                    const Icon = item.icon;
-                    return (
-                        <Tooltip key={item.value} content={item.label} position="top">
-                            <button
-                                onClick={() => setActiveDashboardTab(item.value)}
-                                className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
-                                    }`}
-                            >
-                                <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
-                                {isActive && (
-                                    <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
-                                )}
-                            </button>
-                        </Tooltip>
-                    );
-                })}
-            </div>
-        </div>
-    );
 
     // Render screens
     if (currentScreen === 'checking') {
@@ -766,7 +739,9 @@ const VoteQuestApp = () => {
                 onNavigate={(screen, data) => {
                     if (screen === 'create-room') setShowCreateRoom(true);
                     if (screen === 'room' && data) {
-                        setCurrentRoom(data);
+                        // Ensure we extract the ID if data is an object
+                        const roomId = typeof data === 'string' ? data : data.id;
+                        setCurrentRoom(roomId);
                         setCurrentScreen('room-detail');
                     }
                     if (screen === 'organization-list') {
@@ -784,7 +759,7 @@ const VoteQuestApp = () => {
     }
 
     // Room detail screen
-    if (currentScreen === 'room-detail' && currentRoom) {
+    if (currentScreen === 'room-detail' && currentRoom && currentOrganization) {
         return (
             <RoomDetailScreen
                 roomId={currentRoom}

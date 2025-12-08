@@ -1,0 +1,116 @@
+/* ==============================================
+   MOBILE-SPECIFIC ENHANCEMENTS
+   Auto-applies mobile optimization to components
+   ============================================== */
+
+/* Make ALL buttons touch-friendly */
+@media (max-width: 768px) {
+
+    .btn,
+    button[class*="btn"] {
+        min-height: 44px !important;
+        padding: 12px 20px !important;
+    }
+
+    .btn-sm {
+        min-height: 40px !important;
+        padding: 10px 16px !important;
+    }
+
+    /* Stack button groups vertically */
+    .space-y-6>div:has(button),
+    div:has(> .btn):not(.flex-col):not(.flex-row) {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+
+    /* Full-width buttons on mobile */
+    .btn-primary,
+    .btn-secondary,
+    label[class*="btn"] {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+/* QR Code responsive sizing */
+@media (max-width: 768px) {
+    canvas {
+        max-width: 280px !important;
+        max-height: 280px !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+}
+
+/* Card list mobile view */
+@media (max-width: 768px) {
+
+    /* Hide tables on mobile */
+    table:not(.keep-on-mobile) {
+        display: none !important;
+    }
+
+    /* Better card spacing on mobile */
+    .card,
+    .card-elevated,
+    [class*="card-"] {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Voter list items - better mobile layout */
+    .card-elevated>div>div:has(> p.font-medium) {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+}
+
+/* Form inputs - prevent zoom */
+input,
+textarea,
+select {
+    font-size: 16px !important;
+}
+
+/* Touch-friendly close buttons */
+@media (max-width: 768px) {
+    button:has(svg[class*="w-4"]):not(:has(span)) {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        padding: 12px !important;
+    }
+}
+
+/* Modal improvements */
+@media (max-width: 768px) {
+    .fixed.inset-0:has(.card-elevated) {
+        padding: 1rem !important;
+    }
+
+    .card-elevated {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+}
+
+/* Responsive padding */
+@media (max-width: 768px) {
+
+    .px-4,
+    .px-6,
+    .px-8 {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}
+
+/* Bottom navigation extra mobile polish */
+@media (max-width: 768px) {
+
+    nav[class*="bottom"] button,
+    nav[class*="fixed"] button {
+        min-height: 56px !important;
+    }
+}

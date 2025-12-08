@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import './gold.css'
+import './mobile.css'
+import './mobile-enhancements.css'
 
 export const metadata: Metadata = {
   title: 'VoteQuest - Decentralized Governance',
