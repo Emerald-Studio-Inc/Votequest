@@ -16,19 +16,21 @@ interface Notification {
 
 interface NotificationBellProps {
     address?: string | null;
+    userId?: string | null;
 }
 
-const NotificationBell: React.FC<NotificationBellProps> = ({ address }) => {
+const NotificationBell: React.FC<NotificationBellProps> = ({ address, userId }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showDropdown, setShowDropdown] = useState(false);
 
     useEffect(() => {
-        if (!address) return;
+        if (!address && !userId) return;
 
         const fetchNotifications = async () => {
             try {
-                const response = await fetch(`/api/notifications?address=${address}`);
+                const query = userId ? `userId=${userId}` : `address=${address}`;
+                const response = await fetch(`/api/notifications?${query}`);
                 if (response.ok) {
                     const data = await response.json();
                     setNotifications(data);
@@ -42,7 +44,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address }) => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 30000);
         return () => clearInterval(interval);
-    }, [address]);
+    }, [address, userId]);
 
     const markAsRead = async (notificationId: string) => {
         try {
@@ -62,7 +64,8 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address }) => {
 
     const markAllAsRead = async () => {
         try {
-            await fetch(`/api/notifications/mark-all-read?address=${address}`, { method: 'POST' });
+            const query = userId ? `userId=${userId}` : `address=${address}`;
+            await fetch(`/api/notifications/mark-all-read?${query}`, { method: 'POST' });
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
             setUnreadCount(0);
         } catch (error) {
@@ -70,7 +73,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address }) => {
         }
     };
 
-    if (!address) return null;
+    if (!address && !userId) return null;
 
     return (
         <div className="relative">
@@ -93,7 +96,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address }) => {
                         onClick={() => setShowDropdown(false)}
                     ></div>
 
-                    <div className="absolute right-0 mt-2 w-80 glass-heavy rounded-xl border border-white/10 shadow-2xl z-50 overflow-hidden animate-scale-in">
+                    <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] glass-heavy rounded-xl border border-white/10 shadow-2xl z-50 overflow-hidden animate-scale-in">
                         <div className="p-4 border-b border-white/5">
                             <div className="flex items-center justify-between">
                                 <h3 className="font-semibold">Notifications</h3>

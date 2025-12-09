@@ -9,13 +9,6 @@ const nextConfig = {
         unoptimized: true,
     },
     trailingSlash: true,
-    // Skip ESLint and TypeScript during build for faster deployments
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
-    typescript: {
-        ignoreBuildErrors: true,
-    },
     webpack: (config, { isServer }) => {
         // Fix for transitive dependencies that are Node.js or React Native only
         if (!isServer) {

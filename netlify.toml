@@ -10,6 +10,7 @@
 
 # Enable Next.js Runtime
 [functions]
+  directory = "netlify/functions"
   node_bundler = "esbuild"
 
 # Cache Next.js build output

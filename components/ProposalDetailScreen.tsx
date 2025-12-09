@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, Users, Check, Shield, TrendingUp, Activity, AlertCircle, CheckCircle2, ChevronRight, Share2 } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Check, Shield, TrendingUp, Activity, AlertCircle, CheckCircle2, ChevronRight, Share2, Zap, Star } from 'lucide-react';
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import ShareModal from './ShareModal';
@@ -33,6 +33,64 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
     const [hoveredOption, setHoveredOption] = useState<string | null>(null);
     const [showVoteAnimation, setShowVoteAnimation] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [boostLoading, setBoostLoading] = useState(false);
+    const [highlightLoading, setHighlightLoading] = useState(false);
+
+    // TODO: Import toast properly
+    const [boosted, setBoosted] = useState(false);
+
+    const toast = {
+        success: (title: string, msg: string) => alert(`${title}\n${msg}`),
+        error: (title: string, msg: string) => alert(`${title}\n${msg}`)
+    };
+
+    const handleBoost = async () => {
+        if (!hasVoted) {
+            toast.error('Vote Required', 'You must vote before boosting.');
+            return;
+        }
+        setBoostLoading(true);
+        try {
+            const response = await fetch('/api/coins/boost', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    proposalId: proposal.id,
+                    optionId: selectedOption // We might need to fetch the voted option if not in state
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            setBoosted(true);
+            toast.success('Boost Activated!', 'Your vote power has been doubled.');
+        } catch (error: any) {
+            toast.error('Boost Failed', error.message);
+        } finally {
+            setBoostLoading(false);
+        }
+    };
+
+    const handleHighlight = async () => {
+        setHighlightLoading(true);
+        try {
+            const response = await fetch('/api/coins/highlight', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    proposalId: proposal.id
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            toast.success('Proposal Highlighted!', 'Your proposal is now featured for 24 hours.');
+        } catch (error: any) {
+            toast.error('Highlight Failed', error.message);
+        } finally {
+            setHighlightLoading(false);
+        }
+    };
 
     const totalVotes = proposal.options.reduce((sum: number, opt: any) => sum + opt.votes, 0);
 
@@ -82,29 +140,49 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 
             {/* Header */}
             <div className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
-                <div className="max-w-[1000px] mx-auto px-8 py-5">
+                <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-4 md:py-5">
                     <div className="flex items-center justify-between">
                         <button
                             onClick={onBack}
                             className="btn btn-ghost btn-sm group"
                         >
                             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" strokeWidth={2} />
-                            <span>Back to Proposals</span>
+                            <span className="hidden sm:inline">Back to Proposals</span>
                         </button>
 
                         <div className="flex items-center gap-3">
+                            {/* Highlight Button (Creator Only) */}
+                            {userId === proposal.created_by && !proposal.featured && (
+                                <button
+                                    onClick={handleHighlight}
+                                    disabled={highlightLoading}
+                                    className="btn btn-ghost btn-sm group text-yellow-400 hover:text-yellow-300"
+                                    title="Highlight this proposal (200 coins)"
+                                >
+                                    <Star className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
+                                    <span className="hidden sm:inline">Highlight</span>
+                                </button>
+                            )}
+
                             <button
                                 onClick={() => setShowShareModal(true)}
                                 className="btn btn-secondary btn-sm group"
                             >
                                 <Share2 className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
-                                <span>Share</span>
+                                <span className="hidden sm:inline">Share</span>
                             </button>
 
                             {hasVoted && (
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20 animate-scale-in">
+                                <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-green-500/10 border border-green-500/20 animate-scale-in">
                                     <CheckCircle2 className="w-4 h-4 text-green-400" strokeWidth={2} />
-                                    <span className="text-sm font-semibold text-green-400">Vote Recorded</span>
+                                    <span className="text-sm font-semibold text-green-400 hidden sm:inline">Vote Recorded</span>
+                                </div>
+                            )}
+
+                            {boosted && (
+                                <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 animate-scale-in">
+                                    <Zap className="w-4 h-4 text-purple-400" strokeWidth={2} />
+                                    <span className="text-sm font-semibold text-purple-400 hidden sm:inline">Boost Active</span>
                                 </div>
                             )}
                         </div>
@@ -113,7 +191,7 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1000px] mx-auto px-8 pt-12 relative z-10">
+            <div className="max-w-[1000px] mx-auto px-4 md:px-8 pt-12 relative z-10">
 
                 {/* Proposal Header */}
                 <div className="mb-12 animate-slide-up">
@@ -128,6 +206,13 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                             <Users className="w-3.5 h-3.5" strokeWidth={2} />
                             <span>{totalVotes.toLocaleString()} votes</span>
                         </div>
+
+                        {proposal.featured && (
+                            <div className="badge border-none bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg animate-pulse-slow">
+                                <Star className="w-3.5 h-3.5 fill-current" strokeWidth={2} />
+                                <span>Featured Proposal</span>
+                            </div>
+                        )}
 
                         {proposal.status === 'active' && (
                             <div className="badge badge-success">
@@ -326,16 +411,26 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                         )}
 
                         {hasVoted && (
-                            <div className="mt-8 flex items-start gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                                <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
-                                <div>
-                                    <p className="text-body-small text-green-400 mb-1 font-medium">
-                                        Vote recorded successfully
-                                    </p>
-                                    <p className="text-caption text-green-400/70">
-                                        Your vote has been recorded on the blockchain and cannot be changed. Thank you for participating!
-                                    </p>
+                            <div className="mt-8 flex flex-col md:flex-row items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                                <div className="flex items-start gap-3 flex-1">
+                                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
+                                    <div>
+                                        <p className="text-body-small text-green-400 mb-1 font-medium">
+                                            Vote recorded successfully
+                                        </p>
+                                        <p className="text-caption text-green-400/70">
+                                            Your vote has been recorded on the blockchain.
+                                        </p>
+                                    </div>
                                 </div>
+                                <button
+                                    onClick={handleBoost}
+                                    disabled={boostLoading}
+                                    className="btn btn-sm bg-purple-600 hover:bg-purple-700 text-white border-none flex items-center gap-2"
+                                >
+                                    <Zap className="w-4 h-4" />
+                                    <span>Boost Vote (500)</span>
+                                </button>
                             </div>
                         )}
                     </div>

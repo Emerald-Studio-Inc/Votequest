@@ -33,6 +33,8 @@ export type Proposal = {
   blockchain_id?: number | null
   onchain_id?: number | null
   tx_hash?: string | null
+  featured?: boolean
+  featured_until?: string | null
 }
 
 export type ProposalOption = {

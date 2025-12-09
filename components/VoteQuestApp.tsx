@@ -46,9 +46,6 @@ import AdminSetup2FA from './AdminSetup2FA';
 import OrganizationListScreen from './OrganizationListScreen';
 import OrganizationDashboard from './OrganizationDashboard';
 import OrganizationSetup from './OrganizationSetup';
-import RoomDetailScreen from './RoomDetailScreen';
-import AdminVerificationDashboard from './AdminVerificationDashboard';
-import BottomNavigation from './BottomNavigation';
 
 interface UserData {
     address: string | null;
@@ -90,11 +87,10 @@ const VoteQuestApp = () => {
     const [animations, setAnimations] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string>('');
-    const [currentOrganization, setCurrentOrganization] = useState<string | null>(null);
-    const [currentRoom, setCurrentRoom] = useState<string | null>(null);
-    const [showCreateRoom, setShowCreateRoom] = useState(false);
     const [authUser, setAuthUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
+    const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
+    const [selectedRoom, setSelectedRoom] = useState<any>(null);
 
     // Blockchain removed - using database only
     const address = null;
@@ -276,16 +272,23 @@ const VoteQuestApp = () => {
         let passphraseAttempts = 1;
 
         try {
-            // 1. Verify passphrase
-            const correctPassphrase = process.env.NEXT_PUBLIC_ADMIN_PASSPHRASE;
-            if (!correctPassphrase || passphrase !== correctPassphrase) {
+            // 1. Verify passphrase via Server API (Secure)
+            const validateRes = await fetch('/api/admin/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ passphrase })
+            });
+
+            const validateJson = await validateRes.json();
+
+            if (!validateRes.ok || !validateJson.ok) {
                 // Log failed attempt
                 await fetch('/api/admin/log-access', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ granted: false, passphrase_attempts: passphraseAttempts })
+                    body: JSON.stringify({ granted: false, passphrase_attempts: 1 })
                 });
-                alert('Invalid passphrase. Access denied.');
+                alert('Invalid passphrase');
                 setShowAdminModal(false);
                 return;
             }
@@ -537,21 +540,17 @@ const VoteQuestApp = () => {
 
     const handleCreateProposal = async (proposalData: any) => {
         try {
-            const response = await fetch('/api/proposal/create-simple', {
+            const response = await fetch('/api/proposals', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...proposalData,
-                    userId: userData.userId  // Changed from createdBy to userId
+                    createdBy: userData.userId
                 })
             });
 
             const data = await response.json();
-            if (!response.ok) {
-                console.error('Proposal creation failed:', data);
-                const errorMsg = data.details ? data.details.join(', ') : data.error;
-                throw new Error(errorMsg || 'Failed to create proposal');
-            }
+            if (!response.ok) throw new Error(data.error || 'Failed to create proposal');
 
             // Update coins
             setUserData(prev => ({
@@ -589,6 +588,35 @@ const VoteQuestApp = () => {
             throw error;
         }
     };
+
+    // Navigation Component
+    const BottomNavigation = () => (
+        <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
+            <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
+                {[
+                    { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
+                    { label: 'Proposals', value: 'proposals' as const, icon: List },
+                    { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
+                    { label: 'Settings', value: 'settings' as const, icon: Settings }
+                ].map((item) => {
+                    const isActive = activeDashboardTab === item.value;
+                    const Icon = item.icon;
+                    return (
+                        <Tooltip key={item.value} content={item.label} position="top">
+                            <button
+                                onClick={() => setActiveDashboardTab(item.value)}
+                                className={`relative flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                                    }`}
+                            >
+                                <Icon className={`w-5 h-5 mb-0.5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
+                                <span className="text-[10px] font-medium tracking-tight">{item.label}</span>
+                            </button>
+                        </Tooltip>
+                    );
+                })}
+            </div>
+        </div>
+    );
 
     // Render screens
     if (currentScreen === 'checking') {
@@ -641,10 +669,24 @@ const VoteQuestApp = () => {
                 {activeDashboardTab === 'settings' && (
                     <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                 )}
-                <BottomNavigation
-                    activeTab={activeDashboardTab}
-                    onTabChange={setActiveDashboardTab}
+                <BottomNavigation />
+                <AdminPassphraseModal
+                    open={showAdminModal}
+                    onClose={() => setShowAdminModal(false)}
+                    onSuccess={() => {
+                        setShowAdminModal(false);
+                        setCurrentScreen('admin');
+                    }}
                 />
+                {showSetup2FA && (
+                    <AdminSetup2FA
+                        onClose={() => {
+                            setShowSetup2FA(false);
+                            setSetup2FAPassphrase('');
+                        }}
+                        passphrase={setup2FAPassphrase}
+                    />
+                )}
             </>
         );
     }
@@ -706,7 +748,7 @@ const VoteQuestApp = () => {
                 userId={userData.userId || ''}
                 onSelectOrganization={(orgId) => {
                     localStorage.setItem('votequest_current_org', orgId);
-                    setCurrentOrganization(orgId);
+                    setSelectedOrganizationId(orgId);
                     setCurrentScreen('organization-dashboard');
                 }}
                 onCreateNew={() => setCurrentScreen('organization-setup')}
@@ -715,66 +757,68 @@ const VoteQuestApp = () => {
         );
     }
 
-    // Organization setup
+    if (currentScreen === 'organization-dashboard' && selectedOrganizationId) {
+        const handleOrgNavigate = (screen: string, data?: any) => {
+            if (screen === 'organization-list') {
+                setCurrentScreen('organization');
+                setSelectedOrganizationId(null);
+            } else if (screen === 'create-room') {
+                setCurrentScreen('create-room');
+            } else if (screen === 'room' && data) {
+                setSelectedRoom(data);
+                setCurrentScreen('room-detail');
+            } else {
+                setCurrentScreen(screen as any);
+            }
+        };
+
+        return (
+            <OrganizationDashboard
+                organizationId={selectedOrganizationId}
+                userId={userData.userId || ''}
+                onNavigate={handleOrgNavigate}
+            />
+        );
+    }
+
+    if (currentScreen === 'room-detail' && selectedRoom) {
+        return (
+            <div className="min-h-screen pb-32 bg-black text-white">
+                <div className="sticky top-0 z-40 border-b border-white/5 bg-black/80 backdrop-blur-xl">
+                    <div className="max-w-[1200px] mx-auto px-8 py-6">
+                        <button
+                            onClick={() => {
+                                setCurrentScreen('organization-dashboard');
+                                setSelectedRoom(null);
+                            }}
+                            className="btn btn-ghost text-blue-400 hover:text-blue-300 mb-4"
+                        >
+                            ← Back to Organization
+                        </button>
+                        <h1 className="text-2xl font-bold">{selectedRoom.title}</h1>
+                        <p className="text-mono-60">{selectedRoom.description}</p>
+                    </div>
+                </div>
+                <div className="max-w-[1200px] mx-auto px-8 pt-12">
+                    <div className="card-elevated p-8">
+                        <h2 className="text-xl font-bold mb-4">Room Details</h2>
+                        <p className="text-mono-80 mb-2"><strong>Status:</strong> {selectedRoom.status}</p>
+                        <p className="text-mono-80"><strong>ID:</strong> {selectedRoom.id}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (currentScreen === 'organization-setup') {
         return (
             <OrganizationSetup
                 userId={userData.userId || ''}
-                onComplete={(orgId) => {
-                    localStorage.setItem('votequest_current_org', orgId);
-                    setCurrentOrganization(orgId);
+                onCancel={() => setCurrentScreen('organization')}
+                onComplete={(orgId: string) => {
+                    setSelectedOrganizationId(orgId);
                     setCurrentScreen('organization-dashboard');
                 }}
-                onCancel={() => setCurrentScreen('organization')}
-            />
-        );
-    }
-
-    // Organization dashboard
-    if (currentScreen === 'organization-dashboard' && currentOrganization) {
-        return (
-            <OrganizationDashboard
-                organizationId={currentOrganization}
-                userId={userData.userId || ''}
-                onNavigate={(screen, data) => {
-                    if (screen === 'create-room') setShowCreateRoom(true);
-                    if (screen === 'room' && data) {
-                        // Ensure we extract the ID if data is an object
-                        const roomId = typeof data === 'string' ? data : data.id;
-                        setCurrentRoom(roomId);
-                        setCurrentScreen('room-detail');
-                    }
-                    if (screen === 'organization-list') {
-                        setCurrentOrganization(null);
-                        setCurrentScreen('organization');
-                    }
-                    if (screen === 'dashboard') {
-                        setCurrentOrganization(null);
-                        localStorage.removeItem('votequest_current_org');
-                        setCurrentScreen('dashboard');
-                    }
-                }}
-            />
-        );
-    }
-
-    // Room detail screen
-    if (currentScreen === 'room-detail' && currentRoom && currentOrganization) {
-        return (
-            <RoomDetailScreen
-                roomId={currentRoom}
-                organizationId={currentOrganization}
-                userId={userData.userId || ''}
-                onBack={() => setCurrentScreen('organization-dashboard')}
-            />
-        );
-    }
-
-    // Admin verification dashboard
-    if (currentScreen === 'admin-verification') {
-        return (
-            <AdminVerificationDashboard
-                onBack={() => setCurrentScreen('dashboard')}
             />
         );
     }

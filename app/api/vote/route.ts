@@ -23,6 +23,12 @@ const voteSchema = z.object({
 
 // CAPTCHA verification function
 async function verifyTurnstile(token: string): Promise<boolean> {
+    // Validate environment variable is set
+    if (!process.env.TURNSTILE_SECRET_KEY) {
+        console.error('[CAPTCHA] TURNSTILE_SECRET_KEY not configured!');
+        throw new Error('Captcha verification not configured. Please contact administrator.');
+    }
+
     try {
         const response = await fetch(
             'https://challenges.cloudflare.com/turnstile/v0/siteverify',
@@ -32,7 +38,8 @@ async function verifyTurnstile(token: string): Promise<boolean> {
                 body: JSON.stringify({
                     secret: process.env.TURNSTILE_SECRET_KEY,
                     response: token
-                })
+                }),
+                signal: AbortSignal.timeout(5000) // 5 second timeout
             }
         );
 
@@ -214,15 +221,15 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Database error' }, { status: 500 });
         }
 
-        // 4. Update counts and XP
+        // 4. Update counts, XP, and STREAK
         await supabaseAdmin.rpc('increment_option_votes', { option_id: optionId });
         await supabaseAdmin.rpc('increment_proposal_participants', { proposal_id: proposalId });
         await supabaseAdmin.rpc('increment_user_votes', { user_id: userId });
 
-        // Award XP (250 XP for voting)
+        // Update streak - fetch user data first
         const { data: user } = await supabaseAdmin
             .from('users')
-            .select('xp')
+            .select('xp, streak, last_vote_date')
             .eq('id', userId)
             .single();
 
@@ -230,10 +237,46 @@ export async function POST(request: Request) {
             const newXP = user.xp + 250;
             const newLevel = Math.floor(Math.sqrt(newXP / 100));
 
+            // Calculate streak
+            let newStreak = user.streak || 0;
+            const lastVoteDate = user.last_vote_date ? new Date(user.last_vote_date) : null;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset to start of day
+
+            if (lastVoteDate) {
+                lastVoteDate.setHours(0, 0, 0, 0);
+                const daysSinceLastVote = Math.floor((today.getTime() - lastVoteDate.getTime()) / (1000 * 60 * 60 * 24));
+
+                if (daysSinceLastVote === 0) {
+                    // Already voted today - keep streak
+                    console.log('[STREAK] Already voted today, streak maintained:', newStreak);
+                } else if (daysSinceLastVote === 1) {
+                    // Voted yesterday - increment streak!
+                    newStreak += 1;
+                    console.log('[STREAK] ✨ Consecutive day! Streak increased to:', newStreak);
+                } else {
+                    // Missed a day - reset streak
+                    newStreak = 1;
+                    console.log('[STREAK] ⚠️ Streak broken. Reset to 1');
+                }
+            } else {
+                // First vote ever
+                newStreak = 1;
+                console.log('[STREAK] 🎉 First vote! Streak started');
+            }
+
             await supabaseAdmin
                 .from('users')
-                .update({ xp: newXP, level: newLevel, updated_at: new Date().toISOString() })
+                .update({
+                    xp: newXP,
+                    level: newLevel,
+                    streak: newStreak,
+                    last_vote_date: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                })
                 .eq('id', userId);
+
+            console.log(`[STREAK] User ${userId}: XP ${user.xp} → ${newXP}, Streak: ${user.streak} → ${newStreak}`);
         }
 
 
@@ -255,14 +298,24 @@ export async function POST(request: Request) {
                 .single();
 
             // Award coins for voting (works with or without blockchain)
-            await awardCoins(userId, 10, 'vote_cast', proposalId, {
+            await awardCoins(userId, 3, 'vote_cast', proposalId, {
                 proposalId,
                 proposalTitle: proposal?.title || 'Unknown Proposal',
                 optionId,
                 optionTitle: option?.title || 'Unknown Option',
                 voteType: txHash ? 'blockchain' : 'database'
             });
-            console.log(`[API] ✅ Awarded 10 VQC for voting (${txHash ? 'blockchain' : 'database'} vote)`);
+            console.log(`[API] ✅ Awarded 3 VQC for voting (${txHash ? 'blockchain' : 'database'} vote)`);
+
+            // Notify the voter (User confirmation)
+            await createNotification(
+                userId,
+                'vote_recorded',
+                'Vote Recorded',
+                `You voted for "${option?.title || 'Option'}" on "${proposal?.title || 'Unknown Proposal'}"`,
+                proposalId,
+                { optionTitle: option?.title, proposalTitle: proposal?.title }
+            );
 
             // Notify proposal creator (only if different user)
             if (proposal && proposal.created_by && proposal.created_by !== userId) {

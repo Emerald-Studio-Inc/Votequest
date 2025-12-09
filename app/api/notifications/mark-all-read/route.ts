@@ -5,28 +5,33 @@ export async function POST(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const address = searchParams.get('address');
+        const userId = searchParams.get('userId');
 
-        if (!address) {
-            return NextResponse.json({ error: 'Address required' }, { status: 400 });
+        if (!address && !userId) {
+            return NextResponse.json({ error: 'Address or User ID required' }, { status: 400 });
         }
 
-        // Get user ID from wallet address
-        const { data: user } = await supabaseAdmin
-            .from('users')
-            .select('id')
-            .eq('wallet_address', address)
-            .single();
+        let targetUserId = userId;
 
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        if (!targetUserId && address) {
+            const { data: user } = await supabaseAdmin
+                .from('users')
+                .select('id')
+                .eq('wallet_address', address)
+                .single();
+
+            if (!user) {
+                return NextResponse.json({ error: 'User not found' }, { status: 404 });
+            }
+            targetUserId = user.id;
         }
 
         // Mark all notifications as read for this user
         const { error } = await supabaseAdmin
             .from('notifications')
-            .update({ is_read: true })
-            .eq('user_id', user.id)
-            .eq('is_read', false);
+            .update({ read: true })
+            .eq('user_id', targetUserId)
+            .eq('read', false);
 
         if (error) throw error;
 

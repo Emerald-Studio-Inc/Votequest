@@ -169,7 +169,7 @@ If you previously used IP whitelisting:
 ADMIN_2FA_SECRET=JBSWY3DPEHPK3PXP
 
 # Still required
-NEXT_PUBLIC_ADMIN_PASSPHRASE=your_secret_passphrase
+ADMIN_PASSPHRASE=your_secret_passphrase
 NEXT_PUBLIC_ENABLE_ADMIN_BACKDOOR=true
 
 # No longer needed (can remove)

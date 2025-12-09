@@ -5,27 +5,33 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const address = searchParams.get('address');
+        const userId = searchParams.get('userId');
 
-        if (!address) {
-            return NextResponse.json({ error: 'Missing wallet address' }, { status: 400 });
+        if (!address && !userId) {
+            return NextResponse.json({ error: 'Missing wallet address or user ID' }, { status: 400 });
         }
 
-        // Get user ID from wallet address
-        const { data: user } = await supabaseAdmin
-            .from('users')
-            .select('id')
-            .eq('wallet_address', address.toLowerCase())
-            .single();
+        let targetUserId = userId;
 
-        if (!user) {
-            return NextResponse.json([]);
+        // If only address provided, look up user ID
+        if (!targetUserId && address) {
+            const { data: user } = await supabaseAdmin
+                .from('users')
+                .select('id')
+                .eq('wallet_address', address.toLowerCase())
+                .single();
+
+            if (!user) {
+                return NextResponse.json([]);
+            }
+            targetUserId = user.id;
         }
 
         // Get notifications
         const { data: notifications, error } = await supabaseAdmin
             .from('notifications')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', targetUserId)
             .order('created_at', { ascending: false })
             .limit(20);
 

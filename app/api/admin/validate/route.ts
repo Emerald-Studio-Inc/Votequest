@@ -1,21 +1,23 @@
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const pass = body?.passphrase || '';
+    const { passphrase } = await request.json();
 
-    const secret = process.env.ADMIN_SECRET || process.env.NEXT_PUBLIC_ADMIN_SECRET;
-    if (!secret) {
-      return NextResponse.json({ ok: false, error: 'Admin validation not configured' }, { status: 500 });
+    // Use server-side ONLY variable
+    const correctPassphrase = process.env.ADMIN_PASSPHRASE;
+
+    if (!correctPassphrase) {
+      console.error('ADMIN_PASSPHRASE not set in environment variables');
+      return NextResponse.json({ ok: false, error: 'Server misconfiguration' }, { status: 500 });
     }
 
-    if (pass === secret) {
+    if (passphrase === correctPassphrase) {
       return NextResponse.json({ ok: true });
+    } else {
+      return NextResponse.json({ ok: false, error: 'Invalid passphrase' }, { status: 401 });
     }
-
-    return NextResponse.json({ ok: false, error: 'Invalid passphrase' }, { status: 401 });
-  } catch (err) {
-    return NextResponse.json({ ok: false, error: 'Bad request' }, { status: 400 });
+  } catch (error) {
+    return NextResponse.json({ ok: false, error: 'Invalid request' }, { status: 400 });
   }
 }

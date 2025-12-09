@@ -11,7 +11,7 @@ export async function POST(request: Request) {
         const { passphrase } = await request.json();
 
         // Verify passphrase before showing 2FA setup
-        const correctPassphrase = process.env.NEXT_PUBLIC_ADMIN_PASSPHRASE;
+        const correctPassphrase = process.env.ADMIN_PASSPHRASE;
         if (!correctPassphrase || passphrase !== correctPassphrase) {
             return NextResponse.json({
                 error: 'Invalid passphrase'

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Clock, Users, TrendingUp, Check, ArrowUpRight, X, ChevronDown } from 'lucide-react';
+import { Search, Filter, Clock, Users, TrendingUp, Check, ArrowUpRight, X, ChevronDown, Sparkles } from 'lucide-react';
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 
@@ -84,6 +84,9 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                     return timeA - timeB;
                 case 'recent':
                 default:
+                    // Sort featured first, then by date
+                    if (a.featured && !b.featured) return -1;
+                    if (!a.featured && b.featured) return 1;
                     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
             }
         });
@@ -218,6 +221,13 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                                     onMouseLeave={() => setHoveredCard(null)}
                                     style={{ animationDelay: `${Math.min(index * 0.05, 0.5)}s` }}
                                 >
+                                    {/* Featured Badge */}
+                                    {proposal.featured && (
+                                        <div className="absolute top-0 left-0 z-20 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-br-lg shadow-lg flex items-center gap-1">
+                                            <Sparkles className="w-3 h-3" />
+                                            Featured
+                                        </div>
+                                    )}
                                     {/* Hover Gradient */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
@@ -228,7 +238,7 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
 
                                     <div className="relative z-10 p-6">
                                         {/* Header */}
-                                        <div className="flex items-start justify-between mb-4">
+                                        <div className={`flex items-start justify-between mb-4 ${proposal.featured ? 'mt-2' : ''}`}>
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-subheading mb-2 line-clamp-2 group-hover:text-mono-100 transition-colors">
                                                     {proposal.title}

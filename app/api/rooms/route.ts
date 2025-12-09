@@ -65,6 +65,31 @@ export async function POST(request: Request) {
 
         console.log('[API] Room created:', room?.id);
 
+        // Award 3 coins for creating a room (Proof of Action)
+        try {
+            const { awardCoins } = await import('@/lib/coins');
+            if (room) {
+                await awardCoins(userId, 3, 'room_created', room.id, {
+                    roomId: room.id,
+                    title: title,
+                    organizationId: organizationId
+                });
+                console.log('[API] ✅ Awarded 3 VQC for room creation with receipt');
+
+                const { createNotification } = await import('@/lib/coins');
+                await createNotification(
+                    userId,
+                    'room_created',
+                    'Room Ready',
+                    `Voting Room "${title}" created successfully. Invite voters now!`,
+                    room.id,
+                    { title }
+                );
+            }
+        } catch (coinError) {
+            console.error('[API] Error awarding coins:', coinError);
+        }
+
         return NextResponse.json({
             success: true,
             room

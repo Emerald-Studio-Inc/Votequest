@@ -4,6 +4,7 @@ import { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabas
 import Tooltip from './Tooltip';
 import CoinBadge from './CoinBadge';
 import NotificationBell from './NotificationBell';
+import CoinsPurchaseModal from './CoinsPurchaseModal';
 
 interface DashboardScreenProps {
     userData: any;
@@ -26,6 +27,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     animations
 }) => {
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+    const [showCoinModal, setShowCoinModal] = useState(false);
     const [time, setTime] = useState(new Date());
 
     useEffect(() => {
@@ -84,8 +86,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 <h1 className="text-xl font-bold tracking-tight">VoteQuest</h1>
                             </div>
 
-                            {/* Quick Stats - Inline */}
-                            <div className="flex items-center gap-3 md:gap-6 lg:gap-8 text-xs md:text-sm animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                            {/* Quick Stats - Inline (Hidden on Mobile) */}
+                            <div className="hidden md:flex items-center gap-3 md:gap-6 lg:gap-8 text-xs md:text-sm animate-fade-in" style={{ animationDelay: '0.1s' }}>
                                 <Tooltip content="Current Level" position="bottom">
                                     <div className="flex items-center gap-2 text-sm">
                                         <Zap className="w-4 h-4 text-mono-60" strokeWidth={2} />
@@ -115,8 +117,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
                         {/* Actions */}
                         <div className="flex items-center gap-4 animate-slide-left">
-                            <CoinBadge coins={userData.coins || 0} size="md" />
-                            <NotificationBell />
+                            <div className="flex items-center gap-2">
+                                <CoinBadge coins={userData.coins || 0} size="md" />
+                                <button
+                                    onClick={() => setShowCoinModal(true)}
+                                    className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex items-center justify-center transition-all hover:scale-105"
+                                >
+                                    <Plus className="w-5 h-5 fill-current" />
+                                </button>
+                            </div>
+                            <NotificationBell userId={userData.userId} address={userData.address} />
 
                             <Tooltip content="Create New Proposal" position="bottom">
                                 <button
@@ -205,7 +215,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             </div>
 
                             {/* Stats Grid */}
-                            <div className="grid grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
                                         <Zap className="w-5 h-5 text-mono-70" strokeWidth={2} />
@@ -393,6 +403,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     )}
                 </div>
             </div>
+            <CoinsPurchaseModal
+                userId={userData.userId || ''}
+                isOpen={showCoinModal}
+                onClose={() => setShowCoinModal(false)}
+                onSuccess={() => {
+                    setShowCoinModal(false);
+                }}
+            />
         </div>
     );
 };

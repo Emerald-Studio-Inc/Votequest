@@ -65,7 +65,7 @@ export async function getUserOrganizations(userId: string): Promise<Organization
         .select('organization_id, organizations(*)')
         .eq('user_id', userId);
 
-    return data?.map(d => d.organizations).filter(Boolean) || [];
+    return data?.map((d: any) => d.organizations).filter(Boolean) || [];
 }
 
 export async function isOrgAdmin(userId: string, orgId: string): Promise<boolean> {
