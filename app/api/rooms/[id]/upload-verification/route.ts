@@ -9,14 +9,14 @@ import { join } from 'path';
  */
 export async function POST(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
         const formData = await request.formData();
         const email = formData.get('email') as string;
         const govId = formData.get('govId') as File;
         const photo = formData.get('photo') as File | null;
-        const { roomId } = params;
+        const { id: roomId } = params;
 
         if (!email || !govId) {
             return NextResponse.json(

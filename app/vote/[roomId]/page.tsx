@@ -116,8 +116,8 @@ export default function VoteRoomPage() {
             <div className="absolute top-0 left-0 right-0 h-1 gold-border-animated"></div>
 
             <div className="max-w-4xl mx-auto px-6 pt-16 pb-12">
-                {/* Header - Show on intro and verification */}
-                {(state === 'intro' || state === 'verify-email') && (
+                {/* Intro State */}
+                {state === 'intro' && (
                     <>
                         {/* Institutional Badge */}
                         <div className="flex items-center justify-center gap-3 mb-6">
@@ -142,9 +142,9 @@ export default function VoteRoomPage() {
                         )}
 
                         {/* Verification Tier Info */}
-                        <div className="card-gold p-6 mb-8 gold-glow">
+                        <div className="card-gold p-6 mb-8 gold-glow max-w-2xl mx-auto">
                             <div className="flex items-center gap-4">
-                                <Shield className="w-8 h-8 gold-text" />
+                                <Shield className="w-8 h-8 gold-text flex-shrink-0" />
                                 <div>
                                     <p className="font-medium mb-1">
                                         {room.verification_tier === 'tier1' && 'Email Verification Required'}
@@ -160,13 +160,23 @@ export default function VoteRoomPage() {
                             </div>
                         </div>
 
+                        {/* Start Button */}
+                        <div className="text-center mb-12">
+                            <button
+                                onClick={() => setState('verify-email')}
+                                className="btn-gold btn-lg min-w-[200px]"
+                            >
+                                Start Voting
+                            </button>
+                        </div>
+
                         <div className="divider-gold mb-8"></div>
-                        <h2 className="text-heading mb-6 text-center">Vote on:</h2>
-                        <div className="space-y-4">
+                        <h2 className="text-heading mb-6 text-center">Preview: Candidates</h2>
+                        <div className="space-y-4 opacity-70">
                             {room.room_options?.map((option: any, index: number) => (
                                 <div
                                     key={option.id}
-                                    className="card p-6 gold-border transition-all hover:gold-glow"
+                                    className="card p-6 gold-border"
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
@@ -184,16 +194,33 @@ export default function VoteRoomPage() {
                         </div>
                     </>
                 )}
-        </div>
 
-                {/* Footer */}
-                <div className="border-t border-white/5 py-8">
-                    <div className="max-w-4xl mx-auto px-6 text-center">
-                        <p className="text-sm text-mono-50">
-                            Powered by <span className="gold-text font-bold">VoteQuest</span> Institutional Voting
-                        </p>
-                    </div>
+                {/* Verification State */}
+                {state === 'verify-email' && (
+                    <EmailVerification
+                        roomId={roomId}
+                        verificationTier={room.verification_tier}
+                        onVerified={(email, code, identifier) => handleEmailVerified(email, code)}
+                    />
+                )}
+
+                {/* Voting State */}
+                {state === 'voting' && (
+                    <VotingInterface
+                        room={room}
+                        onVoteSubmit={handleVoteSubmit}
+                    />
+                )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-white/5 py-8">
+                <div className="max-w-4xl mx-auto px-6 text-center">
+                    <p className="text-sm text-mono-50">
+                        Powered by <span className="gold-text font-bold">VoteQuest</span> Institutional Voting
+                    </p>
                 </div>
             </div>
+        </div>
     );
 }

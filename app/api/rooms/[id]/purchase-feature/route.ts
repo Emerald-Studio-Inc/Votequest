@@ -18,10 +18,10 @@ const FEATURE_COSTS = {
 
 export async function POST(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const roomId = params.roomId;
+        const roomId = params.id;
         const ip = request.headers.get('x-forwarded-for') || 'unknown';
 
         // Rate limiting

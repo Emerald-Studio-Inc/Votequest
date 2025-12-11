@@ -21,23 +21,43 @@ export default function OrganizationDashboard({
     const [showSubscriptionPicker, setShowSubscriptionPicker] = useState(false);
     const [showCoinFeatures, setShowCoinFeatures] = useState(false);
     const [selectedRoomForFeatures, setSelectedRoomForFeatures] = useState<string | null>(null);
+    const [userCoins, setUserCoins] = useState(0);
 
     useEffect(() => {
         loadOrganization();
         loadRooms();
+        loadUserCoins();
     }, [organizationId]);
+
+    const loadUserCoins = async () => {
+        try {
+            const response = await fetch(`/api/users/${userId}/coins`);
+            if (response.ok) {
+                const data = await response.json();
+                setUserCoins(data.coins || 0);
+            }
+        } catch (error) {
+            console.error('Error loading user coins:', error);
+        }
+    };
 
     const loadOrganization = async () => {
         try {
-            // TODO: Fetch organization details
-            setOrganization({
-                id: organizationId,
-                name: 'Test Organization',
-                type: 'school',
-                subscription_tier: 'free'
-            });
+            setLoading(true);
+            const response = await fetch(`/api/organizations/${organizationId}`);
+
+            if (response.ok) {
+                const data = await response.json();
+                setOrganization(data.organization);
+            } else {
+                console.error('Failed to load organization');
+                // Optional: Redirect back if not found
+                // onNavigate?.('organization-list');
+            }
         } catch (error) {
             console.error('Error loading organization:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -130,7 +150,7 @@ export default function OrganizationDashboard({
                             </div>
                         </div>
                         <button
-                            onClick={() => onNavigate?.('create-room')}
+                            onClick={() => onNavigate?.('create-room', { name: organization.name })}
                             className="btn btn-primary flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
@@ -143,7 +163,7 @@ export default function OrganizationDashboard({
             {/* Coin Features Modal */}
             <CoinFeaturesPurchase
                 roomId={selectedRoomForFeatures || ''}
-                userCoins={0} // TODO: Pass real user coins
+                userCoins={userCoins}
                 isOpen={showCoinFeatures}
                 onClose={() => {
                     setShowCoinFeatures(false);
@@ -151,6 +171,7 @@ export default function OrganizationDashboard({
                 }}
                 onSuccess={() => {
                     loadRooms();
+                    loadUserCoins();
                 }}
             />
 

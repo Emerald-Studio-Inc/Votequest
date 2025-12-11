@@ -7,10 +7,10 @@ import { supabaseAdmin } from '@/lib/server-db';
  */
 export async function DELETE(
     request: Request,
-    { params }: { params: { roomId: string; voterId: string } }
+    { params }: { params: { id: string; voterId: string } }
 ) {
     try {
-        const { roomId, voterId } = params;
+        const { id: roomId, voterId } = params;
 
         // Delete voter from eligibility list
         const { error } = await supabaseAdmin

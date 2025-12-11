@@ -46,6 +46,9 @@ import AdminSetup2FA from './AdminSetup2FA';
 import OrganizationListScreen from './OrganizationListScreen';
 import OrganizationDashboard from './OrganizationDashboard';
 import OrganizationSetup from './OrganizationSetup';
+import RoomDetailScreen from './RoomDetailScreen';
+
+import CreateRoomWizard from './CreateRoomWizard';
 
 interface UserData {
     address: string | null;
@@ -90,14 +93,56 @@ const VoteQuestApp = () => {
     const [authUser, setAuthUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
+    const [selectedOrganizationName, setSelectedOrganizationName] = useState<string>('');
     const [selectedRoom, setSelectedRoom] = useState<any>(null);
 
     // Blockchain removed - using database only
     const address = null;
     const isConnected = false;
 
-    // Auto-reload disabled - users can manually refresh if needed
-    // useAutoReload();
+    // Handle payment redirects (coins/subscription)
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+
+    useEffect(() => {
+        if (!searchParams) return;
+
+        const handlePaymentFeedback = async () => {
+            const { toast } = await import('@/lib/toast');
+            const router = (await import('next/navigation')).useRouter; // We can't use hook conditionally easily in effects, but URL cleanup is secondary
+
+            // Coin Purchase Feedback
+            if (searchParams.get('coinsSuccess') === 'true') {
+                toast.success('Coins purchased successfully!', 'Your balance has been updated.');
+                // Refresh user profile to get new balance
+                if (userData.userId) loadUserProfile(userData.userId);
+                // Clean URL (optional, primitive way)
+                window.history.replaceState(null, '', '/');
+            } else if (searchParams.get('coinsError') === 'true') {
+                toast.error('Coin purchase failed', 'Please try again or contact support.');
+                window.history.replaceState(null, '', '/');
+            }
+
+            // Subscription Feedback
+            if (searchParams.get('subscriptionSuccess') === 'true') {
+                toast.success('Subscription activated!', 'Your organization is now upgraded.');
+                window.history.replaceState(null, '', '/');
+            } else if (searchParams.get('subscriptionError') === 'true') {
+                toast.error('Subscription failed', 'Payment could not be verified.');
+                window.history.replaceState(null, '', '/');
+            }
+
+            // Handle Deep Linking
+            const screen = searchParams.get('screen');
+            const orgId = searchParams.get('orgId');
+
+            if (screen === 'organization-dashboard' && orgId) {
+                setSelectedOrganizationId(orgId);
+                setCurrentScreen('organization-dashboard');
+            }
+        };
+
+        handlePaymentFeedback();
+    }, []);
 
     // Check auth on mount
     useEffect(() => {
@@ -208,6 +253,7 @@ const VoteQuestApp = () => {
     const [showAdminModal, setShowAdminModal] = useState(false);
     const [showSetup2FA, setShowSetup2FA] = useState(false);
     const [setup2FAPassphrase, setSetup2FAPassphrase] = useState('');
+    const [adminPassphrase, setAdminPassphrase] = useState('');
     const [adminSessionStart, setAdminSessionStart] = useState<number | null>(null);
     const ADMIN_SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -673,7 +719,8 @@ const VoteQuestApp = () => {
                 <AdminPassphraseModal
                     open={showAdminModal}
                     onClose={() => setShowAdminModal(false)}
-                    onSuccess={() => {
+                    onSuccess={(passphrase) => {
+                        setAdminPassphrase(passphrase);
                         setShowAdminModal(false);
                         setCurrentScreen('admin');
                     }}
@@ -718,7 +765,7 @@ const VoteQuestApp = () => {
     }
 
     if (currentScreen === 'admin') {
-        return <AdminDashboard onBack={() => setCurrentScreen('dashboard')} />;
+        return <AdminDashboard onBack={() => setCurrentScreen('dashboard')} passphrase={adminPassphrase} />;
     }
 
     if (currentScreen === 'proposal' && selectedProposal) {
@@ -763,6 +810,7 @@ const VoteQuestApp = () => {
                 setCurrentScreen('organization');
                 setSelectedOrganizationId(null);
             } else if (screen === 'create-room') {
+                if (data?.name) setSelectedOrganizationName(data.name);
                 setCurrentScreen('create-room');
             } else if (screen === 'room' && data) {
                 setSelectedRoom(data);
@@ -783,30 +831,30 @@ const VoteQuestApp = () => {
 
     if (currentScreen === 'room-detail' && selectedRoom) {
         return (
-            <div className="min-h-screen pb-32 bg-black text-white">
-                <div className="sticky top-0 z-40 border-b border-white/5 bg-black/80 backdrop-blur-xl">
-                    <div className="max-w-[1200px] mx-auto px-8 py-6">
-                        <button
-                            onClick={() => {
-                                setCurrentScreen('organization-dashboard');
-                                setSelectedRoom(null);
-                            }}
-                            className="btn btn-ghost text-blue-400 hover:text-blue-300 mb-4"
-                        >
-                            ← Back to Organization
-                        </button>
-                        <h1 className="text-2xl font-bold">{selectedRoom.title}</h1>
-                        <p className="text-mono-60">{selectedRoom.description}</p>
-                    </div>
-                </div>
-                <div className="max-w-[1200px] mx-auto px-8 pt-12">
-                    <div className="card-elevated p-8">
-                        <h2 className="text-xl font-bold mb-4">Room Details</h2>
-                        <p className="text-mono-80 mb-2"><strong>Status:</strong> {selectedRoom.status}</p>
-                        <p className="text-mono-80"><strong>ID:</strong> {selectedRoom.id}</p>
-                    </div>
-                </div>
-            </div>
+            <RoomDetailScreen
+                roomId={selectedRoom.id}
+                organizationId={selectedRoom.organization_id}
+                userId={userData.userId || ''}
+                onBack={() => {
+                    setCurrentScreen('organization-dashboard');
+                    setSelectedRoom(null);
+                }}
+            />
+        );
+    }
+
+    if (currentScreen === 'create-room') {
+        return (
+            <CreateRoomWizard
+                organizationId={selectedOrganizationId || ''}
+                organizationName={selectedOrganizationName}
+                userId={userData.userId || ''}
+                onComplete={(roomId) => {
+                    // Refresh logic if needed, then go to dashboard
+                    setCurrentScreen('organization-dashboard');
+                }}
+                onCancel={() => setCurrentScreen('organization-dashboard')}
+            />
         );
     }
 

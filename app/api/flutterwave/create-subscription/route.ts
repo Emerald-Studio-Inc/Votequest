@@ -1,18 +1,7 @@
+
 import { NextResponse } from 'next/server';
-// @ts-ignore
-const Flutterwave = require('flutterwave-node-v3');
 import { supabaseAdmin } from '@/lib/server-db';
 import { rateLimit } from '@/lib/rate-limit';
-
-// Initialize Flutterwave
-if (!process.env.FLUTTERWAVE_SECRET_KEY) {
-    throw new Error('FLUTTERWAVE_SECRET_KEY not set in environment variables');
-}
-
-const flutterwave = new Flutterwave(
-    process.env.FLUTTERWAVE_SECRET_KEY,
-    process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || ''
-);
 
 // Tier pricing mapping (in kobo - divide by 100 for Naira)
 const TIER_PRICES = {
@@ -23,6 +12,11 @@ const TIER_PRICES = {
 
 export async function POST(request: Request) {
     try {
+        if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+            console.error('FLUTTERWAVE_SECRET_KEY not set');
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
         // Rate limiting
         const ip = request.headers.get('x-forwarded-for') || 'unknown';
         if (!rateLimit(ip, 10, 60000)) {
@@ -46,19 +40,24 @@ export async function POST(request: Request) {
         }
 
         // Verify user owns organization
+        console.log('[DEBUG] Querying organization with ID:', organizationId);
         const { data: org, error: orgError } = await supabaseAdmin
             .from('organizations')
-            .select('id, name, creator_id')
+            .select('id, name, created_by')
             .eq('id', organizationId)
             .single();
 
+        console.log('[DEBUG] Org query result:', { org, orgError });
+
         if (orgError || !org) {
+            console.error('[DEBUG] Organization not found error:', orgError);
             return NextResponse.json({
-                error: 'Organization not found'
+                error: 'Organization not found',
+                details: orgError
             }, { status: 404 });
         }
 
-        if (org.creator_id !== userId) {
+        if (org.created_by !== userId) {
             return NextResponse.json({
                 error: 'Unauthorized - you must own this organization'
             }, { status: 403 });
@@ -92,12 +91,20 @@ export async function POST(request: Request) {
 
         const priceInfo = TIER_PRICES[tier as keyof typeof TIER_PRICES];
 
+        // Use dynamic origin
+        const origin = new URL(request.url).origin;
+        console.log('[DEBUG] Subscription Dynamic Origin:', origin);
+
+        const redirectUrl = `${origin}/api/flutterwave/verify-subscription?org=${organizationId}&tier=${tier}&t=${Date.now()}`;
+        console.log('[DEBUG] Generated Redirect URL:', redirectUrl);
+
         // Create Flutterwave payment link
+        // Create Flutterwave payment link via fetch (SDK is unreliable in this env)
         const payload = {
             tx_ref: `sub_${organizationId}_${Date.now()}`,
             amount: priceInfo.monthly / 100, // Convert kobo to Naira
             currency: 'NGN',
-            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/flutterwave/verify-subscription?org=${organizationId}&tier=${tier}`,
+            redirect_url: redirectUrl,
             customer: {
                 email: user.email,
                 name: org.name,
@@ -105,7 +112,7 @@ export async function POST(request: Request) {
             customizations: {
                 title: `VoteQuest ${priceInfo.name} Plan`,
                 description: `${priceInfo.voters} voter limit - Monthly subscription`,
-                logo: 'https://votequest.app/logo.png', // Update with your logo
+                logo: 'https://votequest.app/logo.png',
             },
             meta: {
                 organizationId,
@@ -115,20 +122,29 @@ export async function POST(request: Request) {
             }
         };
 
-        // Create the payment
-        const response = await flutterwave.Payment.initiate(payload);
+        const flwResponse = await fetch('https://api.flutterwave.com/v3/payments', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
 
-        console.log('[FLUTTERWAVE] Payment initiated:', response);
+        const flwData = await flwResponse.json();
 
-        if (!response.data?.link) {
+        console.log('[FLUTTERWAVE] Payment initiated:', flwData);
+
+        if (!flwResponse.ok || !flwData.data?.link) {
+            console.error('[FLUTTERWAVE] API Error:', flwData);
             return NextResponse.json({
-                error: 'Failed to generate payment link'
+                error: 'Failed to generate payment link via API'
             }, { status: 500 });
         }
 
         return NextResponse.json({
-            paymentLink: response.data.link,
-            reference: response.data.reference || '',
+            paymentLink: flwData.data.link,
+            reference: flwData.data.reference || '',
             tier,
             amount: priceInfo.monthly / 100
         });

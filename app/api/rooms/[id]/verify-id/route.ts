@@ -7,11 +7,11 @@ import { supabaseAdmin } from '@/lib/server-db';
  */
 export async function POST(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
         const { email, identifier } = await request.json();
-        const { roomId } = params;
+        const { id: roomId } = params;
 
         if (!email || !identifier) {
             return NextResponse.json(

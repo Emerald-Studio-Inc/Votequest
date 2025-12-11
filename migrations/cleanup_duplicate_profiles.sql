@@ -43,32 +43,16 @@ ORDER BY profile_count DESC;
 -- ==========================================
 
 -- Create a backup table for duplicate profiles before cleanup
-CREATE TABLE IF NOT EXISTS users_duplicate_backup (
-    id uuid,
-    auth_id uuid,
-    email text,
-    username text,
-    xp int,
-    level int,
-    coins int,
-    votes_count int,
-    voting_power int,
-    streak int,
-    global_rank int,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    backed_up_at timestamp with time zone DEFAULT now(),
-    primary_user_id uuid, -- Which profile was kept
-    reason text
-);
+-- Create a backup table for duplicate profiles using CTAS (Create Table As Select)
+-- This avoids column mismatch errors if the users table has more columns than we expect
+DROP TABLE IF EXISTS users_duplicate_backup;
 
--- Backup all duplicate profiles (except the one we'll keep)
-INSERT INTO users_duplicate_backup
+CREATE TABLE users_duplicate_backup AS
 SELECT 
     u.*,
     now() as backed_up_at,
-    NULL as primary_user_id,
-    'Duplicate auth_id' as reason
+    NULL::uuid as primary_user_id,
+    'Duplicate auth_id'::text as reason
 FROM users u
 WHERE auth_id IN (
     SELECT auth_id
@@ -219,41 +203,37 @@ FROM duplicate_users du
 WHERE p.created_by = du.duplicate_id;
 
 -- Update coin_transactions if table exists
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'coin_transactions') THEN
-        WITH primary_users AS (
-            SELECT 
-                u.id as primary_id,
-                u.auth_id
-            FROM users u
-            WHERE auth_id IN (
-                SELECT auth_id
-                FROM users
-                WHERE auth_id IS NOT NULL
-                GROUP BY auth_id
-                HAVING COUNT(*) > 1
-            )
-            AND created_at = (
-                SELECT MIN(created_at)
-                FROM users u2
-                WHERE u2.auth_id = u.auth_id
-            )
-        ),
-        duplicate_users AS (
-            SELECT 
-                u.id as duplicate_id,
-                pu.primary_id
-            FROM users u
-            INNER JOIN primary_users pu ON u.auth_id = pu.auth_id
-            WHERE u.id != pu.primary_id
-        )
-        UPDATE coin_transactions ct
-        SET user_id = du.primary_id
-        FROM duplicate_users du
-        WHERE ct.user_id = du.duplicate_id;
-    END IF;
-END $$;
+-- Update coin_transactions directly (assumes table exists)
+WITH primary_users AS (
+    SELECT 
+        u.id as primary_id,
+        u.auth_id
+    FROM users u
+    WHERE auth_id IN (
+        SELECT auth_id
+        FROM users
+        WHERE auth_id IS NOT NULL
+        GROUP BY auth_id
+        HAVING COUNT(*) > 1
+    )
+    AND created_at = (
+        SELECT MIN(created_at)
+        FROM users u2
+        WHERE u2.auth_id = u.auth_id
+    )
+),
+duplicate_users AS (
+    SELECT 
+        u.id as duplicate_id,
+        pu.primary_id
+    FROM users u
+    INNER JOIN primary_users pu ON u.auth_id = pu.auth_id
+    WHERE u.id != pu.primary_id
+)
+UPDATE coin_transactions ct
+SET user_id = du.primary_id
+FROM duplicate_users du
+WHERE ct.user_id = du.duplicate_id;
 
 -- ==========================================
 -- STEP 5: DELETE DUPLICATE PROFILES

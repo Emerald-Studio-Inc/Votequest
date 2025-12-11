@@ -123,8 +123,75 @@ export default function VoterManagementPanel({
         a.click();
     };
 
+    const [reviewVoter, setReviewVoter] = useState<any>(null);
+    const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null);
+
+    const pendingVoters = voters.filter(v => v.verification_status === 'pending');
+    const approvedVoters = voters.filter(v => v.verification_status !== 'pending');
+
+    const handleReview = async (voterId: string, status: 'verified' | 'rejected') => {
+        try {
+            const response = await fetch(`/api/rooms/${roomId}/review-verification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ voterId, status })
+            });
+
+            if (response.ok) {
+                alert(`Voter ${status === 'verified' ? 'approved' : 'rejected'} successfully`);
+                setReviewVoter(null);
+                onRefresh();
+            } else {
+                const data = await response.json();
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        }
+    };
+
+    const getFileUrl = (path: string) => {
+        if (!path) return '';
+        const filename = path.split(/[/\\]/).pop();
+        return `/api/uploads/${filename}`;
+    };
+
     return (
         <div className="space-y-6">
+            {/* Pending Reviews (Tier 3) */}
+            {verificationTier === 'tier3' && pendingVoters.length > 0 && (
+                <div className="card-gold p-6 gold-glow mb-8 animate-pulse-slow">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 border border-yellow-500/30">
+                                <span className="font-bold">{pendingVoters.length}</span>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Pending Verifications</h3>
+                                <p className="text-sm text-mono-60">Review government IDs</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {pendingVoters.map((voter) => (
+                            <div key={voter.id} className="bg-black/40 rounded-lg p-4 flex items-center justify-between border border-white/5">
+                                <div>
+                                    <p className="font-medium text-white">{voter.email}</p>
+                                    <p className="text-xs text-mono-50">Submitted: {new Date(voter.updated_at || voter.created_at).toLocaleDateString()}</p>
+                                </div>
+                                <button
+                                    onClick={() => setReviewVoter(voter)}
+                                    className="btn btn-primary btn-sm"
+                                >
+                                    Review ID
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex gap-3">
                 <button
@@ -156,7 +223,7 @@ export default function VoterManagementPanel({
                 </button>
             </div>
 
-            {/* Add Voter Modal */}
+            {/* ... (Add Voter Modal - Unchanged) ... */}
             {showAddVoter && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-6">
                     <div className="card-elevated p-6 max-w-md w-full">
@@ -216,31 +283,96 @@ export default function VoterManagementPanel({
                 </div>
             )}
 
+            {/* Review Voter Modal */}
+            {reviewVoter && (
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center px-6">
+                    <div className="card-elevated p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-heading">Review Verification</h3>
+                            <button onClick={() => setReviewVoter(null)} className="btn btn-ghost btn-sm p-2">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm text-mono-60">Voter Email</p>
+                                    <p className="font-medium">{reviewVoter.email}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-mono-60">Submitted</p>
+                                    <p className="font-medium">{new Date(reviewVoter.updated_at || reviewVoter.created_at).toLocaleString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-black/50 rounded-xl overflow-hidden border border-white/10">
+                                {reviewVoter.gov_id_url ? (
+                                    <img
+                                        src={getFileUrl(reviewVoter.gov_id_url)}
+                                        alt="Government ID"
+                                        className="w-full h-auto object-contain max-h-[400px]"
+                                    />
+                                ) : (
+                                    <div className="p-12 text-center text-mono-50">
+                                        No ID image found
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-4 pt-4 border-t border-white/10">
+                                <button
+                                    onClick={() => handleReview(reviewVoter.id, 'rejected')}
+                                    className="btn btn-ghost text-red-400 hover:text-red-300 flex-1 hover:bg-red-500/10"
+                                >
+                                    Reject Request
+                                </button>
+                                <button
+                                    onClick={() => handleReview(reviewVoter.id, 'verified')}
+                                    className="btn-gold flex-1"
+                                >
+                                    Approve Verification
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Voter List */}
             <div className="card-elevated p-6">
                 <h3 className="text-heading mb-4">
-                    Eligible Voters ({voters.length})
+                    Eligible Voters ({approvedVoters.length})
                 </h3>
 
-                {voters.length === 0 ? (
+                {approvedVoters.length === 0 ? (
                     <div className="text-center py-8">
                         <UserPlus className="w-10 h-10 text-mono-50 mx-auto mb-3" />
-                        <p className="text-mono-60">No voters added yet</p>
+                        <p className="text-mono-60">No approved voters yet</p>
                     </div>
                 ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                        {voters.map((voter) => (
+                        {approvedVoters.map((voter) => (
                             <div
                                 key={voter.id}
                                 className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between"
                             >
                                 <div>
-                                    <p className="font-medium text-sm">{voter.identifier}</p>
+                                    <p className="font-medium text-sm">{voter.identifier || voter.email}</p>
                                     {voter.student_id && (
                                         <p className="text-xs text-mono-60">ID: {voter.student_id}</p>
                                     )}
                                     {voter.has_voted && (
                                         <span className="text-xs text-green-400">✓ Voted</span>
+                                    )}
+                                    {/* Verification Status Badge */}
+                                    {voter.verification_status && (
+                                        <span className={`text-xs ml-2 px-2 py-0.5 rounded-full ${voter.verification_status === 'verified' ? 'bg-green-500/20 text-green-400' :
+                                                voter.verification_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                                    'bg-yellow-500/20 text-yellow-400'
+                                            }`}>
+                                            {voter.verification_status}
+                                        </span>
                                     )}
                                 </div>
                                 <button

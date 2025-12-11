@@ -7,10 +7,10 @@ import { supabaseAdmin } from '@/lib/server-db';
  */
 export async function POST(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { roomId } = params;
+        const { id: roomId } = params;
         const { email, optionIds, verificationCode } = await request.json();
 
         if (!email || !optionIds || optionIds.length === 0) {
@@ -66,13 +66,30 @@ export async function POST(
             }
         }
 
-        // 3. Check for duplicate votes (tier 1 - email only)
+        // 3. Lookup User ID from Email (since room_votes requires user_id)
+        // We assume the email corresponds to a registered user for now.
+        // If not, we might need to handle 'guest' votes, but schema requires user_id.
+        const { data: user } = await supabaseAdmin
+            .from('users')
+            .select('id')
+            .eq('email', email.toLowerCase())
+            .single();
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'User account not found for this email. Please register first.' },
+                { status: 404 }
+            );
+        }
+
+        // 4. Check for duplicate votes (tier 1 - email only)
+        // Note: unique constraint on room_votes(room_id, user_id) handles this, but nice to check early
         if (room.verification_tier === 'tier1') {
             const { data: existingVote } = await supabaseAdmin
-                .from('institutional_votes')
+                .from('room_votes')
                 .select('id')
                 .eq('room_id', roomId)
-                .eq('voter_identifier', email.toLowerCase())
+                .eq('user_id', user.id)
                 .single();
 
             if (existingVote) {
@@ -83,27 +100,48 @@ export async function POST(
             }
         }
 
-        // 4. Record votes
+        // 5. Determine Eligibility ID (needed for weighted voting)
+        let eligibilityId = null;
+        if (room.verification_tier !== 'tier1') {
+            const { data: eligible } = await supabaseAdmin
+                .from('voter_eligibility')
+                .select('id')
+                .eq('room_id', roomId)
+                .eq('identifier', email.toLowerCase())
+                .single();
+            if (eligible) eligibilityId = eligible.id;
+        }
+
+        // 6. Record votes
+        // Use 'room_votes' table.
+        // Handle anonymous: If 'allow_anonymous' OR 'anonymous_voting_enabled' is true.
+        const isAnonymous = room.allow_anonymous || room.anonymous_voting_enabled;
+
         const votes = optionIds.map((optionId: string) => ({
             room_id: roomId,
             option_id: optionId,
-            voter_identifier: room.allow_anonymous ? null : email.toLowerCase(),
-            verification_tier: room.verification_tier
+            user_id: user.id, // REQUIRED by schema
+            eligibility_id: eligibilityId,
+            // We can store metadata if we want to track 'claimed' anonymity, usually IP/UserAgent is stored
+            metadata: isAnonymous ? { anonymous: true } : {}
         }));
 
         const { error: voteError } = await supabaseAdmin
-            .from('institutional_votes')
+            .from('room_votes')
             .insert(votes);
 
         if (voteError) {
             console.error('[API] Error recording votes:', voteError);
+            if (voteError.code === '23505') { // Unique violation
+                return NextResponse.json({ error: 'You have already voted in this room' }, { status: 400 });
+            }
             return NextResponse.json(
                 { error: 'Failed to record vote' },
                 { status: 500 }
             );
         }
 
-        // 5. Mark as voted in eligibility list (tier 2/3)
+        // 7. Mark as voted in eligibility list (tier 2/3)
         if (room.verification_tier !== 'tier1') {
             await supabaseAdmin
                 .from('voter_eligibility')

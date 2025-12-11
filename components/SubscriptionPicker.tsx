@@ -91,7 +91,14 @@ const SubscriptionPicker: React.FC<SubscriptionPickerProps> = ({
                 })
             });
 
-            const data = await response.json();
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('[Subscription] Failed to parse response:', text);
+                throw new Error(text || 'Server returned invalid response');
+            }
 
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to create subscription');

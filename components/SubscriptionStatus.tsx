@@ -78,27 +78,10 @@ const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
         }
     };
 
-    const handleManageBilling = async () => {
-        try {
-            const response = await fetch('/api/stripe/portal', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    organizationId,
-                    userId
-                })
-            });
-
-            const data = await response.json();
-            if (data.url) {
-                window.location.href = data.url;
-            }
-        } catch (err) {
-            console.error('Error accessing billing portal:', err);
-            onManageBilling?.();
-        }
+    const handleManageBilling = () => {
+        // Since we don't have a self-serve portal for Flutterwave yet
+        alert("To manage or cancel your subscription, please please contact billing@votequest.app");
+        onManageBilling?.();
     };
 
     if (loading) {

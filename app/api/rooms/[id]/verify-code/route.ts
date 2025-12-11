@@ -9,10 +9,10 @@ const verificationCodes = new Map<string, { code: string; expiry: number }>();
  */
 export async function POST(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { roomId } = params;
+        const { id: roomId } = params;
         const { email, code } = await request.json();
 
         if (!email || !code) {

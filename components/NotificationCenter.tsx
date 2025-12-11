@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Bell, X, Check, Vote, FileText, Trophy, Trash2 } from 'lucide-react';
+import { Bell, X, Check, Vote, FileText, Trophy, Trash2, Activity } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface Notification {
     id: string;
     user_id: string;
-    type: 'vote' | 'proposal' | 'achievement' | 'system';
+    type: 'vote' | 'proposal' | 'achievement' | 'system' | 'coins_purchased';
     title: string;
     message: string;
     read: boolean;
@@ -29,16 +29,17 @@ export default function NotificationCenter({ userId, onClose }: NotificationCent
     }, [userId]);
 
     const loadNotifications = async () => {
-        const query = supabase
-            .from('notifications')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false })
-            .limit(50);
-
-        const { data } = await query;
-        setNotifications(data || []);
-        setLoading(false);
+        try {
+            const response = await fetch(`/api/notifications?userId=${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setNotifications(data || []);
+            }
+        } catch (error) {
+            console.error('Failed to load notifications:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const subscribeToNotifications = () => {
@@ -64,14 +65,19 @@ export default function NotificationCenter({ userId, onClose }: NotificationCent
     };
 
     const markAsRead = async (notificationId: string) => {
-        await supabase
-            .from('notifications')
-            .update({ read: true })
-            .eq('id', notificationId);
+        try {
+            await fetch('/api/notifications/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: notificationId })
+            });
 
-        setNotifications(prev =>
-            prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-        );
+            setNotifications(prev =>
+                prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+            );
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        }
     };
 
     const markAllAsRead = async () => {
@@ -98,6 +104,7 @@ export default function NotificationCenter({ userId, onClose }: NotificationCent
             case 'vote': return Vote;
             case 'proposal': return FileText;
             case 'achievement': return Trophy;
+            case 'coins_purchased': return Activity; // Imported from lucide-react
             default: return Bell;
         }
     };

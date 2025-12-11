@@ -19,7 +19,7 @@ export async function GET(
         // Verify user has access to this organization
         const { data: org, error: orgError } = await supabaseAdmin
             .from('organizations')
-            .select('id, creator_id, subscription_tier')
+            .select('id, created_by, subscription_tier')
             .eq('id', organizationId)
             .single();
 
@@ -31,7 +31,7 @@ export async function GET(
         }
 
         // Check if user is org creator or member (can extend later)
-        if (org.creator_id !== userId) {
+        if (org.created_by !== userId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 403 }

@@ -24,40 +24,39 @@ export default function CreateRoomWizard({
     const [description, setDescription] = useState('');
     const [verificationTier, setVerificationTier] = useState<'tier1' | 'tier2' | 'tier3'>('tier1');
     const [options, setOptions] = useState([
-        { title: '', description: '' },
-        { title: '', description: '' }
+        { title: '', description: '', imageUrl: '' },
+        { title: '', description: '', imageUrl: '' }
     ]);
 
     const tiers = [
         {
             value: 'tier1',
-            name: 'Email Only',
-            description: 'Anyone with an email can vote',
-            icon: '📧',
-            security: 'Basic',
-            color: 'blue'
+            name: 'Basic',
+            icon: '🗳️',
+            description: 'Open to anyone with the link',
+            security: 'Low'
         },
         {
             value: 'tier2',
-            name: 'Email + ID Number',
-            description: 'Requires student/employee ID',
-            icon: '🎓',
-            security: 'Medium',
-            color: 'purple'
+            name: 'Verified',
+            icon: '✅',
+            description: 'Requires email verification',
+            security: 'Medium'
         },
         {
             value: 'tier3',
-            name: 'Email + Government ID',
-            description: 'Upload photo ID for verification',
-            icon: '🪪',
-            security: 'High',
-            color: 'green'
+            name: 'Strict',
+            icon: '🔐',
+            description: 'Government ID required',
+            security: 'High'
         }
     ];
 
+    // ...
+
     const addOption = () => {
         if (options.length < 10) {
-            setOptions([...options, { title: '', description: '' }]);
+            setOptions([...options, { title: '', description: '', imageUrl: '' }]);
         }
     };
 
@@ -67,7 +66,7 @@ export default function CreateRoomWizard({
         }
     };
 
-    const updateOption = (index: number, field: 'title' | 'description', value: string) => {
+    const updateOption = (index: number, field: 'title' | 'description' | 'imageUrl', value: string) => {
         const updated = [...options];
         updated[index][field] = value;
         setOptions(updated);
@@ -97,7 +96,11 @@ export default function CreateRoomWizard({
                     title,
                     description,
                     verificationTier,
-                    options: validOptions,
+                    options: validOptions.map(o => ({
+                        title: o.title,
+                        description: o.description,
+                        image_url: o.imageUrl
+                    })),
                     userId
                 })
             });
@@ -120,8 +123,8 @@ export default function CreateRoomWizard({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-            <div className="card-elevated p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:px-6">
+            <div className="card-elevated p-4 sm:p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <h2 className="text-display mb-2">Create Voting Room</h2>
@@ -202,8 +205,8 @@ export default function CreateRoomWizard({
                                     key={tier.value}
                                     onClick={() => setVerificationTier(tier.value as any)}
                                     className={`
-                    w-full p-5 rounded-xl border-2 transition-all text-left
-                    flex items-start gap-4 group
+                    w-full p-4 sm:p-5 rounded-xl border-2 transition-all text-left
+                    flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 group
                     ${isSelected
                                             ? 'border-white bg-white/5'
                                             : 'border-white/10 hover:border-white/20'
@@ -278,8 +281,15 @@ export default function CreateRoomWizard({
                                                 type="text"
                                                 value={option.description}
                                                 onChange={(e) => updateOption(index, 'description', e.target.value)}
-                                                placeholder="Optional description"
+                                                placeholder="Candidate Bio / Merits (e.g., 'Class President 2024, Honor Roll')"
                                                 className="input w-full text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={option.imageUrl}
+                                                onChange={(e) => updateOption(index, 'imageUrl', e.target.value)}
+                                                placeholder="Image URL (e.g., https://example.com/photo.jpg)"
+                                                className="input w-full text-sm font-mono text-mono-60"
                                             />
                                         </div>
                                         {options.length > 2 && (

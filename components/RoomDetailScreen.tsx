@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Settings, Users, BarChart3, Play, Pause, Archive, Edit, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Settings, Users, BarChart3, Play, Pause, Archive, Edit, CheckCircle, XCircle, Clock, Zap } from 'lucide-react';
 import VoterManagementPanel from './VoterManagementPanel';
 import ShareRoomInvite from './ShareRoomInvite';
+import CoinFeaturesPurchase from './CoinFeaturesPurchase';
 
 interface RoomDetailScreenProps {
     roomId: string;
@@ -20,11 +21,26 @@ export default function RoomDetailScreen({
     const [voters, setVoters] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'overview' | 'voters' | 'results'>('overview');
+    const [showCoinFeatures, setShowCoinFeatures] = useState(false);
+    const [userCoins, setUserCoins] = useState(0);
 
     useEffect(() => {
         loadRoom();
         loadVoters();
+        loadUserCoins();
     }, [roomId]);
+
+    const loadUserCoins = async () => {
+        try {
+            const response = await fetch(`/api/users/${userId}/coins`);
+            if (response.ok) {
+                const data = await response.json();
+                setUserCoins(data.coins || 0);
+            }
+        } catch (error) {
+            console.error('Error loading user coins:', error);
+        }
+    };
 
     const loadRoom = async () => {
         try {
@@ -158,9 +174,28 @@ export default function RoomDetailScreen({
                             <Edit className="w-4 h-4" />
                             Edit
                         </button>
+
+                        <button
+                            onClick={() => setShowCoinFeatures(true)}
+                            className="btn btn-ghost flex items-center gap-2 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
+                        >
+                            <Zap className="w-4 h-4" />
+                            Boost Room
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <CoinFeaturesPurchase
+                roomId={roomId}
+                userCoins={userCoins}
+                isOpen={showCoinFeatures}
+                onClose={() => setShowCoinFeatures(false)}
+                onSuccess={() => {
+                    loadRoom();
+                    loadUserCoins(); // Refresh coins after purchase
+                }}
+            />
 
             {/* Tabs */}
             <div className="max-w-[1200px] mx-auto px-8 mt-8">
@@ -245,6 +280,35 @@ export default function RoomDetailScreen({
                                 </div>
                             </div>
                         </div>
+                        {/* Candidates / Options Preview */}
+                        <div className="card-elevated p-6">
+                            <h3 className="text-heading mb-4">Candidates</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {room.room_options?.map((option: any) => (
+                                    <div key={option.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-start gap-4">
+                                        {/* Avatar */}
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${!option.image_url ? 'bg-white/10' : ''}`}>
+                                            {option.image_url ? (
+                                                <img
+                                                    src={option.image_url}
+                                                    alt={option.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <Users className="w-5 h-5 text-mono-50" />
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <h4 className="font-bold text-white mb-1">{option.title}</h4>
+                                            {option.description && (
+                                                <p className="text-sm text-mono-60 line-clamp-3">{option.description}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -267,11 +331,27 @@ export default function RoomDetailScreen({
                             return (
                                 <div key={option.id} className="card-elevated p-6">
                                     <div className="flex items-start justify-between mb-4">
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-lg mb-1">{option.title}</h4>
-                                            {option.description && (
-                                                <p className="text-sm text-mono-60">{option.description}</p>
+                                        <div className="flex items-start gap-4 flex-1">
+                                            {/* Candidate Image */}
+                                            {option.image_url && (
+                                                <div className="w-16 h-16 rounded-full bg-white/5 overflow-hidden border border-white/10 flex-shrink-0">
+                                                    <img
+                                                        src={option.image_url}
+                                                        alt={option.title}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).style.display = 'none';
+                                                        }}
+                                                    />
+                                                </div>
                                             )}
+
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-lg mb-1">{option.title}</h4>
+                                                {option.description && (
+                                                    <p className="text-sm text-mono-60 line-clamp-2">{option.description}</p>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-3xl font-bold">{percentage}%</p>

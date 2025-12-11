@@ -66,35 +66,60 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
                             className={`
                 w-full text-left p-6 rounded-xl transition-all
                 ${isSelected
-                                    ? 'card-gold gold-glow border-2'
-                                    : 'card gold-border hover:gold-glow'
+                                    ? 'bg-white/10 border-white/30 backdrop-blur-md shadow-xl'
+                                    : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 backdrop-blur-sm'
                                 }
               `}
                         >
-                            <div className="flex items-start gap-4">
-                                {/* Selection Indicator */}
-                                <div className="flex-shrink-0 pt-1">
-                                    {isSelected ? (
-                                        <CheckCircle className="w-6 h-6 gold-text" strokeWidth={2.5} />
-                                    ) : (
-                                        <Circle className="w-6 h-6 text-mono-40" strokeWidth={2} />
-                                    )}
-                                </div>
+                            <div className="flex flex-col sm:flex-row items-start gap-4">
+                                {/* Header: Indicator + Image (Row on mobile) */}
+                                <div className="flex items-center gap-4 w-full sm:w-auto">
+                                    {/* Selection Indicator */}
+                                    <div className="flex-shrink-0 pt-1">
+                                        {isSelected ? (
+                                            <CheckCircle className="w-6 h-6 gold-text" strokeWidth={2.5} />
+                                        ) : (
+                                            <Circle className="w-6 h-6 text-mono-40" strokeWidth={2} />
+                                        )}
+                                    </div>
 
-                                {/* Option Number */}
-                                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-                                    <span className={`font-bold ${isSelected ? 'gold-text' : 'text-mono-60'}`}>
-                                        {index + 1}
-                                    </span>
-                                </div>
+                                    {/* Option Number or Image */}
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${!option.image_url ? 'bg-white/5 border border-white/10' : ''}`}>
+                                        {option.image_url ? (
+                                            <img
+                                                src={option.image_url}
+                                                alt={option.title}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                }}
+                                            />
+                                        ) : (
+                                            <span className={`font-bold ${isSelected ? 'gold-text' : 'text-mono-60'}`}>
+                                                {index + 1}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                {/* Option Content */}
-                                <div className="flex-1">
-                                    <h3 className={`font-medium text-lg mb-1 ${isSelected ? 'gold-text' : 'text-white'}`}>
+                                    {/* Mobile Title (visible only on mobile) */}
+                                    <h3 className="sm:hidden font-medium text-lg text-white ml-2">
                                         {option.title}
                                     </h3>
-                                    {option.description && (
-                                        <p className="text-sm text-mono-60">{option.description}</p>
+                                </div>
+
+                                {/* Option Content (Desktop Layout / Description on Mobile) */}
+                                <div className="flex-1 w-full pl-0 sm:pl-0">
+                                    <h3 className="hidden sm:block font-medium text-lg mb-1 text-white">
+                                        {option.title}
+                                    </h3>
+                                    {option.description ? (
+                                        <div className="text-sm text-mono-60 bg-white/5 p-3 rounded-lg mt-2 w-full">
+                                            {option.description}
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs text-mono-40 italic mt-1">
+                                            No bio provided
+                                        </div>
                                     )}
                                 </div>
                             </div>

@@ -8,10 +8,19 @@ import { supabaseAdmin } from '@/lib/server-db';
  */
 export async function GET(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { roomId } = params;
+        const { id: roomId } = params;
+
+        // Fetch room settings first to check for anonymity
+        const { data: room } = await supabaseAdmin
+            .from('voting_rooms')
+            .select('allow_anonymous, anonymous_voting_enabled')
+            .eq('id', roomId)
+            .single();
+
+        const isAnonymous = room?.allow_anonymous || room?.anonymous_voting_enabled;
 
         const { data: voters, error } = await supabaseAdmin
             .from('voter_eligibility')
@@ -24,7 +33,14 @@ export async function GET(
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ voters: voters || [] });
+        // If anonymous, redact personal info
+        const safeVoters = isAnonymous ? voters.map((v: any) => ({
+            ...v,
+            identifier: 'Anonymous Voter', // Hide email/ID
+            metadata: {} // Clear metadata
+        })) : voters;
+
+        return NextResponse.json({ voters: safeVoters || [] });
 
     } catch (error: any) {
         console.error('[API] Error fetching voters:', error);
@@ -38,10 +54,10 @@ export async function GET(
  */
 export async function POST(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { roomId } = params;
+        const { id: roomId } = params;
         const body = await request.json();
         const { voters, single } = body;
 

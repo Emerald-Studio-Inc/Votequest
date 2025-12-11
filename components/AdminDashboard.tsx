@@ -4,9 +4,10 @@ import { Download, Users, Coins, FileText, TrendingUp, Calendar, Upload, Buildin
 
 interface AdminDashboardProps {
     onBack: () => void;
+    passphrase: string;
 }
 
-export default function AdminDashboard({ onBack }: AdminDashboardProps) {
+export default function AdminDashboard({ onBack, passphrase }: AdminDashboardProps) {
     const [activeTab, setActiveTab] = useState<'overview' | 'organizations' | 'coins' | 'users'>('overview');
     const [stats, setStats] = useState({
         totalUsers: 0,
@@ -33,32 +34,19 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
     useEffect(() => {
         loadAdminData();
         loadExportStats();
-        loadOrganizations();
     }, []);
-
-    const loadOrganizations = async () => {
-        const { data } = await supabase
-            .from('organizations')
-            .select('*, members(count)')
-            .order('created_at', { ascending: false });
-
-        if (data) {
-            setOrganizations(data.map(org => ({
-                ...org,
-                members_count: org.members[0]?.count || 0
-            })));
-        }
-    };
 
     const handleCoinAdjustment = async () => {
         if (!coinForm.userId || !coinForm.amount) return;
         setLoading(true);
 
         try {
-            // Using a new dedicated endpoint for safer admin adjustments
             const response = await fetch('/api/admin/adjust-coins', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-passphrase': passphrase
+                },
                 body: JSON.stringify({
                     userId: coinForm.userId,
                     amount: coinForm.type === 'credit' ? coinForm.amount : -coinForm.amount,
@@ -69,8 +57,8 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
             if (!response.ok) throw new Error('Failed to adjust coins');
 
             alert(`Successfully ${coinForm.type}ed ${coinForm.amount} coins!`);
-            setCoinForm({ ...coinForm, userId: '', amount: 100 }); // Reset form
-            loadAdminData(); // Refresh stats
+            setCoinForm({ ...coinForm, userId: '', amount: 100 });
+            loadAdminData();
 
         } catch (error) {
             console.error('Error adjusting coins:', error);
@@ -83,54 +71,39 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
     const loadAdminData = async () => {
         setLoading(true);
 
-        // Fetch all receipts with user info
-        const { data: receiptsData } = await supabase
-            .from('coin_transactions')
-            .select(`
-        *,
-        users:user_id (
-          id,
-          wallet_address,
-          username,
-          email,
-          level,
-          xp,
-          coins
-        )
-      `)
-            .order('created_at', { ascending: false })
-            .limit(1000);
+        try {
+            const response = await fetch('/api/admin/dashboard-data', {
+                headers: {
+                    'x-admin-passphrase': passphrase
+                }
+            });
 
-        // Fetch user stats
-        const { data: usersData } = await supabase
-            .from('users')
-            .select('*')
-            .order('coins', { ascending: false })
-            .limit(100);
+            if (!response.ok) {
+                if (response.status === 401) {
+                    alert('Session expired or unauthorized. Please re-login.');
+                    onBack();
+                    return;
+                }
+                throw new Error('Failed to fetch admin data');
+            }
 
-        // Fetch proposals count
-        const { count: proposalsCount } = await supabase
-            .from('proposals')
-            .select('*', { count: 'exact', head: true });
+            const data = await response.json();
 
-        // Fetch votes count
-        const { count: votesCount } = await supabase
-            .from('votes')
-            .select('*', { count: 'exact', head: true });
+            setUsers(data.users || []);
+            setReceipts(data.receipts || []);
+            setOrganizations(data.organizations || []);
+            setStats(data.stats || {
+                totalUsers: 0, totalReceipts: 0, totalCoins: 0, totalProposals: 0, totalVotes: 0
+            });
 
-        if (receiptsData) setReceipts(receiptsData);
-        if (usersData) setUsers(usersData);
-
-        setStats({
-            totalUsers: usersData?.length || 0,
-            totalReceipts: receiptsData?.length || 0,
-            totalCoins: receiptsData?.reduce((sum, r) => sum + r.amount, 0) || 0,
-            totalProposals: proposalsCount || 0,
-            totalVotes: votesCount || 0
-        });
-
-        setLoading(false);
+        } catch (error) {
+            console.error('Error loading admin data:', error);
+            alert('Failed to load dashboard data. Please Check logs.');
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     const exportCSV = () => {
         const csv = [

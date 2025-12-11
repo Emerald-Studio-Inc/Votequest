@@ -7,10 +7,10 @@ import { supabaseAdmin } from '@/lib/server-db';
  */
 export async function PATCH(
     request: Request,
-    { params }: { params: { roomId: string } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { roomId } = params;
+        const { id: roomId } = params;
         const body = await request.json();
         const { status } = body;
 

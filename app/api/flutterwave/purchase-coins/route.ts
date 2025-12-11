@@ -1,17 +1,12 @@
 import { NextResponse } from 'next/server';
 // @ts-ignore
-const Flutterwave = require('flutterwave-node-v3');
+const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
 import { supabaseAdmin } from '@/lib/server-db';
 import { rateLimit } from '@/lib/rate-limit';
 
-if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+if (!FLUTTERWAVE_SECRET_KEY) {
     throw new Error('FLUTTERWAVE_SECRET_KEY not set');
 }
-
-const flutterwave = new Flutterwave(
-    process.env.FLUTTERWAVE_SECRET_KEY,
-    process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || ''
-);
 
 // Coin package pricing (in kobo)
 const COIN_PACKAGES = {
@@ -55,12 +50,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Create Flutterwave payment link
+        // Use the request's origin to determine where to redirect back to.
+        // This ensures it works on Localhost, Vercel/Netlify Preview, and Production automatically.
+        const origin = new URL(request.url).origin;
+        console.log('[DEBUG] Dynamic Origin:', origin);
+
+        const redirectUrl = `${origin}/api/flutterwave/verify-coins?package=${packageType}&t=${Date.now()}`;
+        console.log('[DEBUG] Generated Redirect URL:', redirectUrl);
+
+        // Create Flutterwave payment link via fetch
         const payload = {
             tx_ref: `coins_${userId}_${Date.now()}`,
             amount: pkg.kobo / 100, // Convert kobo to Naira
             currency: 'NGN',
-            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/flutterwave/verify-coins?package=${packageType}`,
+            redirect_url: redirectUrl,
             customer: {
                 email: user.email,
                 name: 'VoteQuest User',
@@ -68,30 +71,38 @@ export async function POST(request: Request) {
             customizations: {
                 title: 'VoteQuest Coins',
                 description: `${pkg.vqc} coins${pkg.bonus ? ` + ${pkg.bonus} bonus` : ''}`,
-                logo: 'https://votequest.app/logo.png', // Update with your logo
+                logo: 'https://votequest.app/logo.png',
             },
             meta: {
                 userId,
                 vqcAmount: pkg.vqc.toString(),
                 bonusVqc: pkg.bonus.toString(),
-                packageType
+                packageType,
+                type: 'coin_purchase'
             }
         };
 
-        // Create the payment
-        const response = await flutterwave.Payment.initiate(payload);
+        const flwResponse = await fetch('https://api.flutterwave.com/v3/payments', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
 
-        console.log('[FLUTTERWAVE] Coin payment initiated:', response);
+        const flwData = await flwResponse.json();
 
-        if (!response.data?.link) {
+        if (!flwResponse.ok || !flwData.data?.link) {
+            console.error('[FLUTTERWAVE] API Error:', flwData);
             return NextResponse.json({
-                error: 'Failed to generate payment link'
+                error: 'Failed to generate payment link via API'
             }, { status: 500 });
         }
 
         return NextResponse.json({
-            paymentLink: response.data.link,
-            reference: response.data.reference || '',
+            paymentLink: flwData.data.link,
+            reference: flwData.data.reference || '',
             amount: pkg.kobo / 100,
             vqc: pkg.vqc + pkg.bonus
         });

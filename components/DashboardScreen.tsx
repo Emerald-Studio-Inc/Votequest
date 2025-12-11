@@ -214,47 +214,33 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
                             </div>
 
-                            {/* Stats Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                        <Zap className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                            {/* Stats Slider (Mobile) / Grid (Desktop) */}
+                            <div className="
+                                flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 
+                                md:grid md:grid-cols-4 md:gap-6 md:pb-0 md:mx-0 md:px-0
+                                scrollbar-hide
+                            ">
+                                {[
+                                    { icon: Zap, label: 'Level', value: userData.level, color: 'text-mono-70' },
+                                    { icon: Flame, label: 'Streak', value: `${userData.streak} days`, color: 'text-orange-400' },
+                                    { icon: Activity, label: 'Votes', value: userData.votesCount, color: 'text-mono-70' },
+                                    { icon: BarChart3, label: 'Power', value: userData.votingPower.toLocaleString(), color: 'text-mono-70' }
+                                ].map((stat, i) => (
+                                    <div key={i} className="
+                                        snap-center flex-shrink-0 w-[40vw] sm:w-[30vw] md:w-auto
+                                        flex items-center gap-3 p-4 md:p-0
+                                        rounded-2xl bg-white/5 border border-white/5 md:bg-transparent md:border-none
+                                        backdrop-blur-sm md:backdrop-filter-none
+                                    ">
+                                        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                                            <stat.icon className={`w-5 h-5 ${stat.color}`} strokeWidth={2} />
+                                        </div>
+                                        <div>
+                                            <p className="text-caption text-mono-50 uppercase">{stat.label}</p>
+                                            <p className="text-xl font-bold whitespace-nowrap">{stat.value}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-caption text-mono-50 uppercase">Level</p>
-                                        <p className="text-xl font-bold">{userData.level}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                        <Flame className="w-5 h-5 text-orange-400" strokeWidth={2} />
-                                    </div>
-                                    <div>
-                                        <p className="text-caption text-mono-50 uppercase">Streak</p>
-                                        <p className="text-xl font-bold">{userData.streak} days</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                        <Activity className="w-5 h-5 text-mono-70" strokeWidth={2} />
-                                    </div>
-                                    <div>
-                                        <p className="text-caption text-mono-50 uppercase">Votes</p>
-                                        <p className="text-xl font-bold">{userData.votesCount}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                        <BarChart3 className="w-5 h-5 text-mono-70" strokeWidth={2} />
-                                    </div>
-                                    <div>
-                                        <p className="text-caption text-mono-50 uppercase">Power</p>
-                                        <p className="text-xl font-bold">{userData.votingPower.toLocaleString()}</p>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
