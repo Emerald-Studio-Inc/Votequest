@@ -37,7 +37,8 @@ export async function GET(request: Request) {
 
         if (error) {
             console.error('Error fetching notifications:', error);
-            return NextResponse.json({ error: 'Database error' }, { status: 500 });
+            // DEBUG: Return exact error to client
+            return NextResponse.json({ error: `Database error: ${error.message}`, details: error }, { status: 500 });
         }
 
         return NextResponse.json(notifications || []);

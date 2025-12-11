@@ -98,6 +98,28 @@ export async function createNotification(
     metadata?: any
 ): Promise<boolean> {
     try {
+        // Deduplication: Check for recent identical notification (last 5 minutes)
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+        let query = supabaseAdmin
+            .from('notifications')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('type', type)
+            .eq('title', title) // Strict title match to allow same type but different message
+            .gt('created_at', fiveMinutesAgo);
+
+        if (proposalId) {
+            query = query.eq('proposal_id', proposalId);
+        }
+
+        const { data: existing } = await query;
+
+        if (existing && existing.length > 0) {
+            console.log('Skipping duplicate notification:', title);
+            return true; // Treat as success to avoid caller retrying
+        }
+
         const { error } = await supabaseAdmin
             .from('notifications')
             .insert({

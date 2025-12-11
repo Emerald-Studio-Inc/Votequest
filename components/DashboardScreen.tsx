@@ -61,9 +61,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         }
     };
 
+    const [proposalFilter, setProposalFilter] = useState<'active' | 'ended'>('active');
+
     const progressPercent = (userData.xp / userData.nextLevelXP) * 100;
-    const activeProposals = proposals.filter(p => p.status === 'active');
-    const recentProposals = activeProposals; // Show all active proposals
+
+    // Filter proposals based on selection
+    const displayedProposals = proposals.filter(p => {
+        if (proposalFilter === 'active') return p.status === 'active';
+        return p.status === 'ended' || p.status === 'completed'; // Capture both history statuses
+    });
 
     return (
         <div className="min-h-screen pb-32 relative overflow-hidden">
@@ -115,47 +121,51 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center gap-4 animate-slide-left">
-                            <div className="flex items-center gap-2">
+                        {/* Actions - Scrollable on Mobile */}
+                        <div className="flex items-center gap-3 md:gap-4 overflow-x-auto no-scrollbar max-w-[60vw] md:max-w-none pl-2 pr-2 -mr-4 md:mr-0 mask-gradient-right">
+                            <div className="flex items-center gap-2 flex-shrink-0">
                                 <CoinBadge coins={userData.coins || 0} size="md" />
                                 <button
                                     onClick={() => setShowCoinModal(true)}
-                                    className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex items-center justify-center transition-all hover:scale-105"
+                                    className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex items-center justify-center transition-all hover:scale-105 shadow-lg shadow-purple-500/20"
                                 >
                                     <Plus className="w-5 h-5 fill-current" />
                                 </button>
                             </div>
-                            <NotificationBell userId={userData.userId} address={userData.address} />
+
+                            <div className="flex-shrink-0">
+                                <NotificationBell userId={userData.userId} address={userData.address} />
+                            </div>
+
+                            <div className="w-px h-6 bg-white/10 flex-shrink-0 mx-1"></div>
 
                             <Tooltip content="Create New Proposal" position="bottom">
                                 <button
                                     onClick={() => onNavigate('create-proposal')}
-                                    className="btn btn-primary btn-sm group flex items-center justify-center min-w-[44px]"
+                                    className="btn btn-primary btn-sm group flex items-center justify-center flex-shrink-0 whitespace-nowrap px-4 bg-white text-black hover:bg-white/90 border-none"
                                     aria-label="Create new proposal"
                                 >
                                     <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={2.5} />
-                                    <span className="hidden sm:inline ml-2">New Proposal</span>
+                                    <span className="font-bold ml-2">New Proposal</span>
                                 </button>
                             </Tooltip>
 
                             <Tooltip content="Institutional Voting" position="bottom">
                                 <button
                                     onClick={() => onNavigate('organization')}
-                                    className="btn btn-secondary btn-sm group flex items-center justify-center min-w-[44px]"
+                                    className="btn btn-secondary btn-sm group flex items-center justify-center flex-shrink-0 whitespace-nowrap px-4"
                                     style={{
                                         background: 'linear-gradient(135deg, #F4D58D 0%, #FFE999 100%)',
-                                        border: '2px solid #F4D58D',
-                                        boxShadow: '0 0 20px rgba(244, 213, 141, 0.6)',
+                                        border: 'none',
+                                        boxShadow: '0 0 15px rgba(244, 213, 141, 0.3)',
                                         color: '#000000'
                                     }}
                                     aria-label="Organizations"
                                 >
                                     <Building2 className="w-4 h-4" strokeWidth={2.5} style={{ color: '#000000' }} />
-                                    <span className="hidden sm:inline ml-2" style={{
+                                    <span className="ml-2" style={{
                                         color: '#000000',
                                         fontWeight: '700',
-                                        textShadow: '0 1px 2px rgba(255, 255, 255, 0.3)'
                                     }}>Organizations</span>
                                 </button>
                             </Tooltip>
@@ -214,7 +224,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
                             </div>
 
-                            {/* Stats Slider (Mobile) / Grid (Desktop) */}
+                            {/* Stats Grid (Desktop) */}
                             <div className="
                                 flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 
                                 md:grid md:grid-cols-4 md:gap-6 md:pb-0 md:mx-0 md:px-0
@@ -236,8 +246,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                             <stat.icon className={`w-5 h-5 ${stat.color}`} strokeWidth={2} />
                                         </div>
                                         <div>
-                                            <p className="text-caption text-mono-50 uppercase">{stat.label}</p>
-                                            <p className="text-xl font-bold whitespace-nowrap">{stat.value}</p>
+                                            <p className="text-caption text-mono-50 uppercase tracking-widest">{stat.label}</p>
+                                            <p className="text-xl font-bold whitespace-nowrap font-mono-num">{stat.value}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -246,27 +256,67 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     </div>
                 </div>
 
-                {/* Active Proposals Section */}
-                <div className="mb-16 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 className="text-heading-xl mb-2">Active Proposals</h3>
-                            <p className="text-body text-mono-60">
-                                {activeProposals.length} proposals awaiting your vote
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => onTabChange('proposals')}
-                            className="btn btn-ghost btn-sm group"
-                        >
-                            <span>View All</span>
-                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={2} />
-                        </button>
+                {/* Proposals Header with Toggle */}
+                <div className="flex items-center justify-between mb-6 md:mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <div>
+                        <h3 className="text-display font-bold mb-2">VoteQuest</h3>
+                        <p className="text-body text-mono-60">Participate in governance</p>
                     </div>
 
-                    {/* Proposals Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-                        {recentProposals.map((proposal, index) => {
+                    {/* Toggle Switch */}
+                    <div className="flex bg-white/5 rounded-xl p-1 border border-white/5 backdrop-blur-sm">
+                        <button
+                            onClick={() => setProposalFilter('active')}
+                            className={`
+                                px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300
+                                ${proposalFilter === 'active'
+                                    ? 'bg-white text-black shadow-lg shadow-white/10'
+                                    : 'text-mono-60 hover:text-white'}
+                            `}
+                        >
+                            Active
+                        </button>
+                        <button
+                            onClick={() => setProposalFilter('ended')}
+                            className={`
+                                px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300
+                                ${proposalFilter === 'ended'
+                                    ? 'bg-white text-black shadow-lg shadow-white/10'
+                                    : 'text-mono-60 hover:text-white'}
+                            `}
+                        >
+                            History
+                        </button>
+                    </div>
+                </div>
+
+                {/* Proposals Grid */}
+                {displayedProposals.length === 0 ? (
+                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/5 backdrop-blur-sm animate-scale-in">
+                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                            <Vote className="w-8 h-8 text-mono-40" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2 text-mono-80">
+                            {proposalFilter === 'active' ? 'No Active Proposals' : 'No Past Proposals'}
+                        </h3>
+                        <p className="text-mono-50 max-w-md mx-auto">
+                            {proposalFilter === 'active'
+                                ? 'Check back later for new voting opportunities.'
+                                : 'History is empty. Participate in active votes to see results here.'}
+                        </p>
+                        {proposalFilter === 'active' && (
+                            <button
+                                onClick={() => onNavigate('create-proposal')}
+                                className="btn btn-primary mx-auto"
+                            >
+                                <Plus className="w-4 h-4" strokeWidth={2.5} />
+                                Create Proposal
+                            </button>
+                        )}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {displayedProposals.map((proposal, index) => {
                             const timeLeft = formatTimeLeft(proposal.end_date);
                             const voted = hasVoted(proposal.id);
                             const totalVotes = proposal.options.reduce((sum: number, opt: any) => sum + opt.votes, 0);
@@ -274,7 +324,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             return (
                                 <div
                                     key={proposal.id}
-                                    className="card card-interactive relative overflow-hidden group"
+                                    className={`card card-interactive relative overflow-hidden group ${proposal.status !== 'active' ? 'opacity-90 grayscale-[0.3]' : ''}`}
                                     onClick={() => onSelectProposal(proposal)}
                                     onMouseEnter={() => setHoveredCard(proposal.id)}
                                     onMouseLeave={() => setHoveredCard(null)}
@@ -290,7 +340,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                                 <h4 className="text-subheading mb-2 line-clamp-2 group-hover:text-mono-100 transition-colors">
                                                     {proposal.title}
                                                 </h4>
-                                                <p className="text-body-small text-mono-50 line-clamp-2">
+                                                <p className="text-body-small text-mono-50 line-clamp-2 select-text">
                                                     {proposal.description}
                                                 </p>
                                             </div>
@@ -344,7 +394,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                                 <Tooltip content="Total Participants" position="top">
                                                     <div className="flex items-center gap-1.5">
                                                         <Users className="w-4 h-4 text-mono-50" strokeWidth={2} />
-                                                        <span className="text-sm text-mono-70 font-medium">
+                                                        <span className="text-sm text-mono-70 font-medium font-mono-num">
                                                             {totalVotes.toLocaleString()}
                                                         </span>
                                                     </div>
@@ -352,7 +402,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
                                                 <div className={`flex items-center gap-1.5 ${timeLeft.urgent ? 'text-orange-400' : 'text-mono-50'}`}>
                                                     <Clock className="w-4 h-4" strokeWidth={2} />
-                                                    <span className="text-sm font-medium">
+                                                    <span className="text-sm font-medium font-mono-num">
                                                         {timeLeft.text}
                                                     </span>
                                                 </div>
@@ -368,27 +418,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             );
                         })}
                     </div>
-
-                    {activeProposals.length === 0 && (
-                        <div className="card p-16 text-center">
-                            <div className="w-16 h-16 rounded-full bg-white/5 mx-auto mb-6 flex items-center justify-center">
-                                <Vote className="w-8 h-8 text-mono-50" strokeWidth={1.5} />
-                            </div>
-                            <h4 className="text-heading mb-3">No Active Proposals</h4>
-                            <p className="text-body text-mono-60 mb-8 max-w-md mx-auto">
-                                There are no active proposals at the moment. Check back later or create a new proposal to get started.
-                            </p>
-                            <button
-                                onClick={() => onNavigate('create-proposal')}
-                                className="btn btn-primary mx-auto"
-                            >
-                                <Plus className="w-4 h-4" strokeWidth={2.5} />
-                                Create Proposal
-                            </button>
-                        </div>
-                    )}
-                </div>
+                )}
             </div>
+
             <CoinsPurchaseModal
                 userId={userData.userId || ''}
                 isOpen={showCoinModal}

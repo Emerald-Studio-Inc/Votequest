@@ -42,7 +42,8 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address, userId }) 
         };
 
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 30000);
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 60000); // Poll every minute
         return () => clearInterval(interval);
     }, [address, userId]);
 
@@ -96,7 +97,8 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address, userId }) 
                         onClick={() => setShowDropdown(false)}
                     ></div>
 
-                    <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] glass-heavy rounded-xl border border-white/10 shadow-2xl z-50 overflow-hidden animate-scale-in">
+                    {/* Fixed positioning to escape overflow-hidden/scroll containers in header */}
+                    <div className="fixed top-20 right-4 w-80 max-w-[calc(100vw-2rem)] glass-heavy rounded-xl border border-white/10 shadow-2xl z-50 overflow-hidden animate-scale-in">
                         <div className="p-4 border-b border-white/5">
                             <div className="flex items-center justify-between">
                                 <h3 className="font-semibold">Notifications</h3>
