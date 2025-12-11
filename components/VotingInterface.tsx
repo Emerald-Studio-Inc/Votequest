@@ -8,21 +8,43 @@ interface VotingInterfaceProps {
 
 export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceProps) {
     const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+    const [voteWeights, setVoteWeights] = useState<Record<string, number>>({});
     const [submitting, setSubmitting] = useState(false);
 
+    const isQuadratic = room.voting_strategy === 'quadratic';
+
     const handleOptionToggle = (optionId: string) => {
-        if (room.allow_multiple) {
-            // Multiple choice
-            setSelectedOptions(prev =>
-                prev.includes(optionId)
-                    ? prev.filter(id => id !== optionId)
-                    : [...prev, optionId]
-            );
+        if (room.allow_multiple || isQuadratic) {
+            // Multiple choice OR Quadratic (always inherently multi)
+            setSelectedOptions(prev => {
+                const isSelected = prev.includes(optionId);
+                if (isSelected) {
+                    // Deselect: remove from selected and weights
+                    const newWeights = { ...voteWeights };
+                    delete newWeights[optionId];
+                    setVoteWeights(newWeights);
+                    return prev.filter(id => id !== optionId);
+                } else {
+                    // Select: add with default weight 1
+                    setVoteWeights(prevW => ({ ...prevW, [optionId]: 1 }));
+                    return [...prev, optionId];
+                }
+            });
         } else {
             // Single choice
             setSelectedOptions([optionId]);
+            setVoteWeights({ [optionId]: 1 });
         }
     };
+
+    const handleWeightChange = (optionId: string, weight: number) => {
+        setVoteWeights(prev => ({
+            ...prev,
+            [optionId]: weight
+        }));
+    };
+
+    const totalCost = Object.values(voteWeights).reduce((sum, w) => sum + (w * w), 0);
 
     const handleSubmit = async () => {
         if (selectedOptions.length === 0) {
@@ -30,13 +52,29 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
             return;
         }
 
-        if (!confirm('Submit your vote? This action cannot be undone.')) {
+        let confirmMsg = 'Submit your vote? This action cannot be undone.';
+        if (isQuadratic) {
+            confirmMsg = `Submit votes? Total Cost: ${totalCost} VQC.`;
+        }
+
+        if (!confirm(confirmMsg)) {
             return;
         }
 
         try {
             setSubmitting(true);
-            await onVoteSubmit(selectedOptions);
+
+            if (isQuadratic) {
+                // Submit weighted payload
+                const payload = selectedOptions.map(id => ({
+                    optionId: id,
+                    count: voteWeights[id] || 1
+                }));
+                await onVoteSubmit(payload as any);
+            } else {
+                // Submit standard payload
+                await onVoteSubmit(selectedOptions as any);
+            }
         } catch (error) {
             console.error('Vote submission error:', error);
             setSubmitting(false);
@@ -47,83 +85,109 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
         <div className="max-w-4xl mx-auto">
             <div className="mb-8">
                 <h2 className="text-heading mb-2 gold-text">Cast Your Vote</h2>
-                <p className="text-body text-mono-60">
-                    {room.allow_multiple
-                        ? 'Select one or more options'
-                        : 'Select one option'}
-                </p>
+                <div className="flex justify-between items-end">
+                    <p className="text-body text-mono-60">
+                        {isQuadratic
+                            ? 'Quadratic Voting: Adjustable weights (Cost = Votes²)'
+                            : (room.allow_multiple ? 'Select one or more options' : 'Select one option')}
+                    </p>
+                    {isQuadratic && (
+                        <div className="text-right">
+                            <span className="text-sm text-mono-50 uppercase tracking-widest">Total Cost</span>
+                            <div className="text-2xl font-bold text-white font-mono">{totalCost} <span className="text-yellow-500 text-sm">VQC</span></div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="space-y-4 mb-8">
                 {room.room_options?.map((option: any, index: number) => {
                     const isSelected = selectedOptions.includes(option.id);
+                    const weight = voteWeights[option.id] || 1;
+                    const cost = weight * weight;
 
                     return (
-                        <button
+                        <div
                             key={option.id}
-                            onClick={() => handleOptionToggle(option.id)}
-                            disabled={submitting}
                             className={`
-                w-full text-left p-6 rounded-xl transition-all
-                ${isSelected
+                                rounded-xl transition-all border
+                                ${isSelected
                                     ? 'bg-white/10 border-white/30 backdrop-blur-md shadow-xl'
                                     : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 backdrop-blur-sm'
                                 }
-              `}
+                            `}
                         >
-                            <div className="flex flex-col sm:flex-row items-start gap-4">
-                                {/* Header: Indicator + Image (Row on mobile) */}
-                                <div className="flex items-center gap-4 w-full sm:w-auto">
-                                    {/* Selection Indicator */}
-                                    <div className="flex-shrink-0 pt-1">
-                                        {isSelected ? (
-                                            <CheckCircle className="w-6 h-6 gold-text" strokeWidth={2.5} />
-                                        ) : (
-                                            <Circle className="w-6 h-6 text-mono-40" strokeWidth={2} />
-                                        )}
+                            <button
+                                onClick={() => handleOptionToggle(option.id)}
+                                disabled={submitting}
+                                className="w-full text-left p-6"
+                            >
+                                <div className="flex flex-col sm:flex-row items-start gap-4">
+                                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                                        <div className="flex-shrink-0 pt-1">
+                                            {isSelected ? (
+                                                <CheckCircle className="w-6 h-6 gold-text" strokeWidth={2.5} />
+                                            ) : (
+                                                <Circle className="w-6 h-6 text-mono-40" strokeWidth={2} />
+                                            )}
+                                        </div>
+
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${!option.image_url ? 'bg-white/5 border border-white/10' : ''}`}>
+                                            {option.image_url ? (
+                                                <img
+                                                    src={option.image_url}
+                                                    alt={option.title}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                />
+                                            ) : (
+                                                <span className={`font-bold ${isSelected ? 'gold-text' : 'text-mono-60'}`}>
+                                                    {index + 1}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <h3 className="sm:hidden font-medium text-lg text-white ml-2">{option.title}</h3>
                                     </div>
 
-                                    {/* Option Number or Image */}
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${!option.image_url ? 'bg-white/5 border border-white/10' : ''}`}>
-                                        {option.image_url ? (
-                                            <img
-                                                src={option.image_url}
-                                                alt={option.title}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                }}
-                                            />
+                                    <div className="flex-1 w-full pl-0 sm:pl-0">
+                                        <h3 className="hidden sm:block font-medium text-lg mb-1 text-white">{option.title}</h3>
+                                        {option.description ? (
+                                            <div className="text-sm text-mono-60 bg-white/5 p-3 rounded-lg mt-2 w-full">
+                                                {option.description}
+                                            </div>
                                         ) : (
-                                            <span className={`font-bold ${isSelected ? 'gold-text' : 'text-mono-60'}`}>
-                                                {index + 1}
-                                            </span>
+                                            <div className="text-xs text-mono-40 italic mt-1">No bio provided</div>
                                         )}
                                     </div>
-
-                                    {/* Mobile Title (visible only on mobile) */}
-                                    <h3 className="sm:hidden font-medium text-lg text-white ml-2">
-                                        {option.title}
-                                    </h3>
                                 </div>
+                            </button>
 
-                                {/* Option Content (Desktop Layout / Description on Mobile) */}
-                                <div className="flex-1 w-full pl-0 sm:pl-0">
-                                    <h3 className="hidden sm:block font-medium text-lg mb-1 text-white">
-                                        {option.title}
-                                    </h3>
-                                    {option.description ? (
-                                        <div className="text-sm text-mono-60 bg-white/5 p-3 rounded-lg mt-2 w-full">
-                                            {option.description}
+                            {/* QUADRATIC SLIDER UI */}
+                            {isSelected && isQuadratic && (
+                                <div className="px-6 pb-6 pt-2 border-t border-white/10 mt-2 animate-slide-down">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-sm text-mono-60">Voting Power</label>
+                                        <div className="text-right">
+                                            <span className="text-white font-bold font-mono">{weight} Votes</span>
+                                            <span className="text-mono-50 text-xs ml-2">({cost} coins)</span>
                                         </div>
-                                    ) : (
-                                        <div className="text-xs text-mono-40 italic mt-1">
-                                            No bio provided
-                                        </div>
-                                    )}
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="10"
+                                        value={weight}
+                                        onChange={(e) => handleWeightChange(option.id, parseInt(e.target.value))}
+                                        className="w-full accent-yellow-500 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                    <div className="flex justify-between text-xs text-mono-40 mt-1">
+                                        <span>1 (1c)</span>
+                                        <span>5 (25c)</span>
+                                        <span>10 (100c)</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </button>
+                            )}
+                        </div>
                     );
                 })}
             </div>
@@ -142,7 +206,9 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
                                 Submitting Vote...
                             </>
                         ) : (
-                            `Submit Vote${selectedOptions.length > 1 ? 's' : ''} (${selectedOptions.length})`
+                            isQuadratic
+                                ? `Cast Votes (${totalCost} Coins)`
+                                : `Submit Vote${selectedOptions.length > 1 ? 's' : ''} (${selectedOptions.length})`
                         )}
                     </button>
                     <p className="text-sm text-center text-mono-50 mt-3">

@@ -1,4 +1,5 @@
 import { CheckCircle, Share2, Download } from 'lucide-react';
+import VoteDistributionChart from './VoteDistributionChart';
 
 interface VoteSuccessScreenProps {
     room: any;
@@ -53,6 +54,13 @@ export default function VoteSuccessScreen({ room, votedOptions }: VoteSuccessScr
                         <p className="font-medium text-white">{new Date().toLocaleTimeString()}</p>
                     </div>
                 </div>
+
+                {/* Vote Distribution Chart */}
+                {room.room_options && (
+                    <div className="card bg-white/5 border border-white/5 p-4 mb-8">
+                        <VoteDistributionChart options={room.room_options} />
+                    </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '0.3s' }}>

@@ -11,11 +11,20 @@ export async function POST(
 ) {
     try {
         const { id: roomId } = params;
-        const { email, optionIds, verificationCode } = await request.json();
+        const { email, optionIds, votes: rawVotes, verificationCode } = await request.json();
 
-        if (!email || !optionIds || optionIds.length === 0) {
+        // Normalize input: Support both simple optionIds (standard) and weighted votes (QV)
+        let votePayload: { optionId: string; count: number }[] = [];
+
+        if (rawVotes && Array.isArray(rawVotes)) {
+            votePayload = rawVotes;
+        } else if (optionIds && Array.isArray(optionIds)) {
+            votePayload = optionIds.map((id: string) => ({ optionId: id, count: 1 }));
+        }
+
+        if (!email || votePayload.length === 0) {
             return NextResponse.json(
-                { error: 'Email and at least one option required' },
+                { error: 'Email and at least one vote option required' },
                 { status: 400 }
             );
         }
@@ -41,7 +50,56 @@ export async function POST(
             );
         }
 
-        // 2. Check if voter is eligible (tier 2/3 only)
+        // QV LOGIC: Calculate Cost
+        const strategy = room.voting_strategy || 'standard';
+        let totalCost = 0;
+        let totalPower = 0;
+
+        // Validate counts based on strategy
+        for (const v of votePayload) {
+            if (v.count < 1) continue;
+
+            if (strategy === 'standard' && v.count > 1) {
+                return NextResponse.json({ error: 'Standard voting only allows 1 vote per option' }, { status: 400 });
+            }
+
+            if (strategy === 'quadratic') {
+                totalCost += (v.count * v.count);
+            }
+            totalPower += v.count;
+        }
+
+        // 2. Lookup User ID (Needed for Coins & Recording)
+        const { data: user } = await supabaseAdmin
+            .from('users')
+            .select('id, coins')
+            .eq('email', email.toLowerCase())
+            .single();
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'User account not found for this email. Please register first to spend coins.' },
+                { status: 404 }
+            );
+        }
+
+        // 3. Deduct Coins (If QV)
+        if (strategy === 'quadratic' && totalCost > 0) {
+            const { spendCoins } = await import('@/lib/coins');
+            const success = await spendCoins(user.id, totalCost, 'quadratic_room_vote', roomId, {
+                totalPower
+            });
+
+            if (!success) {
+                return NextResponse.json({
+                    error: 'Insufficient Voting Power (Coins)',
+                    details: `You need ${totalCost} VQC to cast these votes. Your Balance: ${user.coins || 0}`
+                }, { status: 402 });
+            }
+        }
+
+        // 4. Check Eligibility (Tier 2/3)
+        let eligibilityId = null;
         if (room.verification_tier !== 'tier1') {
             const { data: eligible } = await supabaseAdmin
                 .from('voter_eligibility')
@@ -57,34 +115,15 @@ export async function POST(
                 );
             }
 
-            // Check if already voted
             if (eligible.has_voted) {
                 return NextResponse.json(
                     { error: 'You have already voted in this room' },
                     { status: 400 }
                 );
             }
-        }
-
-        // 3. Lookup User ID from Email (since room_votes requires user_id)
-        // We assume the email corresponds to a registered user for now.
-        // If not, we might need to handle 'guest' votes, but schema requires user_id.
-        const { data: user } = await supabaseAdmin
-            .from('users')
-            .select('id')
-            .eq('email', email.toLowerCase())
-            .single();
-
-        if (!user) {
-            return NextResponse.json(
-                { error: 'User account not found for this email. Please register first.' },
-                { status: 404 }
-            );
-        }
-
-        // 4. Check for duplicate votes (tier 1 - email only)
-        // Note: unique constraint on room_votes(room_id, user_id) handles this, but nice to check early
-        if (room.verification_tier === 'tier1') {
+            eligibilityId = eligible.id;
+        } else {
+            // Tier 1 Check
             const { data: existingVote } = await supabaseAdmin
                 .from('room_votes')
                 .select('id')
@@ -93,55 +132,44 @@ export async function POST(
                 .single();
 
             if (existingVote) {
-                return NextResponse.json(
-                    { error: 'You have already voted in this room' },
-                    { status: 400 }
-                );
+                return NextResponse.json({ error: 'You have already voted in this room' }, { status: 400 });
             }
         }
 
-        // 5. Determine Eligibility ID (needed for weighted voting)
-        let eligibilityId = null;
-        if (room.verification_tier !== 'tier1') {
-            const { data: eligible } = await supabaseAdmin
-                .from('voter_eligibility')
-                .select('id')
-                .eq('room_id', roomId)
-                .eq('identifier', email.toLowerCase())
-                .single();
-            if (eligible) eligibilityId = eligible.id;
-        }
-
-        // 6. Record votes
-        // Use 'room_votes' table.
-        // Handle anonymous: If 'allow_anonymous' OR 'anonymous_voting_enabled' is true.
+        // 5. Record votes
         const isAnonymous = room.allow_anonymous || room.anonymous_voting_enabled;
 
-        const votes = optionIds.map((optionId: string) => ({
+        const votesToInsert = votePayload.map(v => ({
             room_id: roomId,
-            option_id: optionId,
-            user_id: user.id, // REQUIRED by schema
+            option_id: v.optionId,
+            user_id: user.id,
             eligibility_id: eligibilityId,
-            // We can store metadata if we want to track 'claimed' anonymity, usually IP/UserAgent is stored
+            voting_power: v.count,
+            coin_cost: strategy === 'quadratic' ? (v.count * v.count) : 0,
             metadata: isAnonymous ? { anonymous: true } : {}
         }));
 
         const { error: voteError } = await supabaseAdmin
             .from('room_votes')
-            .insert(votes);
+            .insert(votesToInsert);
 
         if (voteError) {
             console.error('[API] Error recording votes:', voteError);
-            if (voteError.code === '23505') { // Unique violation
-                return NextResponse.json({ error: 'You have already voted in this room' }, { status: 400 });
-            }
-            return NextResponse.json(
-                { error: 'Failed to record vote' },
-                { status: 500 }
-            );
+            if (voteError.code === '23505') return NextResponse.json({ error: 'Duplicate vote detected' }, { status: 400 });
+            return NextResponse.json({
+                error: `Failed to record vote: ${voteError.message} (Code: ${voteError.code})`
+            }, { status: 500 });
         }
 
-        // 7. Mark as voted in eligibility list (tier 2/3)
+        // 6. Update Stats (Weighted)
+        for (const v of votePayload) {
+            await supabaseAdmin.rpc('increment_room_option_votes_weighted', {
+                option_id: v.optionId,
+                amount: v.count
+            });
+        }
+
+        // Mark eligibility as used
         if (room.verification_tier !== 'tier1') {
             await supabaseAdmin
                 .from('voter_eligibility')
@@ -150,11 +178,18 @@ export async function POST(
                 .eq('identifier', email.toLowerCase());
         }
 
-        console.log(`[API] Vote recorded for room ${roomId} by ${email}`);
+        // Reward User (Optional - flat 5 coins for participating)
+        // Only if they actually spent coins or legit vote
+        try {
+            const { awardCoins } = await import('@/lib/coins');
+            await awardCoins(user.id, 5, 'room_vote_participation', roomId);
+        } catch (e) { }
 
         return NextResponse.json({
             success: true,
-            message: 'Vote submitted successfully'
+            message: 'Vote submitted successfully',
+            cost: totalCost,
+            power: totalPower
         });
 
     } catch (error: any) {

@@ -35,6 +35,7 @@ export type Proposal = {
   tx_hash?: string | null
   featured?: boolean
   featured_until?: string | null
+  voting_strategy: 'standard' | 'quadratic'
 }
 
 export type ProposalOption = {
@@ -56,6 +57,8 @@ export type Vote = {
   option_id: string
   tx_hash: string | null
   voted_at: string
+  voting_power: number
+  coin_cost: number
 }
 
 export type ProposalWithOptions = Proposal & {

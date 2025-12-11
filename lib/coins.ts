@@ -216,3 +216,78 @@ export async function getCoinTransactions(userId: string, limit: number = 20) {
 
     return data || [];
 }
+
+/**
+ * Spend coins for an action (e.g. Quadratic Voting)
+ */
+export async function spendCoins(
+    userId: string,
+    amount: number,
+    reason: string,
+    proposalId?: string,
+    receiptMetadata?: ReceiptMetadata
+): Promise<boolean> {
+    try {
+        if (amount <= 0) return true; // No cost
+
+        // 1. Check Balance
+        const { data: user, error: userError } = await supabaseAdmin
+            .from('users')
+            .select('coins')
+            .eq('id', userId)
+            .single();
+
+        if (userError || !user) {
+            console.error('Error fetching user for coins:', userError);
+            return false;
+        }
+
+        if ((user.coins || 0) < amount) {
+            console.error(`Insufficient funds: User has ${user.coins}, needs ${amount}`);
+            return false;
+        }
+
+        // 2. Generate Receipt
+        const receipt = await generateReceipt(
+            userId,
+            'vote', // generic 'vote' action for receipt verification
+            amount, // amount spent
+            receiptMetadata || {}
+        );
+
+        // 3. Deduct Coins
+        const newBalance = user.coins - amount;
+        const { error: updateError } = await supabaseAdmin
+            .from('users')
+            .update({ coins: newBalance })
+            .eq('id', userId);
+
+        if (updateError) {
+            console.error('Error updating user coins:', updateError);
+            return false;
+        }
+
+        // 4. Record Transaction (Negative amount for spend)
+        const { error: txError } = await supabaseAdmin
+            .from('coin_transactions')
+            .insert({
+                user_id: userId,
+                amount: -amount, // Negative for spending
+                reason,
+                proposal_id: proposalId || null,
+                receipt_hash: receipt.hash,
+                action_metadata: receipt.metadata,
+                verified: true
+            });
+
+        if (txError) {
+            console.error('Error creating coin spent transaction:', txError);
+        }
+
+        console.log(`✅ User ${userId} spent ${amount} coins for ${reason}`);
+        return true;
+    } catch (error) {
+        console.error('Error spending coins:', error);
+        return false;
+    }
+}

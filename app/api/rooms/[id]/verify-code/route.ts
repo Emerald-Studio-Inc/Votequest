@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-
-// Same in-memory store as verify-email (production: use Redis)
-const verificationCodes = new Map<string, { code: string; expiry: number }>();
+import { validateVerificationCode } from '@/lib/verificationStore';
 
 /**
  * Verify email code
@@ -22,33 +20,14 @@ export async function POST(
             );
         }
 
-        const key = `${roomId}:${email.toLowerCase()}`;
-        const stored = verificationCodes.get(key);
+        const result = validateVerificationCode(roomId, email, code);
 
-        if (!stored) {
+        if (!result.success) {
             return NextResponse.json(
-                { error: 'No code found. Please request a new one.' },
+                { error: result.error },
                 { status: 400 }
             );
         }
-
-        if (Date.now() > stored.expiry) {
-            verificationCodes.delete(key);
-            return NextResponse.json(
-                { error: 'Code expired. Please request a new one.' },
-                { status: 400 }
-            );
-        }
-
-        if (stored.code !== code) {
-            return NextResponse.json(
-                { error: 'Invalid code' },
-                { status: 400 }
-            );
-        }
-
-        // Code is valid!
-        verificationCodes.delete(key);
 
         return NextResponse.json({
             success: true,

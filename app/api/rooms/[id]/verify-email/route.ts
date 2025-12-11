@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/server-db';
-
-// In-memory store for verification codes (production: use Redis)
-const verificationCodes = new Map<string, { code: string; expiry: number }>();
+import { storeVerificationCode } from '@/lib/verificationStore';
 
 /**
  * Send email verification code
@@ -22,11 +20,9 @@ export async function POST(
 
         // Generate 6-digit code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiry = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-        // Store code (in production, use Redis with TTL)
-        const key = `${roomId}:${email.toLowerCase()}`;
-        verificationCodes.set(key, { code, expiry });
+        // Store code using shared store
+        storeVerificationCode(roomId, email, code);
 
         // TODO: Send email with code
         // For now, log to console for testing
