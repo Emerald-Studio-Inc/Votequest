@@ -89,6 +89,7 @@ const VoteQuestApp = () => {
     const [captchaToken, setCaptchaToken] = useState<string>('');
     const [authUser, setAuthUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
+    const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
 
     // Blockchain removed - using database only
     const address = null;
@@ -705,11 +706,47 @@ const VoteQuestApp = () => {
             <OrganizationListScreen
                 userId={userData.userId || ''}
                 onSelectOrganization={(orgId) => {
+                    setSelectedOrganizationId(orgId);
                     localStorage.setItem('votequest_current_org', orgId);
-                    setCurrentScreen('dashboard'); // For now, just go back
+                    setCurrentScreen('org-dashboard');
                 }}
-                onCreateNew={() => setCurrentScreen('dashboard')} // For now, just go back
+                onCreateNew={() => setCurrentScreen('org-setup')}
                 onBack={() => setCurrentScreen('dashboard')}
+            />
+        );
+    }
+
+    // Organization Dashboard
+    if (currentScreen === 'org-dashboard' && selectedOrganizationId) {
+        return (
+            <OrganizationDashboard
+                organizationId={selectedOrganizationId}
+                userId={userData.userId || ''}
+                onNavigate={(screen, data) => {
+                    if (screen === 'organization-list') {
+                        setCurrentScreen('organization');
+                    } else if (screen === 'create-room') {
+                        setCurrentScreen('create-room');
+                    } else if (screen === 'room' && data) {
+                        // Navigate to room detail - store room ID and navigate
+                        localStorage.setItem('votequest_current_room', data.id);
+                        setCurrentScreen('room-detail');
+                    }
+                }}
+            />
+        );
+    }
+
+    // Organization Setup
+    if (currentScreen === 'org-setup') {
+        return (
+            <OrganizationSetup
+                userId={userData.userId || ''}
+                onComplete={(organizationId: string) => {
+                    setSelectedOrganizationId(organizationId);
+                    setCurrentScreen('org-dashboard');
+                }}
+                onCancel={() => setCurrentScreen('organization')}
             />
         );
     }
