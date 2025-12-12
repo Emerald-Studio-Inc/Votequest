@@ -19,11 +19,11 @@ interface MapNode {
 }
 
 const NODES: MapNode[] = [
-    { id: 'home', label: 'Home', icon: Home, x: 50, y: 10, connections: ['dashboard'], screenId: 'home' },
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, x: 50, y: 35, connections: ['create-org', 'org-list'], screenId: 'dashboard' },
-    { id: 'create-org', label: 'Create Org', icon: Zap, x: 30, y: 60, connections: [], screenId: 'create-organization' },
-    { id: 'org-list', label: 'Organizations', icon: Building2, x: 70, y: 60, connections: ['room'], screenId: 'organization-list' },
-    { id: 'room', label: 'Voting Room', icon: Vote, x: 70, y: 85, connections: [], screenId: 'room' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, x: 50, y: 20, connections: ['create-org', 'org-list'], screenId: 'dashboard' },
+    { id: 'create-org', label: 'Create Org', icon: Zap, x: 25, y: 50, connections: [], screenId: 'org-setup' },
+    { id: 'org-list', label: 'Organizations', icon: Building2, x: 75, y: 50, connections: ['room'], screenId: 'organization' },
+    // Point 'Voting Room' to 'organization' list since specific room needs selection
+    { id: 'room', label: 'Find a Room', icon: Vote, x: 75, y: 80, connections: [], screenId: 'organization' },
 ];
 
 export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProps) {
@@ -62,7 +62,7 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
 
             {/* The Map Overlay */}
             {isOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md animate-fade-in flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md animate-fade-in flex items-center justify-center p-4 overflow-y-auto">
                     <button
                         onClick={() => setIsOpen(false)}
                         className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
