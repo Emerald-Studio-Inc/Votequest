@@ -46,9 +46,6 @@ import AdminSetup2FA from './AdminSetup2FA';
 import OrganizationListScreen from './OrganizationListScreen';
 import OrganizationDashboard from './OrganizationDashboard';
 import OrganizationSetup from './OrganizationSetup';
-import RoomDetailScreen from './RoomDetailScreen';
-
-import CreateRoomWizard from './CreateRoomWizard';
 
 interface UserData {
     address: string | null;
@@ -92,57 +89,13 @@ const VoteQuestApp = () => {
     const [captchaToken, setCaptchaToken] = useState<string>('');
     const [authUser, setAuthUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
-    const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
-    const [selectedOrganizationName, setSelectedOrganizationName] = useState<string>('');
-    const [selectedRoom, setSelectedRoom] = useState<any>(null);
 
     // Blockchain removed - using database only
     const address = null;
     const isConnected = false;
 
-    // Handle payment redirects (coins/subscription)
-    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-
-    useEffect(() => {
-        if (!searchParams) return;
-
-        const handlePaymentFeedback = async () => {
-            const { toast } = await import('@/lib/toast');
-            const router = (await import('next/navigation')).useRouter; // We can't use hook conditionally easily in effects, but URL cleanup is secondary
-
-            // Coin Purchase Feedback
-            if (searchParams.get('coinsSuccess') === 'true') {
-                toast.success('Coins purchased successfully!', 'Your balance has been updated.');
-                // Refresh user profile to get new balance
-                if (userData.userId) loadUserProfile(userData.userId);
-                // Clean URL (optional, primitive way)
-                window.history.replaceState(null, '', '/');
-            } else if (searchParams.get('coinsError') === 'true') {
-                toast.error('Coin purchase failed', 'Please try again or contact support.');
-                window.history.replaceState(null, '', '/');
-            }
-
-            // Subscription Feedback
-            if (searchParams.get('subscriptionSuccess') === 'true') {
-                toast.success('Subscription activated!', 'Your organization is now upgraded.');
-                window.history.replaceState(null, '', '/');
-            } else if (searchParams.get('subscriptionError') === 'true') {
-                toast.error('Subscription failed', 'Payment could not be verified.');
-                window.history.replaceState(null, '', '/');
-            }
-
-            // Handle Deep Linking
-            const screen = searchParams.get('screen');
-            const orgId = searchParams.get('orgId');
-
-            if (screen === 'organization-dashboard' && orgId) {
-                setSelectedOrganizationId(orgId);
-                setCurrentScreen('organization-dashboard');
-            }
-        };
-
-        handlePaymentFeedback();
-    }, []);
+    // Auto-reload disabled - users can manually refresh if needed
+    // useAutoReload();
 
     // Check auth on mount
     useEffect(() => {
@@ -313,68 +266,26 @@ const VoteQuestApp = () => {
         }
     }, [currentScreen, adminSessionStart]);
 
-    // Admin access handler with 2FA security
-    const handleAdminAccess = async (passphrase: string, code: string) => {
-        let passphraseAttempts = 1;
-
+    // Admin access handler - modal already verified passphrase and 2FA
+    const handleAdminAccess = async (passphrase: string) => {
         try {
-            // 1. Verify passphrase via Server API (Secure)
-            const validateRes = await fetch('/api/admin/validate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ passphrase })
-            });
-
-            const validateJson = await validateRes.json();
-
-            if (!validateRes.ok || !validateJson.ok) {
-                // Log failed attempt
-                await fetch('/api/admin/log-access', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ granted: false, passphrase_attempts: 1 })
-                });
-                alert('Invalid passphrase');
-                setShowAdminModal(false);
-                return;
-            }
-
-            // 2. Verify 2FA code
-            const tfaCheck = await fetch('/api/admin/verify-2fa', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code })
-            });
-            const tfaData = await tfaCheck.json();
-
-            if (!tfaData.valid) {
-                // Log rejected 2FA
-                await fetch('/api/admin/log-access', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ granted: false, passphrase_attempts: 1 })
-                });
-                alert('Invalid 2FA code. Access denied.');
-                setShowAdminModal(false);
-                return;
-            }
-
-            // 3. Log successful access
+            // Log successful access
             await fetch('/api/admin/log-access', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ granted: true, passphrase_attempts: 1 })
             });
 
-            // 4. Grant access and start session timer
+            // Grant access and start session timer
+            setAdminPassphrase(passphrase);
             setAdminSessionStart(Date.now());
             setCurrentScreen('admin');
             setShowAdminModal(false);
 
-            console.log('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes.');
+            console.log('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes');
         } catch (error) {
             console.error('[ADMIN] Error during access check:', error);
-            alert('Error verifying admin access. Please try again.');
+            alert('Error granting admin access. Please try again.');
             setShowAdminModal(false);
         }
     };
@@ -614,7 +525,9 @@ const VoteQuestApp = () => {
                 {
                     label: 'Share Proposal',
                     onClick: () => {
-                        // TODO: Open share modal
+                        const shareUrl = `${window.location.origin}/share/${data.proposal?.blockchain_id || data.proposal?.id}`;
+                        navigator.clipboard.writeText(shareUrl);
+                        toast.info('Link copied!', 'Share this link to invite others to vote.');
                     }
                 }
             );
@@ -651,11 +564,13 @@ const VoteQuestApp = () => {
                         <Tooltip key={item.value} content={item.label} position="top">
                             <button
                                 onClick={() => setActiveDashboardTab(item.value)}
-                                className={`relative flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                                className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
                                     }`}
                             >
-                                <Icon className={`w-5 h-5 mb-0.5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
-                                <span className="text-[10px] font-medium tracking-tight">{item.label}</span>
+                                <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
+                                {isActive && (
+                                    <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
+                                )}
                             </button>
                         </Tooltip>
                     );
@@ -719,11 +634,7 @@ const VoteQuestApp = () => {
                 <AdminPassphraseModal
                     open={showAdminModal}
                     onClose={() => setShowAdminModal(false)}
-                    onSuccess={(passphrase) => {
-                        setAdminPassphrase(passphrase);
-                        setShowAdminModal(false);
-                        setCurrentScreen('admin');
-                    }}
+                    onSuccess={handleAdminAccess}
                 />
                 {showSetup2FA && (
                     <AdminSetup2FA
@@ -795,78 +706,10 @@ const VoteQuestApp = () => {
                 userId={userData.userId || ''}
                 onSelectOrganization={(orgId) => {
                     localStorage.setItem('votequest_current_org', orgId);
-                    setSelectedOrganizationId(orgId);
-                    setCurrentScreen('organization-dashboard');
+                    setCurrentScreen('dashboard'); // For now, just go back
                 }}
-                onCreateNew={() => setCurrentScreen('organization-setup')}
+                onCreateNew={() => setCurrentScreen('dashboard')} // For now, just go back
                 onBack={() => setCurrentScreen('dashboard')}
-            />
-        );
-    }
-
-    if (currentScreen === 'organization-dashboard' && selectedOrganizationId) {
-        const handleOrgNavigate = (screen: string, data?: any) => {
-            if (screen === 'organization-list') {
-                setCurrentScreen('organization');
-                setSelectedOrganizationId(null);
-            } else if (screen === 'create-room') {
-                if (data?.name) setSelectedOrganizationName(data.name);
-                setCurrentScreen('create-room');
-            } else if (screen === 'room' && data) {
-                setSelectedRoom(data);
-                setCurrentScreen('room-detail');
-            } else {
-                setCurrentScreen(screen as any);
-            }
-        };
-
-        return (
-            <OrganizationDashboard
-                organizationId={selectedOrganizationId}
-                userId={userData.userId || ''}
-                onNavigate={handleOrgNavigate}
-            />
-        );
-    }
-
-    if (currentScreen === 'room-detail' && selectedRoom) {
-        return (
-            <RoomDetailScreen
-                roomId={selectedRoom.id}
-                organizationId={selectedRoom.organization_id}
-                userId={userData.userId || ''}
-                onBack={() => {
-                    setCurrentScreen('organization-dashboard');
-                    setSelectedRoom(null);
-                }}
-            />
-        );
-    }
-
-    if (currentScreen === 'create-room') {
-        return (
-            <CreateRoomWizard
-                organizationId={selectedOrganizationId || ''}
-                organizationName={selectedOrganizationName}
-                userId={userData.userId || ''}
-                onComplete={(roomId) => {
-                    // Refresh logic if needed, then go to dashboard
-                    setCurrentScreen('organization-dashboard');
-                }}
-                onCancel={() => setCurrentScreen('organization-dashboard')}
-            />
-        );
-    }
-
-    if (currentScreen === 'organization-setup') {
-        return (
-            <OrganizationSetup
-                userId={userData.userId || ''}
-                onCancel={() => setCurrentScreen('organization')}
-                onComplete={(orgId: string) => {
-                    setSelectedOrganizationId(orgId);
-                    setCurrentScreen('organization-dashboard');
-                }}
             />
         );
     }

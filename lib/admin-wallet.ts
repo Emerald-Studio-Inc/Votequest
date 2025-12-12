@@ -1,15 +1,20 @@
 /**
- * Admin-only wallet hook for Polygon Amoy
- * Only connects wallet when explicitly needed for admin functions
+ * Admin-only wallet hook
+ * Only connects MetaMask when explicitly needed for admin functions
  */
 
 'use client'
 
 import { useState, useCallback } from 'react'
 
-// Polygon Amoy testnet configuration
-const POLYGON_AMOY_CHAIN_ID = '0x13882' // 80002 in hex
-const POLYGON_AMOY_RPC_URL = 'https://rpc-amoy.polygon.technology/'
+// Extend Window type for ethereum
+declare global {
+    interface Window {
+        ethereum?: {
+            request: (args: { method: string; params?: unknown[] }) => Promise<string[]>;
+        };
+    }
+}
 
 export function useAdminWallet() {
     const [address, setAddress] = useState<string | null>(null)
@@ -21,45 +26,15 @@ export function useAdminWallet() {
             setConnecting(true)
             setError(null)
 
-            const ethereumWindow = (window as any).ethereum
-            if (!ethereumWindow) {
-                throw new Error('MetaMask or compatible wallet not installed. Please install MetaMask to use admin features.')
+            if (!window.ethereum) {
+                throw new Error('MetaMask not installed. Please install MetaMask to use admin features.')
             }
 
-            // Request accounts
-            const accounts = await ethereumWindow.request({
+            const accounts = await window.ethereum.request({
                 method: 'eth_requestAccounts'
             })
 
             if (accounts && accounts.length > 0) {
-                // Switch to Polygon Amoy
-                try {
-                    await ethereumWindow.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: POLYGON_AMOY_CHAIN_ID }]
-                    })
-                } catch (switchError: any) {
-                    // Chain not added, add it
-                    if (switchError.code === 4902) {
-                        await ethereumWindow.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [{
-                                chainId: POLYGON_AMOY_CHAIN_ID,
-                                chainName: 'Polygon Amoy',
-                                nativeCurrency: {
-                                    name: 'POL',
-                                    symbol: 'POL',
-                                    decimals: 18
-                                },
-                                rpcUrls: [POLYGON_AMOY_RPC_URL],
-                                blockExplorerUrls: ['https://amoy.polygonscan.com/']
-                            }]
-                        })
-                    } else {
-                        throw switchError
-                    }
-                }
-
                 setAddress(accounts[0])
                 return accounts[0]
             }
@@ -85,4 +60,3 @@ export function useAdminWallet() {
         isConnected: !!address
     }
 }
-

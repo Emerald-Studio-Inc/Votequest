@@ -170,7 +170,10 @@ export default function RoomDetailScreen({
                             </button>
                         )}
 
-                        <button className="btn btn-ghost flex items-center gap-2">
+                        <button
+                            className="btn btn-ghost flex items-center gap-2"
+                            onClick={() => alert('Edit functionality coming soon!')}
+                        >
                             <Edit className="w-4 h-4" />
                             Edit
                         </button>

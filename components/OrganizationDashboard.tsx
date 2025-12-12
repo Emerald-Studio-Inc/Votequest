@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, Plus, Users, Vote, Settings, BarChart3, Zap } from 'lucide-react';
-import SubscriptionStatus from './SubscriptionStatus';
-import SubscriptionPicker from './SubscriptionPicker';
-import CoinFeaturesPurchase from './CoinFeaturesPurchase';
+import { Building2, Plus, Users, Vote, Settings, BarChart3 } from 'lucide-react';
 
 interface OrganizationDashboardProps {
     organizationId: string;
@@ -18,46 +15,23 @@ export default function OrganizationDashboard({
     const [organization, setOrganization] = useState<any>(null);
     const [rooms, setRooms] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showSubscriptionPicker, setShowSubscriptionPicker] = useState(false);
-    const [showCoinFeatures, setShowCoinFeatures] = useState(false);
-    const [selectedRoomForFeatures, setSelectedRoomForFeatures] = useState<string | null>(null);
-    const [userCoins, setUserCoins] = useState(0);
 
     useEffect(() => {
         loadOrganization();
         loadRooms();
-        loadUserCoins();
     }, [organizationId]);
-
-    const loadUserCoins = async () => {
-        try {
-            const response = await fetch(`/api/users/${userId}/coins`);
-            if (response.ok) {
-                const data = await response.json();
-                setUserCoins(data.coins || 0);
-            }
-        } catch (error) {
-            console.error('Error loading user coins:', error);
-        }
-    };
 
     const loadOrganization = async () => {
         try {
-            setLoading(true);
-            const response = await fetch(`/api/organizations/${organizationId}`);
-
-            if (response.ok) {
-                const data = await response.json();
-                setOrganization(data.organization);
-            } else {
-                console.error('Failed to load organization');
-                // Optional: Redirect back if not found
-                // onNavigate?.('organization-list');
-            }
+            // TODO: Fetch organization details
+            setOrganization({
+                id: organizationId,
+                name: 'Test Organization',
+                type: 'school',
+                subscription_tier: 'free'
+            });
         } catch (error) {
             console.error('Error loading organization:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -81,45 +55,6 @@ export default function OrganizationDashboard({
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="loading-spinner w-8 h-8" />
-            </div>
-        );
-    }
-
-    if (showSubscriptionPicker) {
-        return (
-            <div className="min-h-screen pb-32 relative">
-                {/* Header */}
-                <div className="sticky top-0 z-40 border-b border-white/5 bg-black/80 backdrop-blur-xl">
-                    <div className="max-w-[1200px] mx-auto px-8 py-6">
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => setShowSubscriptionPicker(false)}
-                                className="btn btn-ghost flex items-center gap-2"
-                                title="Back to Dashboard"
-                            >
-                                <div className="w-6 h-6 rounded bg-white flex items-center justify-center">
-                                    <Vote className="w-4 h-4 text-black" strokeWidth={2.5} />
-                                </div>
-                                <span className="font-bold">VoteQuest</span>
-                            </button>
-                            <div className="h-6 w-px bg-white/10"></div>
-                            <h1 className="text-xl font-bold">{organization.name}</h1>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Subscription Picker */}
-                <div className="max-w-[1200px] mx-auto px-8 pt-12">
-                    <SubscriptionPicker
-                        organizationId={organizationId}
-                        userId={userId}
-                        onSuccess={() => {
-                            setShowSubscriptionPicker(false);
-                            loadOrganization();
-                        }}
-                        onBack={() => setShowSubscriptionPicker(false)}
-                    />
-                </div>
             </div>
         );
     }
@@ -150,7 +85,7 @@ export default function OrganizationDashboard({
                             </div>
                         </div>
                         <button
-                            onClick={() => onNavigate?.('create-room', { name: organization.name })}
+                            onClick={() => onNavigate?.('create-room')}
                             className="btn btn-primary flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
@@ -160,32 +95,8 @@ export default function OrganizationDashboard({
                 </div>
             </div>
 
-            {/* Coin Features Modal */}
-            <CoinFeaturesPurchase
-                roomId={selectedRoomForFeatures || ''}
-                userCoins={userCoins}
-                isOpen={showCoinFeatures}
-                onClose={() => {
-                    setShowCoinFeatures(false);
-                    setSelectedRoomForFeatures(null);
-                }}
-                onSuccess={() => {
-                    loadRooms();
-                    loadUserCoins();
-                }}
-            />
-
             {/* Main Content */}
             <div className="max-w-[1200px] mx-auto px-8 pt-12">
-                {/* Subscription Status Section */}
-                <div className="mb-12">
-                    <SubscriptionStatus
-                        organizationId={organizationId}
-                        userId={userId}
-                        onUpgrade={() => setShowSubscriptionPicker(true)}
-                    />
-                </div>
-
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-6 mb-12">
                     <div className="card-elevated p-6">
@@ -245,21 +156,8 @@ export default function OrganizationDashboard({
                                             <h4 className="font-medium text-white mb-1">{room.title}</h4>
                                             <p className="text-sm text-mono-60">{room.description}</p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedRoomForFeatures(room.id);
-                                                    setShowCoinFeatures(true);
-                                                }}
-                                                className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 transition-colors"
-                                                title="Boost Room"
-                                            >
-                                                <Zap className="w-4 h-4" />
-                                            </button>
-                                            <div className={`px-3 py-1 rounded-full text-xs font-medium ${room.status === 'active' ? 'bg-green-500/20 text-green-400' : ''} ${room.status === 'draft' ? 'bg-yellow-500/20 text-yellow-400' : ''} ${room.status === 'closed' ? 'bg-mono-20 text-mono-60' : ''}`}>
-                                                {room.status}
-                                            </div>
+                                        <div className={`px-3 py-1 rounded-full text-xs font-medium ${room.status === 'active' ? 'bg-green-500/20 text-green-400' : ''} ${room.status === 'draft' ? 'bg-yellow-500/20 text-yellow-400' : ''} ${room.status === 'closed' ? 'bg-mono-20 text-mono-60' : ''}`}>
+                                            {room.status}
                                         </div>
                                     </div>
                                 </div>

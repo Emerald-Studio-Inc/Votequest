@@ -70,7 +70,18 @@ export default function VoteSuccessScreen({ room, votedOptions }: VoteSuccessScr
                     >
                         View Results
                     </button>
-                    <button className="btn btn-ghost">
+                    <button
+                        className="btn btn-ghost"
+                        onClick={() => {
+                            const url = window.location.href;
+                            if (navigator.share) {
+                                navigator.share({ title: room.title, url });
+                            } else {
+                                navigator.clipboard.writeText(url);
+                                alert('Link copied to clipboard!');
+                            }
+                        }}
+                    >
                         <Share2 className="w-4 h-4" />
                         Share Election
                     </button>

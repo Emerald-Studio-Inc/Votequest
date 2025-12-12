@@ -68,7 +68,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     // Filter proposals based on selection
     const displayedProposals = proposals.filter(p => {
         if (proposalFilter === 'active') return p.status === 'active';
-        return p.status === 'ended' || p.status === 'completed'; // Capture both history statuses
+        return p.status === 'closed'; // Capture history status
     });
 
     return (
