@@ -5,6 +5,7 @@ import { X, Coins, Zap, Gift, Sparkles, ExternalLink } from 'lucide-react';
 
 interface CoinsPurchaseModalProps {
   userId: string;
+  email: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -17,7 +18,7 @@ const COIN_PACKAGES = [
   { id: 'ultimate', coins: 5000, price: 15000, label: 'Ultimate', popular: false, bonus: 1000 },
 ];
 
-export default function CoinsPurchaseModal({ userId, isOpen, onClose, onSuccess }: CoinsPurchaseModalProps) {
+export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onSuccess }: CoinsPurchaseModalProps) {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export default function CoinsPurchaseModal({ userId, isOpen, onClose, onSuccess 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
+          email,
           packageId: pkg.id,
           amount: pkg.price,
           coins: pkg.coins + (pkg.bonus || 0)
@@ -92,8 +94,8 @@ export default function CoinsPurchaseModal({ userId, isOpen, onClose, onSuccess 
               key={pkg.id}
               onClick={() => setSelectedPackage(pkg.id)}
               className={`relative p-4 rounded-2xl border-2 transition-all text-left ${selectedPackage === pkg.id
-                  ? 'border-yellow-500 bg-yellow-500/10'
-                  : 'border-white/10 bg-white/5 hover:border-white/20'
+                ? 'border-yellow-500 bg-yellow-500/10'
+                : 'border-white/10 bg-white/5 hover:border-white/20'
                 }`}
             >
               {pkg.popular && (

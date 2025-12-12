@@ -3,6 +3,7 @@ import { ArrowLeft, Settings, Users, BarChart3, Play, Pause, Archive, Edit, Chec
 import VoterManagementPanel from './VoterManagementPanel';
 import ShareRoomInvite from './ShareRoomInvite';
 import CoinFeaturesPurchase from './CoinFeaturesPurchase';
+import EditRoomModal from './EditRoomModal';
 
 interface RoomDetailScreenProps {
     roomId: string;
@@ -22,6 +23,7 @@ export default function RoomDetailScreen({
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'overview' | 'voters' | 'results'>('overview');
     const [showCoinFeatures, setShowCoinFeatures] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [userCoins, setUserCoins] = useState(0);
 
     useEffect(() => {
@@ -172,7 +174,7 @@ export default function RoomDetailScreen({
 
                         <button
                             className="btn btn-ghost flex items-center gap-2"
-                            onClick={() => alert('Edit functionality coming soon!')}
+                            onClick={() => setShowEditModal(true)}
                         >
                             <Edit className="w-4 h-4" />
                             Edit
@@ -189,9 +191,23 @@ export default function RoomDetailScreen({
                 </div>
             </div>
 
+            <EditRoomModal
+                roomId={roomId}
+                userId={userId}
+                initialTitle={room.title}
+                initialDescription={room.description || ''}
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                onSuccess={() => {
+                    loadRoom();
+                    setShowEditModal(false);
+                }}
+            />
+
             <CoinFeaturesPurchase
                 roomId={roomId}
                 userCoins={userCoins}
+                userId={userId}
                 isOpen={showCoinFeatures}
                 onClose={() => setShowCoinFeatures(false)}
                 onSuccess={() => {

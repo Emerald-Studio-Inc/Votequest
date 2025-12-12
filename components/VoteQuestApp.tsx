@@ -43,13 +43,17 @@ const AdminDashboard = dynamic(() => import('./AdminDashboard'), {
 import Tooltip from './Tooltip';
 import AdminPassphraseModal from './AdminPassphraseModal';
 import AdminSetup2FA from './AdminSetup2FA';
+import QuestGuide from './QuestGuide';
 import OrganizationListScreen from './OrganizationListScreen';
 import OrganizationDashboard from './OrganizationDashboard';
 import OrganizationSetup from './OrganizationSetup';
+import RoomDetailScreen from './RoomDetailScreen';
+import CreateRoomWizard from './CreateRoomWizard';
 
 interface UserData {
     address: string | null;
     userId: string | null;
+    email: string | null;
     level: number;
     xp: number;
     nextLevelXP: number;
@@ -68,6 +72,7 @@ const VoteQuestApp = () => {
     const [userData, setUserData] = useState<UserData>({
         address: null,
         userId: null,
+        email: null,
         level: 1,
         xp: 0,
         nextLevelXP: 100,
@@ -90,6 +95,7 @@ const VoteQuestApp = () => {
     const [authUser, setAuthUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
+    const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
     // Blockchain removed - using database only
     const address = null;
@@ -129,6 +135,7 @@ const VoteQuestApp = () => {
                 setUserData({
                     address: null,
                     userId: null,
+                    email: null,
                     level: 1,
                     xp: 0,
                     nextLevelXP: 100,
@@ -325,6 +332,7 @@ const VoteQuestApp = () => {
                 setUserData({
                     address: profile.email,
                     userId: profile.id,
+                    email: profile.email,
                     level: profile.level,
                     xp: profile.xp,
                     nextLevelXP: nextLevelXP,
@@ -367,6 +375,7 @@ const VoteQuestApp = () => {
                         setUserData({
                             address: newProfile.email,
                             userId: newProfile.id,
+                            email: newProfile.email,
                             level: newProfile.level,
                             xp: newProfile.xp,
                             nextLevelXP: nextLevelXP,
@@ -394,6 +403,7 @@ const VoteQuestApp = () => {
                                 setUserData({
                                     address: existingProfile.email,
                                     userId: existingProfile.id,
+                                    email: existingProfile.email,
                                     level: existingProfile.level,
                                     xp: existingProfile.xp,
                                     nextLevelXP: nextLevelXP,
@@ -577,6 +587,11 @@ const VoteQuestApp = () => {
                     );
                 })}
             </div>
+            {/* Global Quest Guide */}
+            <QuestGuide
+                currentScreen={currentScreen}
+                onNavigate={setCurrentScreen}
+            />
         </div>
     );
 
@@ -722,14 +737,15 @@ const VoteQuestApp = () => {
             <OrganizationDashboard
                 organizationId={selectedOrganizationId}
                 userId={userData.userId || ''}
+                email={userData.email || ''}
                 onNavigate={(screen, data) => {
                     if (screen === 'organization-list') {
                         setCurrentScreen('organization');
                     } else if (screen === 'create-room') {
                         setCurrentScreen('create-room');
                     } else if (screen === 'room' && data) {
-                        // Navigate to room detail - store room ID and navigate
-                        localStorage.setItem('votequest_current_room', data.id);
+                        // Navigate to room detail
+                        setSelectedRoomId(data.id);
                         setCurrentScreen('room-detail');
                     }
                 }}
@@ -747,6 +763,34 @@ const VoteQuestApp = () => {
                     setCurrentScreen('org-dashboard');
                 }}
                 onCancel={() => setCurrentScreen('organization')}
+            />
+        );
+    }
+
+    // Room Detail Screen
+    if (currentScreen === 'room-detail' && selectedRoomId && selectedOrganizationId) {
+        return (
+            <RoomDetailScreen
+                roomId={selectedRoomId}
+                organizationId={selectedOrganizationId}
+                userId={userData.userId || ''}
+                onBack={() => setCurrentScreen('org-dashboard')}
+            />
+        );
+    }
+
+    // Create Room Screen
+    if (currentScreen === 'create-room' && selectedOrganizationId) {
+        return (
+            <CreateRoomWizard
+                organizationId={selectedOrganizationId}
+                organizationName="Organization"
+                userId={userData.userId || ''}
+                onComplete={(roomId) => {
+                    setSelectedRoomId(roomId);
+                    setCurrentScreen('room-detail');
+                }}
+                onCancel={() => setCurrentScreen('org-dashboard')}
             />
         );
     }

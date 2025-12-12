@@ -1,20 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Building2, Plus, Users, Vote, Settings, BarChart3 } from 'lucide-react';
+import { Building2, Plus, Users, Vote, Settings, BarChart3, Clock, ChevronRight } from 'lucide-react';
+import SubscriptionStatus from './SubscriptionStatus';
+import SubscriptionPicker from './SubscriptionPicker';
+import OrganizationAdminLayout from './admin/OrganizationAdminLayout';
+import TurnoutHeatmap from './analytics/TurnoutHeatmap';
+import VoterDemographics from './analytics/VoterDemographics';
 
 interface OrganizationDashboardProps {
     organizationId: string;
     userId: string;
+    email: string;
     onNavigate?: (screen: string, data?: any) => void;
 }
 
 export default function OrganizationDashboard({
     organizationId,
     userId,
+    email,
     onNavigate
 }: OrganizationDashboardProps) {
     const [organization, setOrganization] = useState<any>(null);
     const [rooms, setRooms] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showSubscriptionPicker, setShowSubscriptionPicker] = useState(false);
 
     useEffect(() => {
         loadOrganization();
@@ -23,15 +31,28 @@ export default function OrganizationDashboard({
 
     const loadOrganization = async () => {
         try {
-            // TODO: Fetch organization details
-            setOrganization({
-                id: organizationId,
-                name: 'Test Organization',
-                type: 'school',
-                subscription_tier: 'free'
-            });
+            const response = await fetch(`/api/organizations/${organizationId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setOrganization(data.organization);
+            } else {
+                // Fallback to basic info if detailed fetch fails
+                setOrganization({
+                    id: organizationId,
+                    name: 'Organization',
+                    type: 'other',
+                    subscription_tier: 'free'
+                });
+            }
         } catch (error) {
             console.error('Error loading organization:', error);
+            // Fallback to basic info
+            setOrganization({
+                id: organizationId,
+                name: 'Organization',
+                type: 'other',
+                subscription_tier: 'free'
+            });
         }
     };
 
@@ -165,7 +186,35 @@ export default function OrganizationDashboard({
                         </div>
                     )}
                 </div>
+
+                {/* Subscription Status */}
+                <div className="mt-12">
+                    <h3 className="text-heading mb-6">Subscription & Billing</h3>
+                    <SubscriptionStatus
+                        organizationId={organizationId}
+                        tier={organization.subscription_tier || 'free'}
+                        roomLimit={organization.room_limit || 5}
+                        voterLimit={organization.voter_limit || 50}
+                        roomsUsed={rooms.length}
+                        expiresAt={organization.subscription_expires_at}
+                        onUpgrade={() => setShowSubscriptionPicker(true)}
+                    />
+                </div>
             </div>
+
+            {/* Subscription Picker Modal */}
+            <SubscriptionPicker
+                organizationId={organizationId}
+                currentTier={organization.subscription_tier || 'free'}
+                userId={userId}
+                email={email}
+                isOpen={showSubscriptionPicker}
+                onClose={() => setShowSubscriptionPicker(false)}
+                onSuccess={() => {
+                    setShowSubscriptionPicker(false);
+                    loadOrganization(); // Refresh org data
+                }}
+            />
         </div>
     );
 }

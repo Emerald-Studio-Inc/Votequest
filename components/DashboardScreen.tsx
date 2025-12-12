@@ -423,6 +423,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
             <CoinsPurchaseModal
                 userId={userData.userId || ''}
+                email={userData.email || ''}
                 isOpen={showCoinModal}
                 onClose={() => setShowCoinModal(false)}
                 onSuccess={() => {

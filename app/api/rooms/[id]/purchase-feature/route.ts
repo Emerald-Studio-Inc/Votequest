@@ -74,31 +74,58 @@ export async function POST(
             }, { status: 403 });
         }
 
-        // Check user has enough coins
+        // Check user has enough coins AND voting power
         const { data: user } = await supabaseAdmin
             .from('users')
-            .select('coins')
+            .select('coins, voting_power, level, id')
             .eq('id', userId)
             .single();
 
+        // 1. VP Cost Calculation (Base VP * Cost)
+        // This ensures powerful features cost more "political capital"
+        const vpCost = 50 * expectedCost;
+
         if (!user || (user.coins || 0) < expectedCost) {
             return NextResponse.json({
-                error: 'Insufficient coins'
+                error: `Insufficient coins. Need ${expectedCost} VQC.`
             }, { status: 400 });
         }
 
-        // Deduct coins from user
+        if ((user.voting_power || 0) < vpCost) {
+            return NextResponse.json({
+                error: `Not enough Voting Power. Need ${vpCost} VP.`
+            }, { status: 400 });
+        }
+
+        // 2. Daily Limit Check (Limit = User Level)
+        const today = new Date().toISOString().split('T')[0];
+        const { count: dailyUsage, error: countError } = await supabaseAdmin
+            .from('coin_features')
+            .select('*', { count: 'exact', head: true })
+            .eq('purchased_by', userId)
+            .gte('created_at', today);
+
+        const dailyLimit = user.level || 1;
+
+        if (dailyUsage !== null && dailyUsage >= dailyLimit) {
+            return NextResponse.json({
+                error: `Daily boost limit reached (${dailyLimit}/${dailyLimit}). Level up to increase limit!`
+            }, { status: 429 });
+        }
+
+        // Deduct coins AND Voting Power
         const { error: updateUserError } = await supabaseAdmin
             .from('users')
             .update({
-                coins: (user.coins || 0) - expectedCost
+                coins: (user.coins || 0) - expectedCost,
+                voting_power: (user.voting_power || 0) - vpCost
             })
             .eq('id', userId);
 
         if (updateUserError) {
-            console.error('Error updating user coins:', updateUserError);
+            console.error('Error updating user balance:', updateUserError);
             return NextResponse.json({
-                error: 'Failed to deduct coins'
+                error: 'Failed to process payment'
             }, { status: 500 });
         }
 
@@ -147,11 +174,12 @@ export async function POST(
 
         if (featureError) {
             console.error('Error creating coin feature:', featureError);
-            // Refund coins if feature creation fails
+            // Refund coins/VP if feature creation fails
             await supabaseAdmin
                 .from('users')
                 .update({
-                    coins: (user.coins || 0)
+                    coins: (user.coins || 0),
+                    voting_power: (user.voting_power || 0)
                 })
                 .eq('id', userId);
 
@@ -204,7 +232,8 @@ export async function POST(
             roomId,
             featureType,
             userId,
-            cost: expectedCost
+            cost: expectedCost,
+            vpCost
         });
 
         // Create notification
@@ -212,7 +241,7 @@ export async function POST(
             user_id: userId,
             type: 'room_upgrade',
             title: '⚡ Room Upgraded!',
-            message: `Successfully purchased ${featureType.replace('_', ' ')} for ${expectedCost} coins`,
+            message: `Purchased ${featureType.replace('_', ' ')} (-${expectedCost} VQC, -${vpCost} VP)`,
             metadata: { roomId, featureType },
             read: false
         });
@@ -220,7 +249,8 @@ export async function POST(
         return NextResponse.json({
             success: true,
             feature: coinFeature,
-            remainingCoins: (user.coins || 0) - expectedCost
+            remainingCoins: (user.coins || 0) - expectedCost,
+            remainingVP: (user.voting_power || 0) - vpCost
         });
 
     } catch (error: any) {
