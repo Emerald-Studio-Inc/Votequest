@@ -61,24 +61,26 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
 
             {/* The Map Overlay */}
             {isOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-xl animate-fade-in flex flex-col items-center justify-center p-4">
-                    <button
-                        onClick={() => setIsOpen(false)}
-                        className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors"
-                    >
-                        <X className="w-5 h-5 text-zinc-400" />
-                    </button>
-
-                    <div className="w-full max-w-5xl h-[85vh] relative flex flex-col">
-                        <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-600">
+                <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-3xl animate-fade-in flex flex-col items-center justify-center">
+                    {/* Header */}
+                    <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20 bg-gradient-to-b from-black/80 to-transparent">
+                        <div>
+                            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-600">
                                 WORLD MAP
                             </h2>
-                            <p className="text-amber-500/60 text-sm tracking-wider uppercase mt-2">Select a Destination</p>
+                            <p className="text-amber-500/60 text-sm tracking-widest uppercase mt-1">Select Destination</p>
                         </div>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors backdrop-blur-md"
+                        >
+                            <X className="w-5 h-5 text-zinc-400" />
+                        </button>
+                    </div>
 
-                        {/* Map Visualization Container */}
-                        <div className="flex-1 relative border border-white/5 rounded-3xl bg-white/5 overflow-hidden shadow-2xl shadow-black/50">
+                    {/* Map Container */}
+                    <div className="w-full h-full flex items-center justify-center p-4 sm:p-8 pt-24 pb-12">
+                        <div className="w-full max-w-5xl h-full relative border border-white/5 rounded-3xl bg-black/40 overflow-hidden shadow-2xl shadow-black">
 
                             {/* Grid Background */}
                             <div className="absolute inset-0 opacity-10"

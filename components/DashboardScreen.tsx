@@ -61,7 +61,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         }
     };
 
-    const [proposalFilter, setProposalFilter] = useState<'active' | 'ended'>('active');
+    const [proposalFilter, setProposalFilter] = useState<'active' | 'history'>('active');
 
     const progressPercent = (userData.xp / userData.nextLevelXP) * 100;
 
@@ -264,26 +264,27 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     </div>
 
                     {/* Toggle Switch */}
-                    <div className="flex bg-white/5 rounded-xl p-1 border border-white/5 backdrop-blur-sm">
+                    {/* Proposals Toggle */}
+                    <div className="bg-black/40 backdrop-blur-xl p-1 rounded-xl border border-white/5 flex relative">
+                        {/* Animated Background */}
+                        <div
+                            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gradient-to-r from-amber-200 to-yellow-500 rounded-lg transition-all duration-300 shadow-lg shadow-amber-500/20`}
+                            style={{
+                                left: proposalFilter === 'active' ? '4px' : 'calc(50%)'
+                            }}
+                        />
+
                         <button
                             onClick={() => setProposalFilter('active')}
-                            className={`
-                                px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300
-                                ${proposalFilter === 'active'
-                                    ? 'bg-white text-black shadow-lg shadow-white/10'
-                                    : 'text-mono-60 hover:text-white'}
-                            `}
+                            className={`relative flex-1 px-6 py-2 rounded-lg text-sm font-bold z-10 transition-colors duration-300 ${proposalFilter === 'active' ? 'text-black' : 'text-mono-60 hover:text-white'
+                                }`}
                         >
                             Active
                         </button>
                         <button
-                            onClick={() => setProposalFilter('ended')}
-                            className={`
-                                px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300
-                                ${proposalFilter === 'ended'
-                                    ? 'bg-white text-black shadow-lg shadow-white/10'
-                                    : 'text-mono-60 hover:text-white'}
-                            `}
+                            onClick={() => setProposalFilter('history')}
+                            className={`relative flex-1 px-6 py-2 rounded-lg text-sm font-bold z-10 transition-colors duration-300 ${proposalFilter === 'history' ? 'text-black' : 'text-mono-60 hover:text-white'
+                                }`}
                         >
                             History
                         </button>
