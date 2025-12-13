@@ -1,6 +1,13 @@
 "use client"
 
 import React, { useState } from 'react';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
+import { Lock, Shield, X } from 'lucide-react';
+
+// Neon colors
+const NEON_MAGENTA = '#FF003C';
+const NEON_CYAN = '#00F0FF';
 
 interface Props {
   open: boolean;
@@ -59,63 +66,110 @@ export default function AdminPassphraseModal({ open, onClose, onSuccess }: Props
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <form onSubmit={handleSubmit} className="bg-white/6 backdrop-blur-xl rounded-2xl p-6 w-full max-w-sm border border-white/10">
-        <h3 className="text-lg font-semibold text-white mb-2">
-          {step === 'passphrase' ? 'Admin Access' : 'Two-Factor Authentication'}
-        </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in">
+      {/* Scanline overlay */}
+      <div className="absolute inset-0 pointer-events-none bg-[url('/scanlines.png')] opacity-10"></div>
 
-        <p className="text-sm text-mono-60 mb-4">
-          {step === 'passphrase' ? 'Enter the admin passphrase to continue.' : 'Enter the code from your authenticator app.'}
-        </p>
+      <div className="relative z-10 w-full max-w-md p-4">
+        <CyberCard title={step === 'passphrase' ? 'ADMIN_ACCESS_PROTOCOL' : 'SECURITY_VERIFICATION'} className="shadow-[0_0_50px_-12px_#FF003C]" cornerStyle="tech">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Header Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 border-2 flex items-center justify-center bg-black/50 overflow-hidden relative group"
+                style={{ borderColor: NEON_MAGENTA }}>
+                <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
+                {step === 'passphrase' ? (
+                  <Lock className="w-8 h-8 relative z-10" style={{ color: NEON_MAGENTA }} />
+                ) : (
+                  <Shield className="w-8 h-8 relative z-10" style={{ color: NEON_MAGENTA }} />
+                )}
 
-        {step === 'passphrase' ? (
-          <div className="mb-4">
-            <label className="block text-sm text-mono-70 mb-2">Passphrase</label>
-            <input
-              type="password"
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500"
-              autoFocus
-            />
-          </div>
-        ) : (
-          <div className="mb-4">
-            <label className="block text-sm text-mono-70 mb-2">2FA Code</label>
-            <div className="flex justify-center">
-              <input
-                type="text"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
-                className="w-full px-3 py-2 text-center text-2xl tracking-widest rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500"
-                autoFocus
-                placeholder="000 000"
-              />
+                {/* Corner accents */}
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: NEON_MAGENTA }} />
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r" style={{ borderColor: NEON_MAGENTA }} />
+              </div>
             </div>
-          </div>
-        )}
 
-        {error && <p className="text-sm text-red-400 mb-4 bg-red-500/10 p-2 rounded-lg text-center">{error}</p>}
+            <div className="text-center mb-6">
+              <p className="text-sm font-mono uppercase tracking-widest mb-1" style={{ color: NEON_MAGENTA }}>
+                {'>'} RESTRICTED_AREA
+              </p>
+              <p className="text-xs text-gray-400 font-mono">
+                {step === 'passphrase' ? 'ENTER_SECURITY_CREDENTIALS' : 'AWAITING_2FA_TOKEN'}
+              </p>
+            </div>
 
-        <div className="flex gap-3 justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl text-mono-60 hover:text-white transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading || (step === 'passphrase' ? !passphrase : code.length !== 6)}
-            className="btn btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Verifying...' : (step === 'passphrase' ? 'Next' : 'Unlock')}
-          </button>
-        </div>
-      </form>
+            {step === 'passphrase' ? (
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Passphrase</label>
+                <div className="relative group">
+                  <input
+                    type="password"
+                    value={passphrase}
+                    onChange={(e) => setPassphrase(e.target.value)}
+                    className="w-full bg-black/50 border px-4 py-3 text-white font-mono focus:outline-none transition-all placeholder:text-gray-700"
+                    style={{
+                      borderColor: `${NEON_MAGENTA}50`,
+                      boxShadow: `0 0 10px ${NEON_MAGENTA}20`
+                    }}
+                    autoFocus
+                    placeholder="Enter passphrase..."
+                  />
+                  {/* Focus effect handled via CSS or state, but here simple inline style for border is enough */}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">2FA Code</label>
+                <div className="flex justify-center">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
+                    className="w-full bg-black/50 border px-4 py-3 text-center text-2xl tracking-[0.5em] text-white font-mono focus:outline-none transition-all placeholder:text-gray-700"
+                    style={{
+                      borderColor: `${NEON_MAGENTA}50`,
+                      boxShadow: `0 0 10px ${NEON_MAGENTA}20`,
+                      color: NEON_MAGENTA
+                    }}
+                    autoFocus
+                    placeholder="000000"
+                  />
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="flex items-center gap-2 p-3 border bg-red-900/10 text-red-400 text-xs font-mono uppercase"
+                style={{ borderColor: `${NEON_MAGENTA}50` }}>
+                <X className="w-4 h-4" />
+                <span>{'>'} ERROR: {error}</span>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <ArcadeButton
+                type="button"
+                onClick={onClose}
+                variant="magenta"
+                className="flex-1 opacity-50 hover:opacity-100"
+              >
+                ABORT
+              </ArcadeButton>
+              <ArcadeButton
+                type="submit"
+                disabled={loading || (step === 'passphrase' ? !passphrase : code.length !== 6)}
+                variant="magenta"
+                className="flex-[2]"
+                glow
+              >
+                {loading ? 'VERIFYING...' : (step === 'passphrase' ? 'AUTHENTICATE' : 'UNLOCK_SYSTEM')}
+              </ArcadeButton>
+            </div>
+          </form>
+        </CyberCard>
+      </div>
     </div>
   );
 }

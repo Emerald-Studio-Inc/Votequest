@@ -1,4 +1,6 @@
 import { CheckCircle, Share2, Download } from 'lucide-react';
+import ArcadeButton from './ArcadeButton';
+
 import VoteDistributionChart from './VoteDistributionChart';
 
 interface VoteSuccessScreenProps {
@@ -64,27 +66,30 @@ export default function VoteSuccessScreen({ room, votedOptions }: VoteSuccessScr
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                    <button
+                    <ArcadeButton
                         onClick={() => window.location.reload()}
-                        className="btn btn-secondary"
+                        variant="cyan"
+                        className="w-full sm:w-auto"
                     >
-                        View Results
-                    </button>
-                    <button
-                        className="btn btn-ghost"
+                        VIEW_RESULTS
+                    </ArcadeButton>
+                    <ArcadeButton
                         onClick={() => {
                             const url = window.location.href;
                             if (navigator.share) {
                                 navigator.share({ title: room.title, url });
                             } else {
                                 navigator.clipboard.writeText(url);
+                                // Toast would be better but alert is minimal fallback as per original code
                                 alert('Link copied to clipboard!');
                             }
                         }}
+                        variant="magenta"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2"
                     >
                         <Share2 className="w-4 h-4" />
-                        Share Election
-                    </button>
+                        SHARE_ELECTION
+                    </ArcadeButton>
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-white/5">

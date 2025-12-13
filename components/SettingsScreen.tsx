@@ -302,7 +302,8 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setShowDisconnectConfirm(false)}
-                                    className="flex-1 py-3 text-xs font-mono border border-gray-700 text-gray-400 hover:text-white hover:border-white transition-all uppercase"
+                                    className="flex-1 py-3 text-xs font-mono border border-gray-700 transition-all uppercase hover:border-white"
+                                    style={{ color: '#FFFFFF' }}
                                 >
                                     [ CANCEL ]
                                 </button>

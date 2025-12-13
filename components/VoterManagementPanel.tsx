@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ArcadeButton from './ArcadeButton';
 import { Upload, UserPlus, Download, Trash2, Mail, X } from 'lucide-react';
 
 interface VoterManagementPanelProps {
@@ -194,17 +195,28 @@ export default function VoterManagementPanel({
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-                <button
+                <ArcadeButton
                     onClick={() => setShowAddVoter(true)}
-                    className="btn btn-primary flex items-center gap-2"
+                    variant="cyan"
+                    className="flex items-center gap-2"
                 >
                     <UserPlus className="w-4 h-4" />
-                    Add Voter
-                </button>
+                    ADD_VOTER
+                </ArcadeButton>
 
-                <label className="btn btn-secondary flex items-center gap-2 cursor-pointer">
-                    <Upload className="w-4 h-4" />
-                    {uploading ? 'Uploading...' : 'Upload CSV'}
+                <label className="cursor-pointer group relative">
+                    <div className="px-6 py-2 border-2 flex items-center gap-2 font-mono font-bold transition-all duration-200 active:scale-95"
+                        style={{
+                            borderColor: '#FF003C',
+                            backgroundColor: '#FF003C15',
+                            color: '#FF003C'
+                        }}>
+                        <Upload className="w-4 h-4" />
+                        {uploading ? 'UPLOADING...' : 'UPLOAD_CSV'}
+
+                        <span className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2" style={{ borderColor: '#FF003C' }}></span>
+                        <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2" style={{ borderColor: '#FF003C' }}></span>
+                    </div>
                     <input
                         type="file"
                         accept=".csv"
@@ -214,13 +226,14 @@ export default function VoterManagementPanel({
                     />
                 </label>
 
-                <button
+                <ArcadeButton
                     onClick={downloadTemplate}
-                    className="btn btn-ghost flex items-center gap-2"
+                    variant="lime"
+                    className="flex items-center gap-2"
                 >
                     <Download className="w-4 h-4" />
-                    Download Template
-                </button>
+                    TEMPLATE
+                </ArcadeButton>
             </div>
 
             {/* ... (Add Voter Modal - Unchanged) ... */}
@@ -368,8 +381,8 @@ export default function VoterManagementPanel({
                                     {/* Verification Status Badge */}
                                     {voter.verification_status && (
                                         <span className={`text-xs ml-2 px-2 py-0.5 rounded-full ${voter.verification_status === 'verified' ? 'bg-green-500/20 text-green-400' :
-                                                voter.verification_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                                                    'bg-yellow-500/20 text-yellow-400'
+                                            voter.verification_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                                'bg-yellow-500/20 text-yellow-400'
                                             }`}>
                                             {voter.verification_status}
                                         </span>
