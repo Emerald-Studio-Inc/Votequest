@@ -508,7 +508,7 @@ const VoteQuestApp = () => {
 
     const handleCreateProposal = async (proposalData: any) => {
         try {
-            const response = await fetch('/api/proposals', {
+            const response = await fetch('/api/proposal/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

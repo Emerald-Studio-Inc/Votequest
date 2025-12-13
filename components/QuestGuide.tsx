@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Map, X, Home, LayoutDashboard, Building2, Vote, ArrowRight, Zap, Target, Cpu, Globe } from 'lucide-react';
-import CyberCard from './CyberCard';
+import React, { useState, useEffect, useRef } from 'react';
+import { Map, X, LayoutDashboard, Building2, Vote, Zap, Globe, Target, Cpu } from 'lucide-react';
 
 interface QuestGuideProps {
     currentScreen: string;
@@ -13,37 +12,32 @@ interface MapNode {
     id: string;
     label: string;
     icon: any;
-    x: number;
-    y: number;
-    connections: string[];
     screenId: string;
+    desc: string;
 }
 
 const NODES: MapNode[] = [
-    { id: 'dashboard', label: 'CMD_CENTER', icon: LayoutDashboard, x: 50, y: 20, connections: ['create-org', 'org-list'], screenId: 'dashboard' },
-    { id: 'create-org', label: 'INIT_ORG', icon: Zap, x: 25, y: 50, connections: [], screenId: 'org-setup' },
-    { id: 'org-list', label: 'ORG_NEXUS', icon: Building2, x: 75, y: 50, connections: ['room'], screenId: 'organization' },
-    { id: 'room', label: 'VOTE_NODE', icon: Vote, x: 75, y: 80, connections: [], screenId: 'organization' },
+    { id: 'dashboard', label: 'CMD_CENTER', icon: LayoutDashboard, screenId: 'dashboard', desc: 'Main Operations' },
+    { id: 'create-org', label: 'INIT_ORG', icon: Zap, screenId: 'org-setup', desc: 'Create Organization' },
+    { id: 'org-list', label: 'ORG_NEXUS', icon: Building2, screenId: 'organization', desc: 'Browse Organizations' },
+    { id: 'vote', label: 'VOTE_NODE', icon: Vote, screenId: 'organization', desc: 'Active Votes' }, // Simplified routing
 ];
 
 export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [showTip, setShowTip] = useState(true);
+    const [rotation, setRotation] = useState(0); // For Orb
+    const [wheelRotation, setWheelRotation] = useState(0); // For 3D Wheel
+
+    // Auto-snap to nearest node
+    const snapTimeout = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
         const timer = setTimeout(() => setShowTip(false), 5000);
         return () => clearTimeout(timer);
     }, []);
 
-    const currentNode = NODES.find(n => n.screenId === currentScreen) || NODES[0];
-
-    // Neon color hex values - guaranteed to work
-    const NEON_CYAN = '#00F0FF';
-    const NEON_MAGENTA = '#FF003C';
-    const NEON_LIME = '#39FF14';
-
-    const [rotation, setRotation] = useState(0);
-
+    // Ambient rotation for Orb
     useEffect(() => {
         const handleScroll = () => {
             setRotation(window.scrollY * 0.2);
@@ -52,10 +46,37 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Neon colors
+    const NEON_CYAN = '#00F0FF';
+    const NEON_MAGENTA = '#FF003C';
+    const NEON_LIME = '#39FF14';
+
+    const handleWheel = (e: React.WheelEvent) => {
+        setWheelRotation(prev => prev + (e.deltaY * 0.1));
+
+        // Clear existing snap
+        if (snapTimeout.current) clearTimeout(snapTimeout.current);
+
+        // Set new snap
+        snapTimeout.current = setTimeout(() => {
+            const step = 360 / NODES.length;
+            setWheelRotation(prev => {
+                const remainder = prev % step;
+                return prev - remainder + (remainder > step / 2 ? step : 0);
+            });
+        }, 500);
+    };
+
+    // Calculate current node based on rotation
+    const normalizedRotation = (wheelRotation % 360 + 360) % 360;
+    const step = 360 / NODES.length;
+    const currentIndex = Math.round(normalizedRotation / step) % NODES.length;
+    const activeNode = NODES[(NODES.length - currentIndex) % NODES.length]; // Reversed due to rotation direction
+
     return (
         <>
-            {/* The Floating Orb - Cyber Style */}
-            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
+            {/* The Floating Orb - Z-index fixed to be above content but below HUD if needed, essentially float z-[60] */}
+            <div className="fixed bottom-24 right-6 z-[60] flex items-center gap-4">
                 {showTip && !isOpen && (
                     <div
                         className="bg-black/90 px-4 py-2 text-sm border animate-fade-in shadow-[0_0_15px_rgba(0,240,255,0.3)] font-mono glitch-text"
@@ -70,7 +91,7 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                     onClick={() => setIsOpen(true)}
                     className="group relative w-16 h-16 flex items-center justify-center transition-all duration-300 transform hover:scale-110"
                 >
-                    {/* Rotating Rings (Scroll Driven) */}
+                    {/* Rotating Rings */}
                     <div
                         className="absolute inset-0 rounded-full border-2 border-t-transparent border-l-transparent opacity-80"
                         style={{
@@ -93,160 +114,92 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                 </button>
             </div>
 
-            {/* The Map Overlay */}
+            {/* The Map Overlay - Z-INDEX 40 to sit BEHIND Header (z-50) and Bottom Nav (z-50) */}
             {isOpen && (
-                <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-3xl animate-fade-in flex flex-col items-center justify-center">
+                <div
+                    className="fixed inset-0 z-40 bg-black/80 backdrop-blur-md animate-fade-in flex flex-col items-center justify-center overflow-hidden"
+                    onWheel={handleWheel}
+                    onClick={() => setIsOpen(false)} // Click outside to close
+                >
 
-                    {/* Header */}
-                    <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
-                        <div className="flex items-center gap-4">
-                            <Globe className="w-8 h-8 animate-spin-slow" style={{ color: NEON_CYAN }} />
-                            <div>
-                                <h2
-                                    className="text-3xl font-bold font-mono tracking-tighter"
-                                    style={{ color: NEON_CYAN }}
-                                >
-                                    SYS.MAP_V1
-                                </h2>
-                                <p className="text-xs font-mono tracking-[0.2em] uppercase mt-1" style={{ color: `${NEON_CYAN}99` }}>
-                                    // SELECT_DESTINATION
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="w-10 h-10 rounded-none border flex items-center justify-center transition-all group"
-                            style={{ borderColor: NEON_MAGENTA }}
-                        >
-                            <X className="w-6 h-6 group-hover:scale-110" style={{ color: NEON_MAGENTA }} />
-                        </button>
+                    {/* Header Info */}
+                    <div className="absolute top-24 left-0 w-full text-center pointer-events-none">
+                        <h2 className="text-3xl font-bold font-mono tracking-tighter" style={{ color: NEON_CYAN }}>
+                            NAV_SYSTEM
+                        </h2>
+                        <p className="text-xs font-mono tracking-[0.2em] uppercase mt-1 text-gray-400">
+                            SCROLL TO NAVIGATE
+                        </p>
                     </div>
 
-                    {/* Map Container */}
-                    <div className="w-full h-full flex items-center justify-center p-4 sm:p-8 pt-24 pb-12">
+                    {/* 3D Wheel Container */}
+                    <div
+                        className="relative w-full max-w-lg h-[400px] flex items-center justify-center"
+                        style={{ perspective: '1000px' }}
+                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking wheel area
+                    >
                         <div
-                            className="w-full max-w-5xl relative bg-black/90 overflow-visible shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                            className="relative w-full h-full transition-transform duration-500 ease-out"
                             style={{
-                                border: `2px solid ${NEON_CYAN}`,
-                                minHeight: '400px',
-                                height: '60vh'
+                                transformStyle: 'preserve-3d',
+                                transform: `rotateX(-10deg) rotateY(${wheelRotation}deg)`
                             }}
                         >
+                            {NODES.map((node, index) => {
+                                const angle = (index * 360) / NODES.length;
+                                const radius = 250;
 
-                            {/* Corner Accents */}
-                            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2" style={{ borderColor: NEON_CYAN }}></div>
-                            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2" style={{ borderColor: NEON_CYAN }}></div>
-                            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2" style={{ borderColor: NEON_CYAN }}></div>
-                            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2" style={{ borderColor: NEON_CYAN }}></div>
-
-                            {/* Connection Lines SVG */}
-                            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
-                                {NODES.map(node =>
-                                    node.connections.map(targetId => {
-                                        const target = NODES.find(n => n.id === targetId);
-                                        if (!target) return null;
-                                        return (
-                                            <line
-                                                key={`${node.id}-${targetId}`}
-                                                x1={`${node.x}%`}
-                                                y1={`${node.y}%`}
-                                                x2={`${target.x}%`}
-                                                y2={`${target.y}%`}
-                                                stroke={NEON_CYAN}
-                                                strokeOpacity="0.5"
-                                                strokeWidth="2"
-                                                strokeDasharray="5,5"
-                                            />
-                                        );
-                                    })
-                                )}
-                            </svg>
-
-                            {/* Nodes */}
-                            <div className="absolute inset-0 z-10">
-                                {NODES.map((node) => {
-                                    const Icon = node.icon;
-                                    const isCurrent = node.id === currentNode.id;
-
-                                    return (
+                                return (
+                                    <div
+                                        key={node.id}
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+                                        style={{
+                                            transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                                            transformStyle: 'preserve-3d'
+                                        }}
+                                        onClick={() => {
+                                            onNavigate(node.screenId);
+                                            setIsOpen(false);
+                                        }}
+                                    >
                                         <div
-                                            key={node.id}
-                                            className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 cursor-pointer group"
-                                            style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                                            onClick={() => {
-                                                onNavigate(node.screenId);
-                                                setIsOpen(false);
+                                            className="w-40 h-48 bg-black/80 border-2 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_30px_rgba(0,240,255,0.4)]"
+                                            style={{
+                                                borderColor: NEON_CYAN,
+                                                boxShadow: `0 0 15px ${NEON_CYAN}20`
                                             }}
                                         >
-                                            {/* Node Hexagon/Circle */}
-                                            <div className={`
-                                                w-20 h-20 flex items-center justify-center transition-all duration-300 relative clip-path-hexagon
-                                                ${isCurrent
-                                                    ? 'scale-110 z-20'
-                                                    : 'hover:scale-105 z-10'
-                                                }
-                                            `}>
-                                                {/* Background Shape */}
-                                                <div
-                                                    className="absolute inset-0 border-2 transition-colors duration-300"
-                                                    style={{
-                                                        transform: 'rotate(45deg)',
-                                                        backgroundColor: isCurrent ? `${NEON_CYAN}30` : 'rgba(0,0,0,0.8)',
-                                                        borderColor: isCurrent ? NEON_CYAN : '#ffffff',
-                                                        boxShadow: isCurrent ? `0 0 30px ${NEON_CYAN}` : 'none'
-                                                    }}
-                                                ></div>
-
-                                                <Icon
-                                                    className="w-8 h-8 z-10 transition-colors"
-                                                    style={{ color: isCurrent ? NEON_CYAN : '#ffffff' }}
-                                                />
-
-                                                {/* Ripple for Current */}
-                                                {isCurrent && (
-                                                    <div
-                                                        className="absolute inset-0 border animate-ping opacity-50"
-                                                        style={{ transform: 'rotate(45deg)', borderColor: NEON_CYAN }}
-                                                    ></div>
-                                                )}
+                                            <div className="p-3 rounded-full border bg-black" style={{ borderColor: NEON_MAGENTA }}>
+                                                <node.icon className="w-8 h-8" style={{ color: NEON_CYAN }} />
                                             </div>
 
-                                            {/* Label */}
-                                            <div
-                                                className="px-3 py-1 text-[10px] font-mono tracking-widest uppercase transition-all border"
-                                                style={{
-                                                    backgroundColor: isCurrent ? NEON_CYAN : 'rgba(0,0,0,0.9)',
-                                                    color: isCurrent ? 'black' : '#ffffff',
-                                                    borderColor: isCurrent ? NEON_CYAN : '#ffffff',
-                                                    fontWeight: isCurrent ? 'bold' : 'normal'
-                                                }}
-                                            >
-                                                {node.label}
+                                            <div className="text-center">
+                                                <p className="text-sm font-bold font-mono text-white mb-1">{node.label}</p>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wide">{node.desc}</p>
                                             </div>
 
-                                            {isCurrent && (
-                                                <div
-                                                    className="absolute -top-12 text-[10px] font-mono animate-bounce flex flex-col items-center"
-                                                    style={{ color: NEON_LIME }}
-                                                >
-                                                    <Target className="w-4 h-4 mb-1" />
-                                                    YOU_ARE_HERE
-                                                </div>
-                                            )}
+                                            {/* Corner Accents */}
+                                            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: NEON_CYAN }} />
+                                            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r" style={{ borderColor: NEON_CYAN }} />
+                                            <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l" style={{ borderColor: NEON_CYAN }} />
+                                            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r" style={{ borderColor: NEON_CYAN }} />
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* Footer Info */}
-                    <div className="absolute bottom-6 left-6 text-xs font-mono text-gray-400">
-                        <div className="flex items-center gap-2">
-                            <Cpu className="w-4 h-4" />
-                            <span>SYSTEM_READY</span>
-                        </div>
-                    </div>
+                    {/* Close Button - Floating reasonably */}
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="absolute bottom-32 flex items-center gap-2 px-6 py-2 border bg-black/50 hover:bg-black transition-colors z-50 pointer-events-auto"
+                        style={{ borderColor: NEON_MAGENTA }}
+                    >
+                        <X className="w-4 h-4" style={{ color: NEON_MAGENTA }} />
+                        <span className="font-mono text-xs font-bold text-white uppercase">CLOSE_MAP</span>
+                    </button>
+
                 </div>
             )}
         </>
