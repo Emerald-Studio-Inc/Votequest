@@ -1,64 +1,70 @@
 import { useState } from 'react';
 import { HelpCircle, X, Vote, FileText, Zap, Trophy, Shield, ChevronRight } from 'lucide-react';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface HelpModalProps {
     onClose: () => void;
 }
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_LIME = '#39FF14';
 
 export default function HelpModal({ onClose }: HelpModalProps) {
     const [activeSection, setActiveSection] = useState<string>('getting-started');
 
     const sections = {
         'getting-started': {
-            title: 'Getting Started',
+            title: 'INIT_SEQUENCE',
             icon: HelpCircle,
             content: [
-                { label: 'Connect Wallet', text: 'Click "Connect Wallet" and choose MetaMask' },
-                { label: 'View Dashboard', text: 'See active proposals and your stats' },
-                { label: 'Start Voting', text: 'Click any proposal to view details and vote' }
+                { label: 'Connect Net-Link', text: 'Engage "Connect Wallet" -> Select MetaMask uplink.' },
+                { label: 'Access Dashboard', text: 'Monitor active protocols and user statistics.' },
+                { label: 'Initiate Voting', text: 'Select any proposal node to analyze and cast vote.' }
             ]
         },
         'voting': {
-            title: 'How to Vote',
+            title: 'VOTING_PROTOCOL',
             icon: Vote,
             content: [
-                { label: 'Choose Proposal', text: 'Browse active proposals on dashboard' },
-                { label: 'Read Details', text: 'Click to see full description and options' },
-                { label: 'Select Option', text: 'Pick your choice from available options' },
-                { label: 'Complete CAPTCHA', text: 'Security check to prevent bots' },
-                { label: 'Confirm Vote', text: 'Transaction in wallet (testnet, no fees)' },
-                { label: 'Get Receipt', text: 'Earn coins + cryptographic proof' }
+                { label: 'Target Proposal', text: 'Identify target from active feed.' },
+                { label: 'Analyze Data', text: 'Review full specs and potential outcomes.' },
+                { label: 'Select Vector', text: 'Choose your preferred option.' },
+                { label: 'Verify Humanity', text: 'Complete CAPTCHA verification sequence.' },
+                { label: 'Sign Transaction', text: 'Authorize via wallet (Testnet, 0 fees).' },
+                { label: 'Acquire Proof', text: 'Receive VQC + cryptographic receipt.' }
             ]
         },
         'receipts': {
-            title: 'Understanding Receipts',
+            title: 'PROOF_OF_WORK',
             icon: FileText,
             content: [
-                { label: 'What Are They?', text: 'SHA-256 cryptographic proof of your actions' },
-                { label: 'Why Important?', text: 'Permanent, unforgeable proof of participation' },
-                { label: 'View Yours', text: 'Settings → View My Receipts' },
-                { label: 'Export', text: 'Download as JSON or CSV anytime' },
-                { label: 'Verify', text: 'Anyone can verify a receipt hash publicly' }
+                { label: 'Hash Data', text: 'SHA-256 cryptographic proof of actions.' },
+                { label: 'Immutability', text: 'Permanent, unforgeable verification.' },
+                { label: 'Access Log', text: 'Settings -> View My Receipts.' },
+                { label: 'Data Export', text: 'Download JSON/CSV archives.' },
+                { label: 'Public Verify', text: 'Any node can verify hash integrity.' }
             ]
         },
         'coins': {
-            title: 'Coin System',
+            title: 'TOKEN_ECONOMICS',
             icon: Zap,
             content: [
-                { label: 'Earn Coins', text: 'Vote (+10 VQC), Create Proposal (+50 VQC)' },
-                { label: 'What They Do', text: 'Show contribution level, leaderboard rank' },
-                { label: 'Receipts', text: 'Each coin has a cryptographic receipt' },
-                { label: 'Level Up', text: 'Earn XP with coins to increase voting power' }
+                { label: 'Mining', text: 'Vote (+10 VQC), Create (+50 VQC).' },
+                { label: 'Utility', text: 'Determine rank and leader status.' },
+                { label: 'Ledger', text: 'All tokens backed by receipt hashes.' },
+                { label: 'Level Up', text: 'Accrue XP to boost voting weight.' }
             ]
         },
         'security': {
-            title: 'Security & Privacy',
+            title: 'SECURITY_LAYER',
             icon: Shield,
             content: [
-                { label: 'CAPTCHA', text: 'Required on all votes to prevent bots' },
-                { label: 'Wallet Safety', text: 'Never share your private key' },
-                { label: 'Transparent', text: 'All votes are public (blockchain)' },
-                { label: 'Receipts', text: 'Cryptographically verified, tamper-proof' }
+                { label: 'Bot Defense', text: 'CAPTCHA required on all entry vectors.' },
+                { label: 'Key Safety', text: 'Never reveal private keys.' },
+                { label: 'Transparency', text: 'All actions visible on chain.' },
+                { label: 'Integrity', text: 'Cryptographically secured.' }
             ]
         }
     };
@@ -66,31 +72,38 @@ export default function HelpModal({ onClose }: HelpModalProps) {
     const currentSection = sections[activeSection as keyof typeof sections];
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center px-6 animate-fade-in">
-            <div className="card-elevated max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4 font-mono animate-fade-in">
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
+            <CyberCard
+                className="w-full max-w-4xl h-[85vh] flex flex-col p-0 relative z-10"
+                title="SYSTEM_MANUAL"
+                cornerStyle="tech"
+            >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-                            <HelpCircle className="w-6 h-6 text-white" />
+                <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: `${NEON_CYAN}30` }}>
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 border flex items-center justify-center bg-black" style={{ borderColor: NEON_CYAN }}>
+                            <HelpCircle className="w-6 h-6 animate-pulse" style={{ color: NEON_CYAN }} />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">Quick Help</h2>
-                            <p className="text-sm text-mono-60">Learn how to use VoteQuest</p>
+                            <h2 className="text-2xl font-bold text-white uppercase tracking-wider glitch-text" data-text="OPERATOR_GUIDE">OPERATOR_GUIDE</h2>
+                            <p className="text-xs text-gray-500 uppercase">V.2.0.4 MANUAL</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                        className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors border border-transparent hover:border-red-500/50"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-6 h-6 text-gray-400 hover:text-red-500" />
                     </button>
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Sidebar */}
-                    <div className="w-64 border-r border-white/10 p-4 space-y-2 overflow-y-auto">
+                    <div className="w-64 border-r p-4 space-y-2 overflow-y-auto bg-black/20" style={{ borderColor: `${NEON_CYAN}30` }}>
                         {Object.entries(sections).map(([key, section]) => {
                             const Icon = section.icon;
                             const isActive = activeSection === key;
@@ -99,69 +112,89 @@ export default function HelpModal({ onClose }: HelpModalProps) {
                                 <button
                                     key={key}
                                     onClick={() => setActiveSection(key)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
-                                            ? 'bg-white text-black'
-                                            : 'bg-white/5 text-mono-70 hover:bg-white/10 hover:text-white'
-                                        }`}
+                                    className="w-full flex items-center gap-3 px-4 py-3 border transition-all relative overflow-hidden group"
+                                    style={{
+                                        borderColor: isActive ? NEON_CYAN : 'transparent',
+                                        backgroundColor: isActive ? `${NEON_CYAN}10` : 'transparent',
+                                        color: isActive ? NEON_CYAN : 'gray'
+                                    }}
                                 >
-                                    <Icon className="w-5 h-5" />
-                                    <span className="text-sm font-medium flex-1 text-left">{section.title}</span>
-                                    {isActive && <ChevronRight className="w-4 h-4" />}
+                                    <Icon className="w-4 h-4" />
+                                    <span className="text-xs font-bold uppercase flex-1 text-left">{section.title}</span>
+                                    {isActive && <div className="w-1 h-full absolute left-0 top-0" style={{ backgroundColor: NEON_CYAN }} />}
+                                    {isActive && <ChevronRight className="w-4 h-4 animate-pulse" />}
                                 </button>
                             );
                         })}
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1 p-6 overflow-y-auto">
-                        <h3 className="text-xl font-bold text-white mb-6">{currentSection.title}</h3>
-                        <div className="space-y-4">
-                            {currentSection.content.map((item, idx) => (
-                                <div key={idx} className="flex gap-4">
-                                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-1">
-                                        <span className="text-sm font-bold text-white">{idx + 1}</span>
+                    <div className="flex-1 p-8 overflow-y-auto bg-black/40 relative">
+                        {/* Scanlines */}
+                        <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.2)_50%)] bg-[size:100%_4px] pointer-events-none opacity-50" />
+
+                        <div className="relative z-10">
+                            <h3 className="text-xl font-bold text-white mb-8 border-b pb-2 inline-block uppercase tracking-widest" style={{ borderColor: NEON_CYAN }}>
+                                // {currentSection.title}
+                            </h3>
+
+                            <div className="grid gap-6">
+                                {currentSection.content.map((item, idx) => (
+                                    <div key={idx} className="flex gap-4 group">
+                                        <div className="w-8 h-8 border flex items-center justify-center flex-shrink-0 mt-1 font-bold group-hover:scale-110 transition-transform"
+                                            style={{ borderColor: NEON_CYAN, color: NEON_CYAN }}>
+                                            0{idx + 1}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-white mb-1 uppercase tracking-wide group-hover:text-cyan-400 transition-colors">
+                                                {item.label}
+                                            </p>
+                                            <p className="text-xs text-gray-400 font-mono tracking-tight leading-relaxed">
+                                                {item.text}
+                                            </p>
+                                        </div>
                                     </div>
+                                ))}
+                            </div>
+
+                            {/* Tips for current section */}
+                            {activeSection === 'voting' && (
+                                <div className="mt-8 p-4 border flex items-start gap-4" style={{ borderColor: NEON_MAGENTA, backgroundColor: `${NEON_MAGENTA}05` }}>
+                                    <Zap className="w-5 h-5 flex-shrink-0" style={{ color: NEON_MAGENTA }} />
                                     <div>
-                                        <p className="text-sm font-semibold text-white mb-1">{item.label}</p>
-                                        <p className="text-sm text-mono-60">{item.text}</p>
+                                        <p className="text-xs font-bold uppercase mb-1" style={{ color: NEON_MAGENTA }}>ADVISORY_NOTICE</p>
+                                        <p className="text-xs text-gray-500">
+                                            Blockchain writes are permanent. Verify vector coordinates before commitment.
+                                        </p>
                                     </div>
                                 </div>
-                            ))}
+                            )}
+
+                            {activeSection === 'receipts' && (
+                                <div className="mt-8 p-4 border flex items-start gap-4" style={{ borderColor: NEON_LIME, backgroundColor: `${NEON_LIME}05` }}>
+                                    <Trophy className="w-5 h-5 flex-shrink-0" style={{ color: NEON_LIME }} />
+                                    <div>
+                                        <p className="text-xs font-bold uppercase mb-1" style={{ color: NEON_LIME }}>SYSTEM_TIP</p>
+                                        <p className="text-xs text-gray-500">
+                                            Receipt hashes are public verifiers. Share proof without revealing private keys.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-
-                        {/* Tips for current section */}
-                        {activeSection === 'voting' && (
-                            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                                <p className="text-sm text-blue-400 font-medium mb-2">💡 Pro Tip</p>
-                                <p className="text-sm text-mono-70">
-                                    Read the full proposal description before voting. Your vote is permanent and recorded on the blockchain!
-                                </p>
-                            </div>
-                        )}
-
-                        {activeSection === 'receipts' && (
-                            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                                <p className="text-sm text-green-400 font-medium mb-2">✨ Did You Know?</p>
-                                <p className="text-sm text-mono-70">
-                                    You can verify any receipt hash publicly at the verification page. Share your proof with anyone!
-                                </p>
-                            </div>
-                        )}
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-white/10 bg-white/5">
-                    <div className="flex items-center justify-between">
-                        <p className="text-sm text-mono-60">
-                            Need more help? Check the full guide in Settings
-                        </p>
-                        <button onClick={onClose} className="btn btn-primary">
-                            Got it!
-                        </button>
-                    </div>
+                <div className="p-6 border-t bg-black/60 flex items-center justify-between" style={{ borderColor: `${NEON_CYAN}30` }}>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">
+                        {'>'} END_OF_FILE
+                    </p>
+                    <ArcadeButton onClick={onClose} variant="cyan" className="text-xs px-6 py-2">
+                        ACKNOWLEDGE
+                    </ArcadeButton>
                 </div>
-            </div>
+            </CyberCard>
         </div>
     );
 }

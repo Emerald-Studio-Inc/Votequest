@@ -559,33 +559,67 @@ const VoteQuestApp = () => {
         }
     };
 
-    // Navigation Component
+    // Navigation Component - Arcade Style with inline colors for visibility
+    const NEON_CYAN = '#00F0FF';
+
     const BottomNavigation = () => (
         <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-            <div className="glass rounded-2xl p-2 flex items-center justify-between shadow-2xl shadow-black/50 backdrop-blur-xl border border-white/10 w-full max-w-sm">
-                {[
-                    { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
-                    { label: 'Proposals', value: 'proposals' as const, icon: List },
-                    { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
-                    { label: 'Settings', value: 'settings' as const, icon: Settings }
-                ].map((item) => {
-                    const isActive = activeDashboardTab === item.value;
-                    const Icon = item.icon;
-                    return (
-                        <Tooltip key={item.value} content={item.label} position="top">
-                            <button
-                                onClick={() => setActiveDashboardTab(item.value)}
-                                className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
-                                    }`}
-                            >
-                                <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2 : 1.5} />
-                                {isActive && (
-                                    <span className="absolute -bottom-1 w-1 h-1 bg-white rounded-full animate-fade-in"></span>
-                                )}
-                            </button>
-                        </Tooltip>
-                    );
-                })}
+            <div
+                className="relative bg-black/80 backdrop-blur-xl w-full max-w-sm"
+                style={{ border: `1px solid ${NEON_CYAN}`, boxShadow: `0 0 20px rgba(0,240,255,0.2)` }}
+            >
+
+                {/* Decorative Tech Lines */}
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: NEON_CYAN }}></div>
+                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r" style={{ borderColor: NEON_CYAN }}></div>
+                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l" style={{ borderColor: NEON_CYAN }}></div>
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r" style={{ borderColor: NEON_CYAN }}></div>
+
+                <div className="flex items-center justify-between p-2">
+                    {[
+                        { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
+                        { label: 'Proposals', value: 'proposals' as const, icon: List },
+                        { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
+                        { label: 'Settings', value: 'settings' as const, icon: Settings }
+                    ].map((item) => {
+                        const isActive = activeDashboardTab === item.value;
+                        const Icon = item.icon;
+                        return (
+                            <Tooltip key={item.value} content={item.label} position="top">
+                                <button
+                                    onClick={() => setActiveDashboardTab(item.value)}
+                                    className="relative group flex flex-col items-center justify-center w-14 h-14 transition-all duration-300"
+                                    style={{ color: isActive ? NEON_CYAN : '#9CA3AF' }}
+                                >
+                                    <div
+                                        className="absolute inset-0 transition-all duration-300"
+                                        style={{
+                                            backgroundColor: isActive ? `${NEON_CYAN}15` : 'transparent',
+                                            border: isActive ? `1px solid ${NEON_CYAN}` : '1px solid transparent',
+                                            boxShadow: isActive ? `0 0 10px ${NEON_CYAN}` : 'none'
+                                        }}
+                                    ></div>
+
+                                    <Icon
+                                        className="w-5 h-5 z-10 transition-transform duration-300"
+                                        style={{
+                                            color: isActive ? NEON_CYAN : '#9CA3AF',
+                                            transform: isActive ? 'scale(1.1)' : 'scale(1)'
+                                        }}
+                                        strokeWidth={isActive ? 2.5 : 1.5}
+                                    />
+
+                                    {isActive && (
+                                        <span
+                                            className="absolute -bottom-1 w-1 h-1 rounded-full animate-pulse"
+                                            style={{ backgroundColor: NEON_CYAN, boxShadow: `0 0 5px ${NEON_CYAN}` }}
+                                        ></span>
+                                    )}
+                                </button>
+                            </Tooltip>
+                        );
+                    })}
+                </div>
             </div>
             {/* Global Quest Guide */}
             <QuestGuide

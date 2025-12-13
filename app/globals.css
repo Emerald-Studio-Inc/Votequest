@@ -2,152 +2,221 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-    /* Core Black Palette - Premium Depth */
-    --bg-void: #000000;
-    --bg-abyss: #050505;
-    --bg-deep: #0a0a0a;
-    --bg-darker: #0f0f0f;
-    --bg-dark: #141414;
-    --bg-base: #1a1a1a;
-    --bg-elevated: #1f1f1f;
-    --bg-surface: #242424;
+    /* ARCADE PROTOCOL PALETTE */
+    /* Deepest Void - Pure black for high contrast */
+    --bg-void: #050505;
+    --bg-abyss: #080808;
+    --bg-grid: #0f0f0f;
+    --bg-surface: #141414;
 
-    /* Minimal Accent - Single Strategic Color */
-    --accent-primary: #ffffff;
-    --accent-hover: #f5f5f5;
-    --accent-active: #e5e5e5;
-    --accent-glow: rgba(255, 255, 255, 0.15);
+    /* NEON TRINITY */
+    --neon-cyan: #00F0FF;
+    --neon-magenta: #FF003C;
+    --neon-lime: #39FF14;
+    --neon-yellow: #FCEE0A;
 
-    /* Monochrome Scale - Semantic Hierarchy */
-    --mono-100: #ffffff;
-    --mono-95: #f5f5f5;
-    --mono-90: #e8e8e8;
-    --mono-80: #cccccc;
-    --mono-70: #b3b3b3;
+    /* Monochrome / HUD */
+    --hud-white: #E0E0E0;
+    --hud-dim: #505050;
+    --hud-dark: #202020;
+
+    /* Glow Intensities */
+    --glow-low: 0 0 5px;
+    --glow-med: 0 0 10px;
+    --glow-high: 0 0 20px;
+    --glow-max: 0 0 40px;
+
+    /* Cyber Variables */
+    --border-neon: 1px solid rgba(0, 240, 255, 0.3);
+    --border-glass: 1px solid rgba(255, 255, 255, 0.1);
+
+    /* ACCENT MAPPING - Fixes btn-primary visibility */
+    --accent-primary: var(--neon-cyan);
+    --accent-hover: #00C0CC;
+    /* Slightly darker cyan for hover */
+    --accent-glow: rgba(0, 240, 255, 0.5);
+
+    /* MISSING MONO VARIABLES - Fixed for Visibility */
+    --mono-95: #F5F5F5;
+    --mono-80: #CCCCCC;
+    --mono-70: #B3B3B3;
     --mono-60: #999999;
     --mono-50: #808080;
     --mono-40: #666666;
-    --mono-30: #4d4d4d;
-    --mono-20: #333333;
-    --mono-10: #1a1a1a;
 
-    /* Glass Effects - Layered Depth */
-    --glass-subtle: rgba(255, 255, 255, 0.02);
-    --glass-light: rgba(255, 255, 255, 0.04);
-    --glass-medium: rgba(255, 255, 255, 0.06);
+    /* MISSING GLASS VARIABLES */
+    --glass-light: rgba(255, 255, 255, 0.03);
+    --glass-medium: rgba(255, 255, 255, 0.05);
     --glass-heavy: rgba(255, 255, 255, 0.08);
     --glass-intense: rgba(255, 255, 255, 0.12);
 
-    /* Border System - Refined Separation */
-    --border-invisible: rgba(255, 255, 255, 0.03);
-    --border-subtle: rgba(255, 255, 255, 0.06);
-    --border-visible: rgba(255, 255, 255, 0.10);
+    /* MISSING BORDER VARIABLES */
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --border-visible: rgba(255, 255, 255, 0.1);
     --border-strong: rgba(255, 255, 255, 0.15);
-    --border-accent: rgba(255, 255, 255, 0.25);
+    --border-accent: rgba(0, 240, 255, 0.3);
 
-    /* Molten Gold System - Premium Accent (Softer Brightness) */
-    --gold-50: #F5F3E8;
-    --gold-100: #EBE6CC;
-    --gold-200: #D9CC99;
-    --gold-300: #C7B366;
-    --gold-400: #B59A33;
-    --gold-500: #D4B877;
-    /* Primary gold - reduced brightness */
-    --gold-600: #C2A663;
-    --gold-700: #B09450;
-    --gold-800: #9E823D;
-    --gold-900: #8C702A;
+    /* MISSING SHADOWS */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5);
 
-    /* Gold Functional Colors */
-    --gold-primary: #D4B877;
-    --gold-light: #E6D199;
-    --gold-dark: #9E823D;
-    --gold-glow: rgba(212, 184, 119, 0.25);
-    --gold-glow-intense: rgba(212, 184, 119, 0.4);
-    --gold-border: rgba(212, 184, 119, 0.35);
-
-    /* Gold Gradients */
-    --gold-gradient: linear-gradient(135deg, #D4B877 0%, #E6D199 50%, #C2A663 100%);
-    --gold-gradient-subtle: linear-gradient(135deg, rgba(212, 184, 119, 0.1) 0%, rgba(230, 209, 153, 0.05) 100%);
-
-    /* Shadow System - Dramatic Depth */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-    --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.7);
-    --shadow-glow: 0 0 40px rgba(255, 255, 255, 0.1);
-
-    /* Animation Timings - Professional Feel */
-    --timing-instant: 0.1s;
+    /* ANIMATION */
     --timing-fast: 0.2s;
-    --timing-smooth: 0.3s;
-    --timing-slow: 0.5s;
-    --easing-default: cubic-bezier(0.4, 0.0, 0.2, 1);
-    --easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --easing-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --timing-smooth: 0.4s;
+    --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Reset & Base */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    font-size: 16px;
-    /* Native App Feel: Prevent rubber-banding on the shell */
-    overscroll-behavior: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-html,
+/* Base Styles */
 body {
-    height: 100%;
-    width: 100%;
-    /* Native App Feel: Prevent text selection generally, enable on specific content */
-    user-select: none;
-    -webkit-user-select: none;
-    overflow-x: hidden;
-    /* Prevent pull-to-refresh on mobile */
-    overscroll-behavior-y: none;
-}
-
-body {
-    background: var(--bg-void);
-    /* Fallback */
     background-color: var(--bg-void);
-
-    color: var(--mono-95);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    font-weight: 400;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    letter-spacing: -0.011em;
-    line-height: 1.6;
+    color: var(--hud-white);
+    font-family: 'Share Tech Mono', monospace;
+    /* Default to Tech Mono */
+    cursor: crosshair;
+    /* Gamified cursor */
+    overflow-x: hidden;
 }
 
-/* Global Tech Grid Overlay - FORCED TOP LAYER */
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    /* Lower than header (z-50) and modals (z-50+) */
-    pointer-events: none;
-    background-size: 40px 40px;
+/* Typography Overrides */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Orbitron', sans-serif;
+    /* Headers are heavy sci-fi */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ARCADE UTILITIES */
+
+/* 1. The Grid Background */
+.cyber-grid {
+    background-size: 30px 30px;
     background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-    opacity: 0.4;
-    /* Stronger visibility as requested */
+        linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+    mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
 }
+
+/* 2. Scanlines */
+.scanlines::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0) 50%,
+            rgba(0, 0, 0, 0.2) 50%,
+            rgba(0, 0, 0, 0.2));
+    background-size: 100% 4px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.15;
+}
+
+/* 3. Text Glitch Effect */
+@keyframes glitch-anim {
+    0% {
+        transform: translate(0)
+    }
+
+    20% {
+        transform: translate(-2px, 2px)
+    }
+
+    40% {
+        transform: translate(-2px, -2px)
+    }
+
+    60% {
+        transform: translate(2px, 2px)
+    }
+
+    80% {
+        transform: translate(2px, -2px)
+    }
+
+    100% {
+        transform: translate(0)
+    }
+}
+
+.glitch-text {
+    position: relative;
+    color: var(--neon-cyan);
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch-text::before {
+    left: 2px;
+    text-shadow: -1px 0 var(--neon-magenta);
+    clip: rect(24px, 550px, 90px, 0);
+    animation: glitch-anim 3s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+    left: -2px;
+    text-shadow: -1px 0 var(--neon-lime);
+    clip: rect(85px, 550px, 140px, 0);
+    animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+/* 4. Neon Borders & Box Shadows */
+.border-neon-cyan {
+    border: 1px solid var(--neon-cyan);
+    box-shadow: 0 0 5px var(--neon-cyan), inset 0 0 5px rgba(0, 240, 255, 0.2);
+}
+
+.border-neon-magenta {
+    border: 1px solid var(--neon-magenta);
+    box-shadow: 0 0 5px var(--neon-magenta), inset 0 0 5px rgba(255, 0, 60, 0.2);
+}
+
+/* 5. Holographic Card */
+.cyber-card {
+    background: rgba(5, 5, 5, 0.8);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+.cyber-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    opacity: 0.5;
+}
+
+.cyber-card:hover {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
 
 /* Premium Glass Morphism System */
 .glass {
@@ -326,49 +395,56 @@ body::after {
 }
 
 .btn-primary {
-    background: var(--accent-primary);
-    color: var(--bg-void);
-    border: 1px solid var(--accent-primary);
-    box-shadow: var(--shadow-sm), 0 0 0 0 var(--accent-glow);
+    background: #00F0FF;
+    /* Neon cyan - explicit */
+    color: #000000;
+    /* Pure black text for contrast */
+    border: 1px solid #00F0FF;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(0, 240, 255, 0.5);
+    font-weight: 700;
 }
 
 .btn-primary:hover {
-    background: var(--accent-hover);
+    background: #00C0CC;
+    /* Slightly darker cyan */
     transform: translateY(-2px) scale(1.02);
-    box-shadow: var(--shadow-md), 0 0 20px var(--accent-glow);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.5);
 }
 
 .btn-primary:active {
     transform: translateY(0) scale(0.98);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .btn-secondary {
-    background: var(--glass-medium);
-    color: var(--mono-95);
-    border: 1px solid var(--border-visible);
+    background: rgba(255, 255, 255, 0.05);
+    /* glass-medium */
+    color: #FFFFFF;
+    /* White text for visibility */
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-secondary:hover {
-    background: var(--glass-heavy);
-    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
     transform: translateY(-1px);
 }
 
 .btn-ghost {
     background: transparent;
-    color: var(--mono-60);
+    color: #CCCCCC;
+    /* Visible gray */
     border: 1px solid transparent;
 }
 
 .btn-ghost:hover {
-    background: var(--glass-light);
-    color: var(--mono-95);
-    border-color: var(--border-subtle);
+    background: rgba(255, 255, 255, 0.03);
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.05);
 }
 
 .btn-danger {
-    background: var(--glass-medium);
+    background: rgba(255, 255, 255, 0.05);
     color: #ef4444;
     border: 1px solid rgba(239, 68, 68, 0.2);
 }

@@ -1,7 +1,9 @@
 ﻿'use client';
 
 import React, { useState } from 'react';
-import { X, Coins, Zap, Gift, Sparkles, ExternalLink } from 'lucide-react';
+import { X, Coins, Zap, Gift, Sparkles, ExternalLink, CreditCard } from 'lucide-react';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface CoinsPurchaseModalProps {
   userId: string;
@@ -12,11 +14,15 @@ interface CoinsPurchaseModalProps {
 }
 
 const COIN_PACKAGES = [
-  { id: 'starter', coins: 100, price: 500, label: 'Starter', popular: false },
-  { id: 'popular', coins: 500, price: 2000, label: 'Popular', popular: true, bonus: 50 },
-  { id: 'pro', coins: 1000, price: 3500, label: 'Pro', popular: false, bonus: 150 },
-  { id: 'ultimate', coins: 5000, price: 15000, label: 'Ultimate', popular: false, bonus: 1000 },
+  { id: 'starter', coins: 100, price: 500, label: 'STARTER_PACK', popular: false },
+  { id: 'popular', coins: 500, price: 2000, label: 'POPULAR_CHOICE', popular: true, bonus: 50 },
+  { id: 'pro', coins: 1000, price: 3500, label: 'PRO_TIER', popular: false, bonus: 150 },
+  { id: 'ultimate', coins: 5000, price: 15000, label: 'ULTIMATE_BUNDLE', popular: false, bonus: 1000 },
 ];
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_LIME = '#39FF14';
 
 export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onSuccess }: CoinsPurchaseModalProps) {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
@@ -66,109 +72,131 @@ export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onS
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-lg bg-black/90 border border-white/10 rounded-3xl overflow-hidden animate-scale-in">
-        {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center">
-              <Coins className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Buy VQC Coins</h2>
-              <p className="text-sm text-mono-60">Power up your voting experience</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono overflow-y-auto custom-scrollbar">
+      {/* Cyber Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-        {/* Package Grid */}
-        <div className="p-6 grid grid-cols-2 gap-4">
-          {COIN_PACKAGES.map((pkg) => (
+      <CyberCard
+        className="w-full max-w-lg relative z-10"
+        title="TOKEN_ACQUISITION"
+        cornerStyle="tech"
+      >
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6 border-b pb-4" style={{ borderColor: `${NEON_CYAN}30` }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 border flex items-center justify-center bg-black" style={{ borderColor: NEON_CYAN }}>
+                <Coins className="w-5 h-5" style={{ color: NEON_CYAN }} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white uppercase tracking-wider glitch-text" data-text="ACQUIRE_VQC">ACQUIRE_VQC</h2>
+                <p className="text-[10px] text-gray-500 uppercase">SECURE_PAYMENT_GATEWAY</p>
+              </div>
+            </div>
             <button
-              key={pkg.id}
-              onClick={() => setSelectedPackage(pkg.id)}
-              className={`relative p-4 rounded-2xl border-2 transition-all text-left ${selectedPackage === pkg.id
-                ? 'border-yellow-500 bg-yellow-500/10'
-                : 'border-white/10 bg-white/5 hover:border-white/20'
-                }`}
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center hover:bg-white/10 transition-colors border border-transparent hover:border-red-500/50"
             >
-              {pkg.popular && (
-                <div className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 text-xs font-bold text-black">
-                  BEST VALUE
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-yellow-400" />
-                <span className="text-sm font-medium text-mono-60">{pkg.label}</span>
-              </div>
-
-              <div className="text-2xl font-bold mb-1">
-                {pkg.coins.toLocaleString()}
-                {pkg.bonus && (
-                  <span className="text-sm text-green-400 ml-1">+{pkg.bonus}</span>
-                )}
-              </div>
-
-              <div className="text-mono-60 text-sm">
-                ₦{pkg.price.toLocaleString()}
-              </div>
+              <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
             </button>
-          ))}
-        </div>
-
-        {/* Features */}
-        <div className="px-6 pb-4">
-          <div className="flex items-center gap-6 text-sm text-mono-60">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-yellow-400" />
-              <span>Instant delivery</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Gift className="w-4 h-4 text-green-400" />
-              <span>Bonus coins included</span>
-            </div>
           </div>
-        </div>
 
-        {/* Error */}
-        {error && (
-          <div className="mx-6 mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-            {error}
-          </div>
-        )}
+          {/* Content */}
+          <div className="space-y-6">
+            {/* Package Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {COIN_PACKAGES.map((pkg) => (
+                <button
+                  key={pkg.id}
+                  onClick={() => setSelectedPackage(pkg.id)}
+                  className="relative p-4 border transition-all text-left group overflow-hidden"
+                  style={{
+                    borderColor: selectedPackage === pkg.id ? NEON_CYAN : 'rgba(255,255,255,0.1)',
+                    backgroundColor: selectedPackage === pkg.id ? `${NEON_CYAN}05` : 'transparent'
+                  }}
+                >
+                  {/* Active Corner Pulse */}
+                  {selectedPackage === pkg.id && (
+                    <>
+                      <div className="absolute top-0 right-0 w-3 h-3 border-t border-r" style={{ borderColor: NEON_CYAN }}></div>
+                      <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l" style={{ borderColor: NEON_CYAN }}></div>
+                    </>
+                  )}
 
-        {/* Action */}
-        <div className="p-6 border-t border-white/10">
-          <button
-            onClick={handlePurchase}
-            disabled={!selectedPackage || loading}
-            className="w-full py-4 rounded-xl font-bold text-black bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <div className="loading-spinner w-5 h-5 border-black/30 border-t-black" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <ExternalLink className="w-5 h-5" />
-                Continue to Payment
-              </>
+                  {pkg.popular && (
+                    <div className="absolute -top-1 -right-1 px-2 py-0.5 text-[10px] font-bold text-black uppercase" style={{ backgroundColor: NEON_LIME }}>
+                      RECOMMENDED
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="w-3 h-3" style={{ color: pkg.popular ? NEON_LIME : 'gray' }} />
+                    <span className="text-xs font-medium text-gray-400 font-mono uppercase">{pkg.label}</span>
+                  </div>
+
+                  <div className="text-xl font-bold mb-1 text-white font-mono">
+                    {pkg.coins.toLocaleString()}
+                    {pkg.bonus && (
+                      <span className="text-[10px] ml-1" style={{ color: NEON_LIME }}>+{pkg.bonus}</span>
+                    )}
+                  </div>
+
+                  <div className="text-sm font-mono" style={{ color: NEON_CYAN }}>
+                    ₦{pkg.price.toLocaleString()}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Features */}
+            <div className="px-2 py-3 border bg-black/40 flex items-center justify-between text-xs font-mono text-gray-400" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+              <div className="flex items-center gap-2">
+                <Zap className="w-3 h-3" style={{ color: NEON_LIME }} />
+                <span>INSTANT_TRANSFER</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Gift className="w-3 h-3" style={{ color: NEON_MAGENTA }} />
+                <span>BONUS_TOKENS</span>
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="p-3 border bg-red-900/10 text-red-400 text-xs font-mono uppercase flex items-center gap-2"
+                style={{ borderColor: NEON_MAGENTA }}>
+                <X className="w-4 h-4" />
+                {'>'} ERROR: {error}
+              </div>
             )}
-          </button>
+          </div>
 
-          <p className="text-center text-xs text-mono-50 mt-3">
-            Secure payment powered by Flutterwave
-          </p>
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t font-mono" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+            <ArcadeButton
+              onClick={handlePurchase}
+              disabled={!selectedPackage || loading}
+              variant="cyan"
+              className="w-full flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'black', borderTopColor: 'transparent' }} />
+                  PROCESSING_TRANSACTION...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4" />
+                  INITIATE_PAYMENT
+                </>
+              )}
+            </ArcadeButton>
+
+            <p className="text-center text-[10px] text-gray-600 mt-3 uppercase tracking-wider">
+              SECURE_LINK_VIA_FLUTTERWAVE
+            </p>
+          </div>
         </div>
-      </div>
+      </CyberCard>
     </div>
   );
 }

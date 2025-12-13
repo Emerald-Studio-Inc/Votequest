@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Building2, Plus, Users, Vote, Settings, BarChart3, Clock, ChevronRight } from 'lucide-react';
+import { Building2, Plus, Users, Vote, Settings, BarChart3, Clock, ChevronRight, Zap } from 'lucide-react';
 import SubscriptionStatus from './SubscriptionStatus';
 import SubscriptionPicker from './SubscriptionPicker';
 import OrganizationAdminLayout from './admin/OrganizationAdminLayout';
 import TurnoutHeatmap from './analytics/TurnoutHeatmap';
 import VoterDemographics from './analytics/VoterDemographics';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface OrganizationDashboardProps {
     organizationId: string;
@@ -12,6 +14,10 @@ interface OrganizationDashboardProps {
     email: string;
     onNavigate?: (screen: string, data?: any) => void;
 }
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_LIME = '#39FF14';
 
 export default function OrganizationDashboard({
     organizationId,
@@ -74,122 +80,150 @@ export default function OrganizationDashboard({
 
     if (!organization) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="loading-spinner w-8 h-8" />
+            <div className="min-h-screen flex items-center justify-center bg-black">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${NEON_CYAN}40`, borderTopColor: NEON_CYAN }}></div>
+                    <p className="text-xs font-mono text-gray-400 animate-pulse uppercase">LOADING_ORG_DATA...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen pb-32 relative">
+        <div className="min-h-screen pb-32 relative bg-black font-mono">
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
             {/* Header */}
-            <div className="sticky top-0 z-40 border-b border-white/5 bg-black/80 backdrop-blur-xl">
+            <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
                 <div className="max-w-[1200px] mx-auto px-8 py-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => onNavigate?.('organization-list')}
-                                className="btn btn-ghost flex items-center gap-2"
+                                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
                                 title="Back to Organizations"
                             >
-                                <div className="w-6 h-6 rounded bg-white flex items-center justify-center">
-                                    <Vote className="w-4 h-4 text-black" strokeWidth={2.5} />
+                                <div className="w-8 h-8 flex items-center justify-center border group-hover:bg-white/10 transition-colors" style={{ borderColor: NEON_CYAN }}>
+                                    <Vote className="w-4 h-4" style={{ color: NEON_CYAN }} strokeWidth={2.5} />
                                 </div>
-                                <span className="font-bold">VoteQuest</span>
+                                <div className="flex flex-col items-start">
+                                    <span className="font-bold text-sm uppercase text-white tracking-wider">VOTEQUEST</span>
+                                    <span className="text-[10px] text-gray-500 uppercase group-hover:text-gray-300"><ChevronRight className="w-3 h-3 inline" /> RETURN</span>
+                                </div>
                             </button>
-                            <div className="h-6 w-px bg-white/10"></div>
+                            <div className="h-8 w-px bg-gray-800"></div>
                             <div>
-                                <h1 className="text-xl font-bold">{organization.name}</h1>
-                                <p className="text-sm text-mono-60 capitalize">
-                                    {organization.type} • {organization.subscription_tier} tier
+                                <h1 className="text-xl font-bold uppercase tracking-wider text-white glitch-text" data-text={organization.name}>{organization.name}</h1>
+                                <p className="text-[10px] font-mono uppercase flex items-center gap-2">
+                                    <span className="px-1.5 py-0.5 border border-gray-700 rounded-none text-gray-400">{organization.type}</span>
+                                    <span className="text-gray-500">•</span>
+                                    <span className="text-white" style={{ textShadow: `0 0 10px ${organization.subscription_tier === 'pro' ? NEON_MAGENTA : NEON_CYAN}` }}>
+                                        {organization.subscription_tier} TIER
+                                    </span>
                                 </p>
                             </div>
                         </div>
-                        <button
+                        <ArcadeButton
                             onClick={() => onNavigate?.('create-room')}
-                            className="btn btn-primary flex items-center gap-2"
+                            variant="cyan"
+                            className="flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
-                            Create Room
-                        </button>
+                            CREATE_ROOM
+                        </ArcadeButton>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1200px] mx-auto px-8 pt-12">
+            <div className="max-w-[1200px] mx-auto px-8 pt-12 relative z-10">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-6 mb-12">
-                    <div className="card-elevated p-6">
+                    <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-2">
-                            <Vote className="w-5 h-5 text-mono-70" />
-                            <p className="text-caption text-mono-60 uppercase">Active Rooms</p>
+                            <Vote className="w-5 h-5 text-gray-400" />
+                            <p className="text-[10px] text-gray-500 uppercase font-mono">ACTIVE_ROOMS</p>
                         </div>
-                        <p className="text-3xl font-bold">{rooms.filter(r => r.status === 'active').length}</p>
-                    </div>
+                        <p className="text-3xl font-bold text-white font-mono">{rooms.filter(r => r.status === 'active').length}</p>
+                    </CyberCard>
 
-                    <div className="card-elevated p-6">
+                    <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-2">
-                            <Users className="w-5 h-5 text-mono-70" />
-                            <p className="text-caption text-mono-60 uppercase">Total Voters</p>
+                            <Users className="w-5 h-5 text-gray-400" />
+                            <p className="text-[10px] text-gray-500 uppercase font-mono">TOTAL_VOTERS</p>
                         </div>
-                        <p className="text-3xl font-bold">0</p>
-                    </div>
+                        <p className="text-3xl font-bold text-white font-mono">0</p>
+                    </CyberCard>
 
-                    <div className="card-elevated p-6">
+                    <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-2">
-                            <BarChart3 className="w-5 h-5 text-mono-70" />
-                            <p className="text-caption text-mono-60 uppercase">Turnout Rate</p>
+                            <BarChart3 className="w-5 h-5 text-gray-400" />
+                            <p className="text-[10px] text-gray-500 uppercase font-mono">TURNOUT_RATE</p>
                         </div>
-                        <p className="text-3xl font-bold">-%</p>
-                    </div>
+                        <p className="text-3xl font-bold text-white font-mono">-%</p>
+                    </CyberCard>
                 </div>
 
                 {/* Rooms List */}
-                <div className="card-elevated p-8">
-                    <h3 className="text-heading mb-6">Voting Rooms</h3>
-
+                <CyberCard className="p-8" title="VOTING_CHAMBERS" cornerStyle="tech">
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
-                            <div className="loading-spinner w-6 h-6" />
+                            <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${NEON_CYAN}40`, borderTopColor: NEON_CYAN }}></div>
                         </div>
                     ) : rooms.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Vote className="w-12 h-12 text-mono-50 mx-auto mb-4" />
-                            <p className="text-mono-60 mb-4">No voting rooms yet</p>
-                            <button
+                        <div className="text-center py-12 border border-dashed border-gray-800 bg-black/50">
+                            <div className="w-16 h-16 mx-auto mb-4 border flex items-center justify-center rounded-none" style={{ borderColor: NEON_CYAN, backgroundColor: `${NEON_CYAN}10` }}>
+                                <Vote className="w-8 h-8 animate-pulse" style={{ color: NEON_CYAN }} />
+                            </div>
+                            <p className="text-gray-400 mb-6 font-mono text-sm uppercase">NO_ACTIVE_CHAMBERS_DETECTED</p>
+                            <ArcadeButton
                                 onClick={() => onNavigate?.('create-room')}
-                                className="btn btn-primary"
+                                variant="cyan"
                             >
-                                Create Your First Room
-                            </button>
+                                INITIALIZE_FIRST_ROOM
+                            </ArcadeButton>
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {rooms.map((room) => (
                                 <div
                                     key={room.id}
-                                    className="p-4 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-fast cursor-pointer"
+                                    className="p-4 bg-black/40 border border-white/5 hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer group relative overflow-hidden"
                                     onClick={() => onNavigate?.('room', room)}
                                 >
-                                    <div className="flex items-start justify-between">
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-800 group-hover:bg-[color:var(--status-color)] transition-colors"
+                                        style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : '#6B7280' } as React.CSSProperties}
+                                    />
+
+                                    <div className="flex items-start justify-between pl-4">
                                         <div>
-                                            <h4 className="font-medium text-white mb-1">{room.title}</h4>
-                                            <p className="text-sm text-mono-60">{room.description}</p>
+                                            <h4 className="font-bold text-white mb-1 uppercase tracking-wide group-hover:text-[color:var(--status-color)] transition-colors"
+                                                style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : 'white' } as React.CSSProperties}
+                                            >
+                                                {room.title}
+                                            </h4>
+                                            <p className="text-xs text-gray-500 font-mono line-clamp-1">{'>'} {room.description}</p>
                                         </div>
-                                        <div className={`px-3 py-1 rounded-full text-xs font-medium ${room.status === 'active' ? 'bg-green-500/20 text-green-400' : ''} ${room.status === 'draft' ? 'bg-yellow-500/20 text-yellow-400' : ''} ${room.status === 'closed' ? 'bg-mono-20 text-mono-60' : ''}`}>
-                                            {room.status}
+                                        <div className={`px-2 py-1 text-[10px] font-bold uppercase border ${room.status === 'active' ? 'border-green-500/50 text-green-400 bg-green-500/10' :
+                                            room.status === 'draft' ? 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10' :
+                                                'border-gray-700 text-gray-500 bg-gray-800/50'
+                                            }`}>
+                                            {room.status === 'active' ? 'LIVE_STATUS' : room.status}
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
-                </div>
+                </CyberCard>
 
                 {/* Subscription Status */}
                 <div className="mt-12">
-                    <h3 className="text-heading mb-6">Subscription & Billing</h3>
+                    <div className="flex items-center gap-3 mb-6">
+                        <Zap className="w-6 h-6" style={{ color: NEON_MAGENTA }} />
+                        <h3 className="text-xl font-bold uppercase text-white tracking-widest">SUBSCRIPTION_STATUS</h3>
+                    </div>
                     <SubscriptionStatus
                         organizationId={organizationId}
                         tier={organization.subscription_tier || 'free'}

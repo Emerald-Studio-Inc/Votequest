@@ -4,6 +4,8 @@ import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import ShareModal from './ShareModal';
 import VoteCaptcha from './VoteCaptcha';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface ProposalDetailScreenProps {
     proposal: ProposalWithOptions;
@@ -17,6 +19,10 @@ interface ProposalDetailScreenProps {
     captchaToken: string;
     setCaptchaToken: (token: string) => void;
 }
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_LIME = '#39FF14';
 
 const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
     proposal,
@@ -119,11 +125,11 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
         const urgent = diff < 24 * 60 * 60 * 1000;
 
         if (days > 0) {
-            return { text: `${days} day${days > 1 ? 's' : ''} ${hours} hour${hours > 1 ? 's' : ''} left`, urgent, ended: false };
+            return { text: `${days}D ${hours}H LEFT`, urgent, ended: false };
         } else if (hours > 0) {
-            return { text: `${hours} hour${hours > 1 ? 's' : ''} ${minutes} min left`, urgent, ended: false };
+            return { text: `${hours}H ${minutes}M LEFT`, urgent, ended: false };
         } else {
-            return { text: `${minutes} minute${minutes > 1 ? 's' : ''} left`, urgent: true, ended: false };
+            return { text: `${minutes} MIN LEFT`, urgent: true, ended: false };
         }
     };
 
@@ -132,22 +138,22 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
     const leadingOption = sortedOptions[0];
 
     return (
-        <div className="min-h-screen pb-32 relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-white/[0.015] rounded-full blur-[150px] animate-float" style={{ animationDuration: '10s' }}></div>
-            </div>
+        <div className="min-h-screen pb-32 relative bg-black font-mono overflow-auto custom-scrollbar">
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             {/* Header */}
-            <div className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+            <div className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
                 <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-4 md:py-5">
                     <div className="flex items-center justify-between">
                         <button
                             onClick={onBack}
-                            className="btn btn-ghost btn-sm group"
+                            className="flex items-center gap-2 group text-gray-400 hover:text-white transition-colors"
                         >
-                            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" strokeWidth={2} />
-                            <span className="hidden sm:inline">Back to Proposals</span>
+                            <div className="w-8 h-8 flex items-center justify-center border group-hover:bg-white/10 transition-colors" style={{ borderColor: NEON_CYAN }}>
+                                <ArrowLeft className="w-4 h-4" style={{ color: NEON_CYAN }} strokeWidth={2.5} />
+                            </div>
+                            <span className="hidden sm:inline font-mono text-sm uppercase">BACK_TO_MISSIONS</span>
                         </button>
 
                         <div className="flex items-center gap-3">
@@ -156,33 +162,36 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                 <button
                                     onClick={handleHighlight}
                                     disabled={highlightLoading}
-                                    className="btn btn-ghost btn-sm group text-yellow-400 hover:text-yellow-300"
+                                    className="flex items-center gap-2 px-3 py-1.5 border hover:bg-yellow-500/10 transition-colors"
+                                    style={{ borderColor: '#EAB308', color: '#EAB308' }}
                                     title="Highlight this proposal (200 coins)"
                                 >
-                                    <Star className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
-                                    <span className="hidden sm:inline">Highlight</span>
+                                    <Star className="w-4 h-4" strokeWidth={2} />
+                                    <span className="hidden sm:inline font-bold text-xs uppercase">PRIORITY_BOOST</span>
                                 </button>
                             )}
 
-                            <button
+                            <ArcadeButton
                                 onClick={() => setShowShareModal(true)}
-                                className="btn btn-secondary btn-sm group"
+                                variant="cyan"
+                                size="sm"
+                                className="flex items-center gap-2"
                             >
-                                <Share2 className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
-                                <span className="hidden sm:inline">Share</span>
-                            </button>
+                                <Share2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">SHARE_DATA</span>
+                            </ArcadeButton>
 
                             {hasVoted && (
-                                <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-green-500/10 border border-green-500/20 animate-scale-in">
-                                    <CheckCircle2 className="w-4 h-4 text-green-400" strokeWidth={2} />
-                                    <span className="text-sm font-semibold text-green-400 hidden sm:inline">Vote Recorded</span>
+                                <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 border bg-green-900/20" style={{ borderColor: NEON_LIME }}>
+                                    <CheckCircle2 className="w-4 h-4" style={{ color: NEON_LIME }} strokeWidth={2} />
+                                    <span className="text-xs font-bold uppercase hidden sm:inline" style={{ color: NEON_LIME }}>VOTE_LOGGED</span>
                                 </div>
                             )}
 
                             {boosted && (
-                                <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 animate-scale-in">
-                                    <Zap className="w-4 h-4 text-purple-400" strokeWidth={2} />
-                                    <span className="text-sm font-semibold text-purple-400 hidden sm:inline">Boost Active</span>
+                                <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 border bg-purple-900/20" style={{ borderColor: NEON_MAGENTA }}>
+                                    <Zap className="w-4 h-4" style={{ color: NEON_MAGENTA }} strokeWidth={2} />
+                                    <span className="text-xs font-bold uppercase hidden sm:inline" style={{ color: NEON_MAGENTA }}>POWER_UP_ACTIVE</span>
                                 </div>
                             )}
                         </div>
@@ -194,65 +203,72 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
             <div className="max-w-[1000px] mx-auto px-4 md:px-8 pt-12 relative z-10">
 
                 {/* Proposal Header */}
-                <div className="mb-12 animate-slide-up">
+                <div className="mb-12">
                     {/* Status Banner */}
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className={`badge ${timeLeft.urgent ? 'badge-warning' : 'badge-neutral'} ${timeLeft.ended ? 'badge-neutral' : ''}`}>
+                    <div className="flex flex-wrap items-center gap-4 mb-8">
+                        <div className={`px-2 py-1 text-xs font-bold border flex items-center gap-2 uppercase tracking-wider ${timeLeft.urgent ? 'animate-pulse' : ''}`}
+                            style={{
+                                borderColor: timeLeft.urgent ? '#EF4444' : timeLeft.ended ? '#6B7280' : NEON_CYAN,
+                                color: timeLeft.urgent ? '#EF4444' : timeLeft.ended ? '#9CA3AF' : NEON_CYAN,
+                                backgroundColor: timeLeft.urgent ? '#EF444410' : timeLeft.ended ? '#6B728010' : `${NEON_CYAN}10`
+                            }}>
                             <Clock className="w-3.5 h-3.5" strokeWidth={2} />
                             <span>{timeLeft.text}</span>
                         </div>
 
-                        <div className="badge badge-neutral">
+                        <div className="px-2 py-1 text-xs font-bold border border-gray-700 bg-gray-900 text-gray-300 flex items-center gap-2 uppercase tracking-wider">
                             <Users className="w-3.5 h-3.5" strokeWidth={2} />
-                            <span>{totalVotes.toLocaleString()} votes</span>
+                            <span>{totalVotes.toLocaleString()} LOGGED</span>
                         </div>
 
                         {proposal.featured && (
-                            <div className="badge border-none bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg animate-pulse-slow">
+                            <div className="px-2 py-1 text-xs font-bold border border-yellow-500 bg-yellow-900/20 text-yellow-500 flex items-center gap-2 uppercase tracking-wider animate-pulse">
                                 <Star className="w-3.5 h-3.5 fill-current" strokeWidth={2} />
-                                <span>Featured Proposal</span>
+                                <span>PRIORITY_MISSION</span>
                             </div>
                         )}
 
                         {proposal.status === 'active' && (
-                            <div className="badge badge-success">
+                            <div className="px-2 py-1 text-xs font-bold border flex items-center gap-2 uppercase tracking-wider" style={{ borderColor: NEON_LIME, color: NEON_LIME, backgroundColor: `${NEON_LIME}10` }}>
                                 <Activity className="w-3.5 h-3.5" strokeWidth={2} />
-                                <span>Active</span>
+                                <span>ACTIVE_STATUS</span>
                             </div>
                         )}
                     </div>
 
                     {/* Title & Description */}
-                    <h1 className="text-display-xl mb-6 leading-tight">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight uppercase tracking-wider text-white glitch-text" data-text={proposal.title}>
                         {proposal.title}
                     </h1>
-                    <p className="text-body-large text-mono-70 leading-relaxed max-w-3xl">
-                        {proposal.description}
+                    <p className="text-lg text-gray-400 leading-relaxed max-w-3xl font-mono border-l-2 pl-4" style={{ borderColor: NEON_CYAN }}>
+                        {'>'} {proposal.description}
                     </p>
                 </div>
 
                 {/* Voting Section */}
-                <div className="mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                    <div className="card-elevated p-8">
-                        <div className="flex items-center justify-between mb-8">
+                <div className="mb-12">
+                    <CyberCard className="p-8" title="CAST_YOUR_VOTE" cornerStyle="tech">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
                             <div>
-                                <h2 className="text-heading mb-2">Cast Your Vote</h2>
-                                <p className="text-body text-mono-60">
+                                <p className="text-sm text-gray-400 font-mono uppercase">
                                     {hasVoted
-                                        ? 'You have already voted on this proposal'
-                                        : 'Select an option below to participate in this vote'
+                                        ? '// MISSION_STATUS: COMPLETE_ALREADY_VOTED'
+                                        : '// INSTRUCTIONS: SELECT_PREFERRED_OPTION'
                                     }
                                 </p>
                             </div>
 
                             {/* Security Check - Shows after selecting option */}
                             {!hasVoted && selectedOption && !captchaToken && (
-                                <div className="mb-6 p-4 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl animate-slide-up">
+                                <div className="w-full md:w-auto p-4 border rounded-none relative overflow-hidden" style={{ borderColor: `${NEON_CYAN}50`, backgroundColor: `${NEON_CYAN}05` }}>
+                                    <div className="absolute top-0 right-0 p-1">
+                                        <div className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: NEON_CYAN }}></div>
+                                    </div>
                                     <div className="flex items-start gap-3 mb-3">
-                                        <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                                        <Shield className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: NEON_CYAN }} />
                                         <div>
-                                            <p className="text-sm font-medium text-blue-100 mb-1">🔒 Security Verification Required</p>
-                                            <p className="text-xs text-blue-200/70">Complete this quick check to cast your vote</p>
+                                            <p className="text-sm font-bold uppercase mb-1" style={{ color: NEON_CYAN }}>SECURITY_VERIFICATION</p>
+                                            <p className="text-[10px] text-gray-400 font-mono">REQUIRED_FOR_Submission</p>
                                         </div>
                                     </div>
                                     <VoteCaptcha onVerify={setCaptchaToken} />
@@ -260,33 +276,31 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                             )}
 
                             {!hasVoted && selectedOption && (
-                                <button
-                                    onClick={async () => {
-                                        if (selectedOption && captchaToken) {
-                                            await onVote(proposal.id, selectedOption, captchaToken);
-                                        }
-                                    }}
-                                    disabled={loading || hasVoted || !selectedOption || !captchaToken}
-                                    className={`btn btn-lg group relative overflow-hidden w-full transition-all duration-300 ${!captchaToken
-                                        ? 'bg-mono-10 text-mono-50 cursor-not-allowed opacity-60'
-                                        : 'btn-primary'
-                                        }`}
-                                    title={!captchaToken ? '⚠️ Complete security check above to enable voting' : 'Click to cast your vote'}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <div className="loading-spinner w-4 h-4"></div>
-                                            <span>Confirming...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            {!captchaToken && <Shield className="w-5 h-5" strokeWidth={2.5} />}
-                                            {captchaToken && <Check className="w-5 h-5 transition-transform group-hover:scale-110" strokeWidth={2.5} />}
-                                            <span>{!captchaToken ? 'Complete Security Check Above ↑' : 'Confirm Vote'}</span>
-                                            {captchaToken && <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={2.5} />}
-                                        </>
-                                    )}
-                                </button>
+                                <div className="w-full md:w-auto">
+                                    <ArcadeButton
+                                        onClick={async () => {
+                                            if (selectedOption && captchaToken) {
+                                                await onVote(proposal.id, selectedOption, captchaToken);
+                                            }
+                                        }}
+                                        disabled={loading || hasVoted || !selectedOption || !captchaToken}
+                                        variant={!captchaToken ? 'magenta' : 'cyan'}
+                                        className="w-full md:w-auto flex items-center justify-center gap-2"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"></div>
+                                                <span>TRANSMITTING...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {!captchaToken && <Shield className="w-5 h-5" />}
+                                                {captchaToken && <Check className="w-5 h-5" strokeWidth={3} />}
+                                                <span>{!captchaToken ? 'VERIFY_SECURITY' : 'CONFIRM_VOTE'}</span>
+                                            </>
+                                        )}
+                                    </ArcadeButton>
+                                </div>
                             )}
                         </div>
 
@@ -301,8 +315,7 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                 return (
                                     <div
                                         key={option.id}
-                                        className={`relative group transition-all duration-300 animate-slide-up`}
-                                        style={{ animationDelay: `${index * 0.05}s` }}
+                                        className="relative group transition-all duration-300"
                                         onMouseEnter={() => setHoveredOption(option.id)}
                                         onMouseLeave={() => setHoveredOption(null)}
                                     >
@@ -310,68 +323,56 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                         <button
                                             onClick={() => !hasVoted && setSelectedOption(option.id)}
                                             disabled={hasVoted}
-                                            className={`
-                                                w-full text-left relative overflow-hidden rounded-xl border transition-all duration-300
-                                                ${isSelected
-                                                    ? 'bg-white/10 border-white/30 shadow-lg'
-                                                    : hasVoted
-                                                        ? 'bg-glass-light border-white/5 cursor-not-allowed'
-                                                        : 'bg-glass-light border-white/10 hover:bg-glass-medium hover:border-white/20 cursor-pointer'
-                                                }
-                                                ${isSelected && 'scale-[1.02]'}
-                                            `}
+                                            className="w-full text-left relative overflow-hidden transition-all duration-300 border bg-black/40 hover:bg-white/5"
+                                            style={{
+                                                borderColor: isSelected ? NEON_CYAN : 'rgba(255,255,255,0.1)',
+                                                boxShadow: isSelected ? `0 0 15px ${NEON_CYAN}40` : 'none',
+                                                clipPath: 'polygon(0 0, 100% 0, 100% 85%, 98% 100%, 0 100%)' // Subtle corner cut
+                                            }}
                                         >
                                             {/* Background Progress Bar */}
                                             <div
-                                                className={`absolute inset-0 transition-all duration-700 ${isLeading
-                                                    ? 'bg-gradient-to-r from-white/5 to-transparent'
-                                                    : 'bg-white/[0.02]'
-                                                    }`}
+                                                className="absolute inset-0 transition-all duration-700 opacity-20"
                                                 style={{
                                                     width: `${percentage}%`,
-                                                    opacity: totalVotes > 0 ? 1 : 0
+                                                    backgroundColor: isLeading ? NEON_LIME : NEON_CYAN,
+                                                    display: totalVotes > 0 ? 'block' : 'none'
                                                 }}
                                             ></div>
 
-                                            {/* Hover Gradient */}
-                                            <div className={`absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 ${isHovered && 'opacity-100'}`}></div>
+                                            {/* Scanline Effect on Hover */}
+                                            <div className={`absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,240,255,0.05)_50%)] bg-[size:4px_4px] pointer-events-none opacity-0 transition-opacity duration-300 ${isHovered ? 'opacity-100' : ''}`} />
 
                                             {/* Content */}
                                             <div className="relative z-10 p-6 flex items-center justify-between">
                                                 <div className="flex-1 flex items-center gap-4">
                                                     {/* Selection Indicator */}
-                                                    <div className={`
-                                                        w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300
-                                                        ${isSelected
-                                                            ? 'border-white bg-white'
-                                                            : hasVoted
-                                                                ? 'border-white/20'
-                                                                : 'border-white/30 group-hover:border-white/50'
-                                                        }
-                                                    `}>
+                                                    <div className="w-6 h-6 border flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                                                        style={{
+                                                            borderColor: isSelected ? NEON_CYAN : 'rgba(255,255,255,0.3)',
+                                                            backgroundColor: isSelected ? `${NEON_CYAN}20` : 'transparent'
+                                                        }}
+                                                    >
                                                         {isSelected && (
-                                                            <Check className="w-4 h-4 text-black" strokeWidth={3} />
+                                                            <div className="w-3 h-3 bg-current" style={{ color: NEON_CYAN }} />
                                                         )}
                                                     </div>
 
                                                     {/* Option Content */}
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-3 mb-1">
-                                                            <h3 className={`text-subheading transition-colors ${isSelected ? 'text-white' : 'text-mono-95'
-                                                                }`}>
+                                                            <h3 className="font-bold uppercase tracking-wide text-white">
                                                                 {option.title}
                                                             </h3>
                                                             {isLeading && totalVotes > 0 && (
-                                                                <Tooltip content="Leading Option" position="top">
-                                                                    <div className="badge badge-success badge-sm">
-                                                                        <TrendingUp className="w-3 h-3" strokeWidth={2} />
-                                                                        <span>Leading</span>
-                                                                    </div>
-                                                                </Tooltip>
+                                                                <div className="px-1.5 py-0.5 text-[10px] font-bold border uppercase flex items-center gap-1" style={{ borderColor: NEON_LIME, color: NEON_LIME, backgroundColor: `${NEON_LIME}10` }}>
+                                                                    <TrendingUp className="w-3 h-3" strokeWidth={2} />
+                                                                    <span>LEADING</span>
+                                                                </div>
                                                             )}
                                                         </div>
                                                         {option.description && (
-                                                            <p className="text-body-small text-mono-60">
+                                                            <p className="text-xs text-gray-500 font-mono">
                                                                 {option.description}
                                                             </p>
                                                         )}
@@ -379,12 +380,11 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 
                                                     {/* Vote Stats */}
                                                     <div className="text-right flex-shrink-0">
-                                                        <div className={`text-2xl font-bold mb-1 transition-colors ${isLeading ? 'text-white' : 'text-mono-95'
-                                                            }`}>
+                                                        <div className="text-2xl font-bold mb-1 font-mono text-white" style={{ textShadow: isLeading ? `0 0 10px ${NEON_LIME}80` : 'none' }}>
                                                             {percentage}%
                                                         </div>
-                                                        <div className="text-caption text-mono-50">
-                                                            {option.votes.toLocaleString()} votes
+                                                        <div className="text-[10px] text-gray-500 font-mono uppercase">
+                                                            {option.votes.toLocaleString()} VOTES
                                                         </div>
                                                     </div>
                                                 </div>
@@ -397,104 +397,112 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 
                         {/* Info Banner */}
                         {!hasVoted && !selectedOption && (
-                            <div className="mt-8 flex items-start gap-3 p-4 rounded-lg bg-white/5 border border-white/10">
-                                <AlertCircle className="w-5 h-5 text-mono-60 flex-shrink-0 mt-0.5" strokeWidth={2} />
+                            <div className="mt-8 flex items-start gap-3 p-4 border bg-gray-900/50" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                                <AlertCircle className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
                                 <div>
-                                    <p className="text-body-small text-mono-70 mb-1 font-medium">
-                                        Your vote is permanent
+                                    <p className="text-sm text-gray-300 mb-1 font-bold uppercase">
+                                        IMMUTABLE_ACTION_WARNING
                                     </p>
-                                    <p className="text-caption text-mono-50">
-                                        Once you vote, you cannot change your selection. Make sure to review all options carefully before confirming.
+                                    <p className="text-xs text-gray-500 font-mono">
+                                        {'>'} VOTE_SUBMISSION_IS_FINAL._NO_ROLLBACKS.
                                     </p>
                                 </div>
                             </div>
                         )}
 
                         {hasVoted && (
-                            <div className="mt-8 flex flex-col md:flex-row items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                            <div className="mt-8 flex flex-col md:flex-row items-center gap-4 p-4 border bg-green-900/10" style={{ borderColor: `${NEON_LIME}40` }}>
                                 <div className="flex items-start gap-3 flex-1">
-                                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
+                                    <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: NEON_LIME }} strokeWidth={2} />
                                     <div>
-                                        <p className="text-body-small text-green-400 mb-1 font-medium">
-                                            Vote recorded successfully
+                                        <p className="text-sm font-bold uppercase mb-1" style={{ color: NEON_LIME }}>
+                                            TRANSACTION_CONFIRMED
                                         </p>
-                                        <p className="text-caption text-green-400/70">
-                                            Your vote has been recorded on the blockchain.
+                                        <p className="text-xs text-green-400/70 font-mono uppercase">
+                                            {'>'} BLOCKCHAIN_VERIFICATION_COMPLETE
                                         </p>
                                     </div>
                                 </div>
-                                <button
+                                <ArcadeButton
                                     onClick={handleBoost}
                                     disabled={boostLoading}
-                                    className="btn btn-sm bg-purple-600 hover:bg-purple-700 text-white border-none flex items-center gap-2"
+                                    variant="magenta"
+                                    className="flex items-center gap-2"
                                 >
                                     <Zap className="w-4 h-4" />
-                                    <span>Boost Vote (500)</span>
-                                </button>
+                                    <span>BOOST_VOTE (500)</span>
+                                </ArcadeButton>
                             </div>
                         )}
-                    </div>
+                    </CyberCard>
                 </div>
 
-                {/* Proposal Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                    <div className="card p-6">
+                {/* Proposal Details Data Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                <Users className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                            <div className="w-10 h-10 border flex items-center justify-center bg-gray-900" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
+                                <Users className="w-5 h-5 text-gray-400" strokeWidth={2} />
                             </div>
                             <div>
-                                <p className="text-caption text-mono-50 uppercase">Participants</p>
-                                <p className="text-xl font-bold">{totalVotes.toLocaleString()}</p>
+                                <p className="text-[10px] text-gray-500 uppercase font-mono">TOTAL_PARTICIPANTS</p>
+                                <p className="text-xl font-bold text-white font-mono">{totalVotes.toLocaleString()}</p>
                             </div>
                         </div>
-                        <p className="text-caption text-mono-50">
-                            Total votes cast
+                        <p className="text-xs text-gray-600 font-mono uppercase">
+                            {'>'} UNIQUE_ADDRESSES
                         </p>
-                    </div>
+                    </CyberCard>
 
-                    <div className="card p-6">
+                    <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                <Activity className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                            <div className="w-10 h-10 border flex items-center justify-center bg-gray-900" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
+                                <Activity className="w-5 h-5 text-gray-400" strokeWidth={2} />
                             </div>
                             <div>
-                                <p className="text-caption text-mono-50 uppercase">Options</p>
-                                <p className="text-xl font-bold">{proposal.options.length}</p>
+                                <p className="text-[10px] text-gray-500 uppercase font-mono">DECISION_PATHS</p>
+                                <p className="text-xl font-bold text-white font-mono">{proposal.options.length}</p>
                             </div>
                         </div>
-                        <p className="text-caption text-mono-50">
-                            Voting choices
+                        <p className="text-xs text-gray-600 font-mono uppercase">
+                            {'>'} AVAILABLE_OPTIONS
                         </p>
-                    </div>
+                    </CyberCard>
 
-                    <div className="card p-6">
+                    <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                <Shield className="w-5 h-5 text-mono-70" strokeWidth={2} />
+                            <div className="w-10 h-10 border flex items-center justify-center bg-gray-900" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
+                                <Shield className="w-5 h-5 text-gray-400" strokeWidth={2} />
                             </div>
                             <div>
-                                <p className="text-caption text-mono-50 uppercase">Status</p>
-                                <p className="text-xl font-bold capitalize">{proposal.status}</p>
+                                <p className="text-[10px] text-gray-500 uppercase font-mono">CURRENT_STATE</p>
+                                <p className="text-xl font-bold text-white font-mono uppercase">{proposal.status}</p>
                             </div>
                         </div>
-                        <p className="text-caption text-mono-50">
-                            Current state
+                        <p className="text-xs text-gray-600 font-mono uppercase">
+                            {'>'} SYSTEM_STATUS
                         </p>
-                    </div>
+                    </CyberCard>
                 </div>
             </div>
 
             {/* Loading Overlay */}
             {showVoteAnimation && loading && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center animate-fade-in">
-                    <div className="card-elevated p-12 text-center max-w-md animate-scale-bounce">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/10 flex items-center justify-center">
-                            <div className="loading-spinner w-10 h-10"></div>
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center">
+                    <div className="text-center max-w-md p-8 border border-white/10 bg-black relative overflow-hidden" style={{ width: '400px' }}>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-white/20">
+                            <div className="h-full bg-cyan-400 animate-[loading_2s_ease-in-out_infinite]" style={{ backgroundColor: NEON_CYAN }}></div>
                         </div>
-                        <h3 className="text-heading mb-3">Confirming Your Vote</h3>
-                        <p className="text-body text-mono-60">
-                            Please wait while your vote is being recorded on the blockchain...
+
+                        <div className="w-20 h-20 mx-auto mb-8 relative">
+                            <div className="absolute inset-0 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${NEON_CYAN}40`, borderTopColor: NEON_CYAN }}></div>
+                            <div className="absolute inset-4 border-4 border-b-transparent rounded-full animate-spin-reverse" style={{ borderColor: `${NEON_MAGENTA}40`, borderBottomColor: NEON_MAGENTA }}></div>
+                            <Vote className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ color: 'white' }} />
+                        </div>
+
+                        <h3 className="text-xl font-bold uppercase mb-2 tracking-widest text-white">CONFIRMING_VOTE</h3>
+                        <p className="text-sm text-gray-400 font-mono uppercase animate-pulse">
+                            {'>'} WRITING_TO_BLOCKCHAIN...
                         </p>
                     </div>
                 </div>
@@ -513,3 +521,24 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 };
 
 export default ProposalDetailScreen;
+
+function Vote(props: any) {
+    return (
+        <svg
+            {...props}
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="m9 12 2 2 4-4" />
+            <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z" />
+            <path d="M22 19H2" />
+        </svg>
+    )
+}

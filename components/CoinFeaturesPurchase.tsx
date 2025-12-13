@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { X, Zap, Users, Clock, Shield, Check, Sparkles, Vote, QrCode } from 'lucide-react';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface CoinFeaturesPurchaseProps {
   roomId: string;
@@ -16,47 +18,51 @@ interface CoinFeaturesPurchaseProps {
 const ROOM_FEATURES = [
   {
     id: 'extra_voters',
-    name: 'Extra Voters',
-    description: 'Add 10 more voter slots to this room',
+    name: 'EXTRA_VOTERS',
+    description: 'ADD_10_VOTER_SLOTS',
     cost: 1,
     icon: Users,
   },
   {
     id: 'extended_window',
-    name: 'Extend Voting',
-    description: 'Extend voting window by 7 days',
+    name: 'EXTEND_VOTING',
+    description: 'EXTEND_WINDOW_7_DAYS',
     cost: 1,
     icon: Clock,
   },
   {
     id: 'qr_code',
-    name: 'QR Code',
-    description: 'Generate shareable QR code for easy access',
+    name: 'QR_ACCESS',
+    description: 'GENERATE_SECURE_QR_CODE',
     cost: 1,
     icon: QrCode,
   },
   {
     id: 'audit_trail',
-    name: 'Audit Trail',
-    description: 'Enable detailed audit logging for transparency',
+    name: 'AUDIT_LOGS',
+    description: 'ENABLE_TRANSPARENCY_LOGS',
     cost: 3,
     icon: Shield,
   },
   {
     id: 'anonymous_voting',
-    name: 'Anonymous Voting',
-    description: 'Enable fully anonymous voting mode',
+    name: 'STEALTH_MODE',
+    description: 'ENABLE_ANONYMOUS_VOTING',
     cost: 2,
     icon: Vote,
   },
   {
     id: 'custom_branding',
-    name: 'Custom Branding',
-    description: 'Add your organization logo and colors',
+    name: 'CUSTOM_SKIN',
+    description: 'APPLY_ORG_BRANDING',
     cost: 1,
     icon: Sparkles,
   },
 ];
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_LIME = '#39FF14';
 
 export default function CoinFeaturesPurchase({
   roomId,
@@ -80,7 +86,7 @@ export default function CoinFeaturesPurchase({
     if (!feature) return;
 
     if (userCoins < feature.cost) {
-      setError(`Not enough coins. You need ${feature.cost} VQC but have ${userCoins}.`);
+      setError(`INSUFFICIENT_FUNDS: NEED_${feature.cost}_VQC`);
       return;
     }
 
@@ -123,116 +129,138 @@ export default function CoinFeaturesPurchase({
   const selectedFeatureData = ROOM_FEATURES.find(f => f.id === selectedFeature);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-black/90 border border-white/10 rounded-3xl overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-black/90 backdrop-blur-xl z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Boost Room</h2>
-              <p className="text-sm text-mono-60">Spend coins to enhance your room</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono overflow-y-auto custom-scrollbar">
+      {/* Cyber Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-        {/* Balance */}
-        <div className="px-6 py-4 bg-white/5 border-b border-white/10">
-          <div className="flex items-center justify-between">
-            <span className="text-mono-60">Your Balance</span>
-            <span className="text-xl font-bold text-yellow-400">{userCoins.toLocaleString()} VQC</span>
-          </div>
-        </div>
-
-        {/* Success State */}
-        {success ? (
-          <div className="p-12 flex flex-col items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center mb-4 animate-scale-bounce">
-              <Check className="w-8 h-8 text-green-400" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Feature Activated!</h3>
-            <p className="text-mono-60">Your room has been upgraded</p>
-          </div>
-        ) : (
-          <>
-            {/* Feature Options */}
-            <div className="p-6 space-y-3">
-              {ROOM_FEATURES.map((feature) => {
-                const Icon = feature.icon;
-                const canAfford = userCoins >= feature.cost;
-                const isSelected = selectedFeature === feature.id;
-
-                return (
-                  <button
-                    key={feature.id}
-                    onClick={() => canAfford && setSelectedFeature(feature.id)}
-                    disabled={!canAfford}
-                    className={`w-full p-4 rounded-xl text-left transition-all flex items-start gap-4 ${isSelected
-                        ? 'bg-purple-500/20 border-2 border-purple-500'
-                        : canAfford
-                          ? 'bg-white/5 border-2 border-white/10 hover:border-white/20'
-                          : 'bg-white/5 border-2 border-white/5 opacity-50 cursor-not-allowed'
-                      }`}
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-purple-500' : 'bg-white/10'
-                      }`}>
-                      <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-mono-60'}`} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-bold">{feature.name}</h4>
-                        <span className={`text-sm font-bold ${canAfford ? 'text-yellow-400' : 'text-red-400'}`}>
-                          {feature.cost} VQC
-                        </span>
-                      </div>
-                      <p className="text-sm text-mono-60">{feature.description}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div className="mx-6 mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                {error}
+      <CyberCard
+        className="w-full max-w-md relative z-10"
+        title="SYSTEM_UPGRADE"
+        cornerStyle="tech"
+      >
+        <div className="flex flex-col h-full max-h-[85vh]">
+          {/* Header */}
+          <div className="p-6 border-b pb-4 flex items-center justify-between" style={{ borderColor: `${NEON_CYAN}30` }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 border flex items-center justify-center bg-black" style={{ borderColor: NEON_CYAN }}>
+                <Zap className="w-5 h-5" style={{ color: NEON_CYAN }} />
               </div>
-            )}
+              <div>
+                <h2 className="text-xl font-bold text-white uppercase tracking-wider glitch-text" data-text="BOOST_CHAMBER">BOOST_CHAMBER</h2>
+                <p className="text-[10px] text-gray-500 uppercase">ENHANCE_FUNCTIONALITY</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center hover:bg-white/10 transition-colors border border-transparent hover:border-red-500/50"
+            >
+              <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
+            </button>
+          </div>
 
-            {/* Action */}
-            <div className="p-6 border-t border-white/10">
-              <button
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            {/* Balance */}
+            <div className="mb-6 px-4 py-3 border bg-black/40 flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+              <span className="text-xs text-gray-400 uppercase">AVAILABLE_CREDITS</span>
+              <span className="text-lg font-bold font-mono" style={{ color: NEON_LIME }}>{userCoins.toLocaleString()} VQC</span>
+            </div>
+
+            {/* Success State */}
+            {success ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-scale-in">
+                <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center mb-4 animate-bounce"
+                  style={{ borderColor: NEON_LIME, backgroundColor: `${NEON_LIME}20` }}>
+                  <Check className="w-8 h-8" style={{ color: NEON_LIME }} />
+                </div>
+                <h3 className="text-xl font-bold mb-2 uppercase text-white tracking-widest">UPGRADE_INSTALLED</h3>
+                <p className="text-xs text-gray-400 font-mono uppercase">Wait for system reboot...</p>
+              </div>
+            ) : (
+              <>
+                {/* Feature Options */}
+                <div className="space-y-3">
+                  {ROOM_FEATURES.map((feature) => {
+                    const Icon = feature.icon;
+                    const canAfford = userCoins >= feature.cost;
+                    const isSelected = selectedFeature === feature.id;
+
+                    return (
+                      <button
+                        key={feature.id}
+                        onClick={() => canAfford && setSelectedFeature(feature.id)}
+                        disabled={!canAfford}
+                        className="w-full p-4 border transition-all text-left flex items-start gap-4 group relative overflow-hidden"
+                        style={{
+                          borderColor: isSelected ? NEON_CYAN : canAfford ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
+                          backgroundColor: isSelected ? `${NEON_CYAN}10` : 'transparent',
+                          opacity: canAfford ? 1 : 0.5,
+                          cursor: canAfford ? 'pointer' : 'not-allowed'
+                        }}
+                      >
+                        {isSelected && <div className="absolute inset-0 bg-cyan-400/5 animate-pulse pointer-events-none" />}
+
+                        <div className="w-10 h-10 border flex items-center justify-center flex-shrink-0"
+                          style={{
+                            borderColor: isSelected ? NEON_CYAN : 'rgba(255,255,255,0.1)',
+                            color: isSelected ? NEON_CYAN : 'gray'
+                          }}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-bold text-sm text-white uppercase tracking-wide" style={{ color: isSelected ? NEON_CYAN : 'white' }}>{feature.name}</h4>
+                            <span className="text-xs font-bold font-mono" style={{ color: canAfford ? NEON_LIME : NEON_MAGENTA }}>
+                              {feature.cost} VQC
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 font-mono uppercase">{feature.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Error */}
+                {error && (
+                  <div className="mt-4 p-3 border bg-red-900/10 text-red-400 text-xs font-mono uppercase flex items-center gap-2"
+                    style={{ borderColor: NEON_MAGENTA }}>
+                    <X className="w-4 h-4" />
+                    {'>'} ERROR: {error}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Footer - Only show if not success */}
+          {!success && (
+            <div className="p-6 border-t font-mono" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+              <ArcadeButton
                 onClick={handlePurchase}
                 disabled={!selectedFeature || loading}
-                className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                variant="cyan"
+                className="w-full flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="loading-spinner w-5 h-5" />
-                    Processing...
+                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'black', borderTopColor: 'transparent' }} />
+                    INSTALLING...
                   </>
                 ) : selectedFeatureData ? (
                   <>
-                    <Zap className="w-5 h-5" />
-                    Purchase for {selectedFeatureData.cost} VQC
+                    <div className="w-2 h-2 bg-black animate-pulse rounded-full mr-2"></div>
+                    INSTALL_FOR_{selectedFeatureData.cost}_VQC
                   </>
                 ) : (
-                  'Select a feature'
+                  'SELECT_UPGRADE_MODULE'
                 )}
-              </button>
+              </ArcadeButton>
             </div>
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      </CyberCard>
     </div>
   );
 }

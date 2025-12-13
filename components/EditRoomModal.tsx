@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Save, Edit } from 'lucide-react';
+import { X, Save, Edit, Terminal } from 'lucide-react';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface EditRoomModalProps {
     roomId: string;
@@ -12,6 +14,9 @@ interface EditRoomModalProps {
     onClose: () => void;
     onSuccess: () => void;
 }
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
 
 export default function EditRoomModal({
     roomId,
@@ -31,7 +36,7 @@ export default function EditRoomModal({
 
     const handleSave = async () => {
         if (!title.trim()) {
-            setError('Title is required');
+            setError('TITLE_REQUIRED');
             return;
         }
 
@@ -64,74 +69,108 @@ export default function EditRoomModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-            <div className="w-full max-w-lg bg-black/90 border border-white/10 rounded-3xl overflow-hidden animate-scale-in">
-                {/* Header */}
-                <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                            <Edit className="w-5 h-5 text-white" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono">
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
+            <CyberCard
+                className="w-full max-w-lg relative z-10"
+                title="CONFIG_EDITOR"
+                cornerStyle="tech"
+            >
+                <div className="p-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6 border-b pb-4" style={{ borderColor: `${NEON_CYAN}30` }}>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 border flex items-center justify-center bg-black" style={{ borderColor: NEON_CYAN }}>
+                                <Edit className="w-5 h-5" style={{ color: NEON_CYAN }} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-white uppercase tracking-wider glitch-text" data-text="EDIT_CHAMBER">EDIT_CHAMBER</h2>
+                                <p className="text-[10px] text-gray-500 uppercase">ID: {roomId.slice(0, 8)}...</p>
+                            </div>
                         </div>
-                        <h2 className="text-xl font-bold">Edit Room</h2>
+                        <button
+                            onClick={onClose}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-white/10 transition-colors border border-transparent hover:border-red-500/50"
+                        >
+                            <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
 
-                {/* Content */}
-                <div className="p-6 space-y-4">
-                    {error && (
-                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                            {error}
+                    {/* Content */}
+                    <div className="space-y-6">
+                        {error && (
+                            <div className="p-3 border bg-red-900/10 text-red-400 text-xs font-mono uppercase flex items-center gap-2"
+                                style={{ borderColor: NEON_MAGENTA }}>
+                                <Terminal className="w-4 h-4" />
+                                {'>'} ERROR: {error}
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-2 uppercase" style={{ color: NEON_CYAN }}>
+                                {'>'} CHAMBER_TITLE
+                            </label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="w-full p-3 bg-black border text-white font-mono focus:outline-none transition-all placeholder-gray-700 uppercase"
+                                style={{ borderColor: 'rgba(255,255,255,0.2)' }}
+                                onFocus={(e) => e.target.style.borderColor = NEON_CYAN}
+                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
+                                placeholder="ENTER_TITLE..."
+                            />
                         </div>
-                    )}
 
-                    <div>
-                        <label className="block text-sm text-mono-60 mb-2">Room Title</label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-purple-500 hover:border-white/20 transition-all font-bold text-lg"
-                            placeholder="Enter room title..."
-                        />
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-2 uppercase" style={{ color: NEON_CYAN }}>
+                                {'>'} DESCRIPTION_DATA
+                            </label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                rows={4}
+                                className="w-full p-3 bg-black border text-white font-mono focus:outline-none transition-all resize-none placeholder-gray-700"
+                                style={{ borderColor: 'rgba(255,255,255,0.2)' }}
+                                onFocus={(e) => e.target.style.borderColor = NEON_CYAN}
+                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
+                                placeholder="ENTER_DESCRIPTION..."
+                            />
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm text-mono-60 mb-2">Description</label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows={4}
-                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-purple-500 hover:border-white/20 transition-all resize-none"
-                            placeholder="Describe what this vote is about..."
-                        />
+                    {/* Footer */}
+                    <div className="mt-8 pt-6 border-t flex justify-end gap-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                        <ArcadeButton
+                            onClick={onClose}
+                            variant="cyan"
+                            disabled={loading}
+                        >
+                            CANCEL
+                        </ArcadeButton>
+                        <ArcadeButton
+                            onClick={handleSave}
+                            disabled={loading}
+                            variant="cyan"
+                            className="flex items-center gap-2"
+                        >
+                            {loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'black', borderTopColor: 'transparent' }} />
+                                    SAVING...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4" />
+                                    SAVE_CONFIG
+                                </>
+                            )}
+                        </ArcadeButton>
                     </div>
                 </div>
-
-                {/* Footer */}
-                <div className="p-6 border-t border-white/10 flex justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        disabled={loading}
-                        className="btn btn-ghost"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={loading}
-                        className="btn btn-primary flex items-center gap-2"
-                    >
-                        {loading ? <div className="loading-spinner w-4 h-4" /> : <Save className="w-4 h-4" />}
-                        Save Changes
-                    </button>
-                </div>
-            </div>
+            </CyberCard>
         </div>
     );
 }

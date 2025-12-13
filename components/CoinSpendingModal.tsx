@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Zap, Pin, X, Loader2 } from 'lucide-react';
+import { Zap, Pin, X, Loader2, DollarSign } from 'lucide-react';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface Props {
     userCoins: number;
@@ -13,6 +15,10 @@ interface Props {
     onSuccess: () => void;
     onClose: () => void;
 }
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_LIME = '#39FF14';
 
 export default function CoinSpendingModal({
     userCoins,
@@ -29,12 +35,12 @@ export default function CoinSpendingModal({
 
     const handleBoost = async () => {
         if (!hasVoted) {
-            setError('You must vote first before boosting');
+            setError('PROTOCOL_ERROR: CAST_VOTE_FIRST');
             return;
         }
 
         if (!optionId) {
-            setError('Invalid option');
+            setError('PROTOCOL_ERROR: INVALID_VECTOR');
             return;
         }
 
@@ -51,7 +57,7 @@ export default function CoinSpendingModal({
             const data = await res.json();
 
             if (!res.ok) {
-                setError(data.error || 'Failed to boost vote');
+                setError(data.error || 'BOOST_FAILED');
                 setLoading(false);
                 return;
             }
@@ -59,14 +65,14 @@ export default function CoinSpendingModal({
             onSuccess();
             onClose();
         } catch (err) {
-            setError('Network error. Please try again.');
+            setError('NETWORK_FAILURE');
             setLoading(false);
         }
     };
 
     const handleHighlight = async () => {
         if (!isCreator) {
-            setError('Only the proposal creator can highlight');
+            setError('ACCESS_DENIED: CREATOR_ONLY');
             return;
         }
 
@@ -83,7 +89,7 @@ export default function CoinSpendingModal({
             const data = await res.json();
 
             if (!res.ok) {
-                setError(data.error || 'Failed to highlight proposal');
+                setError(data.error || 'HIGHLIGHT_FAILED');
                 setLoading(false);
                 return;
             }
@@ -91,116 +97,141 @@ export default function CoinSpendingModal({
             onSuccess();
             onClose();
         } catch (err) {
-            setError('Network error. Please try again.');
+            setError('NETWORK_FAILURE');
             setLoading(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-            <div className="glass-heavy rounded-2xl p-6 max-w-md w-full mx-4 animate-scale-in">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 className="text-2xl font-bold text-white">Spend Coins</h2>
-                        <p className="text-sm text-zinc-400 mt-1">
-                            You have <span className="text-yellow-500 font-semibold">{userCoins} VQC</span>
-                        </p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white/5 rounded-lg transition-all"
-                        disabled={loading}
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono">
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-                {/* Error Message */}
-                {error && (
-                    <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm animate-slide-up">
-                        {error}
-                    </div>
-                )}
-
-                {/* Options */}
-                <div className="space-y-3">
-                    {/* Boost Option */}
-                    {hasVoted && (
-                        <button
-                            onClick={handleBoost}
-                            disabled={userCoins < 500 || loading}
-                            className="w-full glass-medium rounded-xl p-4 hover:glass-heavy transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-xl bg-yellow-500/10 group-hover:bg-yellow-500/20 transition-all">
-                                    <Zap className="w-6 h-6 text-yellow-500" />
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <h3 className="font-semibold text-white">Boost Vote (2x)</h3>
-                                    <p className="text-sm text-zinc-400">Your vote counts double</p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-xl font-bold text-yellow-500">500 VQC</span>
-                                    {userCoins < 500 && (
-                                        <p className="text-xs text-red-400">Not enough</p>
-                                    )}
-                                </div>
+            <CyberCard
+                className="w-full max-w-md relative z-10"
+                title="TRANSACTION_MODULE"
+                cornerStyle="tech"
+            >
+                <div className="p-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6 border-b pb-4" style={{ borderColor: `${NEON_CYAN}30` }}>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 border flex items-center justify-center bg-black" style={{ borderColor: NEON_CYAN }}>
+                                <DollarSign className="w-5 h-5" style={{ color: NEON_CYAN }} />
                             </div>
-                        </button>
-                    )}
-
-                    {/* Highlight Option */}
-                    {isCreator && (
-                        <button
-                            onClick={handleHighlight}
-                            disabled={userCoins < 200 || loading}
-                            className="w-full glass-medium rounded-xl p-4 hover:glass-heavy transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-all">
-                                    <Pin className="w-6 h-6 text-blue-500" />
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <h3 className="font-semibold text-white">Highlight Proposal</h3>
-                                    <p className="text-sm text-zinc-400">Pin to top for 24 hours</p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-xl font-bold text-blue-500">200 VQC</span>
-                                    {userCoins < 200 && (
-                                        <p className="text-xs text-red-400">Not enough</p>
-                                    )}
-                                </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-white uppercase tracking-wider glitch-text" data-text="SPEND_COINS">SPEND_COINS</h2>
+                                <p className="text-[10px] text-gray-500 uppercase">
+                                    BALANCE: <span style={{ color: NEON_LIME }}>{userCoins} VQC</span>
+                                </p>
                             </div>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-white/10 transition-colors border border-transparent hover:border-red-500/50"
+                        >
+                            <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
                         </button>
-                    )}
+                    </div>
 
-                    {/* No options available */}
-                    {!hasVoted && !isCreator && (
-                        <div className="text-center py-8 text-zinc-500">
-                            <p>No spending options available</p>
-                            <p className="text-sm mt-2">Vote to enable boosting</p>
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mb-4 p-3 border bg-red-900/10 text-red-400 text-xs font-mono uppercase flex items-center gap-2"
+                            style={{ borderColor: NEON_MAGENTA }}>
+                            <X className="w-4 h-4" />
+                            {'>'} ERROR: {error}
                         </div>
                     )}
-                </div>
 
-                {/* Loading State */}
-                {loading && (
-                    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-zinc-400">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processing...
+                    {/* Options */}
+                    <div className="space-y-4">
+                        {/* Boost Option */}
+                        {hasVoted && (
+                            <button
+                                onClick={handleBoost}
+                                disabled={userCoins < 500 || loading}
+                                className="w-full p-4 border transition-all text-left flex items-start gap-4 group relative overflow-hidden hover:bg-white/5"
+                                style={{
+                                    borderColor: 'rgba(255,255,255,0.1)',
+                                    opacity: (userCoins < 500 || loading) ? 0.5 : 1,
+                                    cursor: (userCoins < 500 || loading) ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                <div className="absolute inset-0 bg-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                                <div className="w-10 h-10 border flex items-center justify-center flex-shrink-0"
+                                    style={{ borderColor: 'rgba(255,255,0,0.5)', color: 'yellow' }}>
+                                    <Zap className="w-5 h-5" />
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-bold text-white uppercase text-sm mb-1">BOOST_VOTE_POWER (2x)</h3>
+                                    <p className="text-[10px] text-gray-500 font-mono uppercase">DOUBLE_IMPACT_MULTIPLIER</p>
+                                </div>
+
+                                <div className="text-right">
+                                    <span className="text-sm font-bold font-mono" style={{ color: 'yellow' }}>500 VQC</span>
+                                    {userCoins < 500 && (
+                                        <p className="text-[9px] uppercase" style={{ color: NEON_MAGENTA }}>INSUFFICIENT</p>
+                                    )}
+                                </div>
+                            </button>
+                        )}
+
+                        {/* Highlight Option */}
+                        {isCreator && (
+                            <button
+                                onClick={handleHighlight}
+                                disabled={userCoins < 200 || loading}
+                                className="w-full p-4 border transition-all text-left flex items-start gap-4 group relative overflow-hidden hover:bg-white/5"
+                                style={{
+                                    borderColor: 'rgba(255,255,255,0.1)',
+                                    opacity: (userCoins < 200 || loading) ? 0.5 : 1,
+                                    cursor: (userCoins < 200 || loading) ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                <div className="absolute inset-0 bg-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                                <div className="w-10 h-10 border flex items-center justify-center flex-shrink-0"
+                                    style={{ borderColor: NEON_CYAN, color: NEON_CYAN }}>
+                                    <Pin className="w-5 h-5" />
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-bold text-white uppercase text-sm mb-1">HIGHLIGHT_PROPOSAL</h3>
+                                    <p className="text-[10px] text-gray-500 font-mono uppercase">PIN_TO_TOP_24H</p>
+                                </div>
+
+                                <div className="text-right">
+                                    <span className="text-sm font-bold font-mono" style={{ color: NEON_CYAN }}>200 VQC</span>
+                                    {userCoins < 200 && (
+                                        <p className="text-[9px] uppercase" style={{ color: NEON_MAGENTA }}>INSUFFICIENT</p>
+                                    )}
+                                </div>
+                            </button>
+                        )}
+
+                        {/* No options available */}
+                        {!hasVoted && !isCreator && (
+                            <div className="p-6 text-center border bg-white/5" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                                <p className="text-sm font-mono text-gray-400 uppercase">NO_ACTIONS_AVAILABLE</p>
+                                <p className="text-[10px] text-gray-600 mt-2 uppercase">VOTE_TO_UNLOCK_BOOSTING</p>
+                            </div>
+                        )}
                     </div>
-                )}
 
-                {/* Cancel Button */}
-                <button
-                    onClick={onClose}
-                    disabled={loading}
-                    className="mt-6 w-full btn btn-secondary"
-                >
-                    Cancel
-                </button>
-            </div>
+                    {/* Footer */}
+                    <div className="mt-8 pt-4 border-t flex justify-end" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                        <ArcadeButton
+                            onClick={onClose}
+                            variant="magenta"
+                            disabled={loading}
+                        >
+                            CANCEL
+                        </ArcadeButton>
+                    </div>
+                </div>
+            </CyberCard>
         </div >
     );
 }

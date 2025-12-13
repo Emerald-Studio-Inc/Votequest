@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Map, X, Home, LayoutDashboard, Building2, Vote, ArrowRight, Zap, Target } from 'lucide-react';
+import { Map, X, Home, LayoutDashboard, Building2, Vote, ArrowRight, Zap, Target, Cpu, Globe } from 'lucide-react';
+import CyberCard from './CyberCard';
 
 interface QuestGuideProps {
     currentScreen: string;
@@ -19,11 +20,10 @@ interface MapNode {
 }
 
 const NODES: MapNode[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, x: 50, y: 20, connections: ['create-org', 'org-list'], screenId: 'dashboard' },
-    { id: 'create-org', label: 'Create Org', icon: Zap, x: 25, y: 50, connections: [], screenId: 'org-setup' },
-    { id: 'org-list', label: 'Organizations', icon: Building2, x: 75, y: 50, connections: ['room'], screenId: 'organization' },
-    // Point 'Voting Room' to 'organization' list since specific room needs selection
-    { id: 'room', label: 'Find a Room', icon: Vote, x: 75, y: 80, connections: [], screenId: 'organization' },
+    { id: 'dashboard', label: 'CMD_CENTER', icon: LayoutDashboard, x: 50, y: 20, connections: ['create-org', 'org-list'], screenId: 'dashboard' },
+    { id: 'create-org', label: 'INIT_ORG', icon: Zap, x: 25, y: 50, connections: [], screenId: 'org-setup' },
+    { id: 'org-list', label: 'ORG_NEXUS', icon: Building2, x: 75, y: 50, connections: ['room'], screenId: 'organization' },
+    { id: 'room', label: 'VOTE_NODE', icon: Vote, x: 75, y: 80, connections: [], screenId: 'organization' },
 ];
 
 export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProps) {
@@ -37,24 +37,58 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
 
     const currentNode = NODES.find(n => n.screenId === currentScreen) || NODES[0];
 
+    // Neon color hex values - guaranteed to work
+    const NEON_CYAN = '#00F0FF';
+    const NEON_MAGENTA = '#FF003C';
+    const NEON_LIME = '#39FF14';
+
+    const [rotation, setRotation] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setRotation(window.scrollY * 0.2);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <>
-            {/* The Floating Orb */}
+            {/* The Floating Orb - Cyber Style */}
             <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
                 {showTip && !isOpen && (
-                    <div className="bg-amber-950/90 text-amber-100 px-4 py-2 rounded-xl text-sm border border-amber-500/30 animate-fade-in shadow-lg shadow-amber-500/20">
-                        Open Map 🗺️
+                    <div
+                        className="bg-black/90 px-4 py-2 text-sm border animate-fade-in shadow-[0_0_15px_rgba(0,240,255,0.3)] font-mono glitch-text"
+                        data-text="OPEN_MAP"
+                        style={{ color: NEON_CYAN, borderColor: NEON_CYAN }}
+                    >
+                        OPEN_MAP
                     </div>
                 )}
 
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-900/90 to-black backdrop-blur-xl border border-amber-500/50 hover:border-amber-400 hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all flex items-center justify-center group"
+                    className="group relative w-16 h-16 flex items-center justify-center transition-all duration-300 transform hover:scale-110"
                 >
-                    <div className="relative">
-                        <Map className="w-6 h-6 text-amber-200 group-hover:scale-110 transition-transform" />
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full animate-ping" />
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.8)]" />
+                    {/* Rotating Rings (Scroll Driven) */}
+                    <div
+                        className="absolute inset-0 rounded-full border-2 border-t-transparent border-l-transparent opacity-80"
+                        style={{
+                            borderColor: NEON_CYAN,
+                            transform: `rotate(${rotation}deg)`
+                        }}
+                    ></div>
+                    <div
+                        className="absolute inset-2 rounded-full border-2 border-b-transparent border-r-transparent opacity-80"
+                        style={{
+                            borderColor: NEON_MAGENTA,
+                            transform: `rotate(-${rotation * 1.5}deg)`
+                        }}
+                    ></div>
+
+                    {/* Core */}
+                    <div className="absolute inset-4 rounded-full bg-black border border-white/20 flex items-center justify-center backdrop-blur-md shadow-[0_0_20px_rgba(0,240,255,0.4)] group-hover:shadow-[0_0_40px_rgba(0,240,255,0.6)]">
+                        <Map className="w-5 h-5 group-hover:animate-pulse" style={{ color: NEON_CYAN }} />
                     </div>
                 </button>
             </div>
@@ -62,33 +96,51 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
             {/* The Map Overlay */}
             {isOpen && (
                 <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-3xl animate-fade-in flex flex-col items-center justify-center">
+
                     {/* Header */}
-                    <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20 bg-gradient-to-b from-black/80 to-transparent">
-                        <div>
-                            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-600">
-                                WORLD MAP
-                            </h2>
-                            <p className="text-amber-500/60 text-sm tracking-widest uppercase mt-1">Select Destination</p>
+                    <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
+                        <div className="flex items-center gap-4">
+                            <Globe className="w-8 h-8 animate-spin-slow" style={{ color: NEON_CYAN }} />
+                            <div>
+                                <h2
+                                    className="text-3xl font-bold font-mono tracking-tighter"
+                                    style={{ color: NEON_CYAN }}
+                                >
+                                    SYS.MAP_V1
+                                </h2>
+                                <p className="text-xs font-mono tracking-[0.2em] uppercase mt-1" style={{ color: `${NEON_CYAN}99` }}>
+                                    // SELECT_DESTINATION
+                                </p>
+                            </div>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors backdrop-blur-md"
+                            className="w-10 h-10 rounded-none border flex items-center justify-center transition-all group"
+                            style={{ borderColor: NEON_MAGENTA }}
                         >
-                            <X className="w-5 h-5 text-zinc-400" />
+                            <X className="w-6 h-6 group-hover:scale-110" style={{ color: NEON_MAGENTA }} />
                         </button>
                     </div>
 
                     {/* Map Container */}
                     <div className="w-full h-full flex items-center justify-center p-4 sm:p-8 pt-24 pb-12">
-                        <div className="w-full max-w-5xl h-full relative border border-white/5 rounded-3xl bg-black/40 overflow-hidden shadow-2xl shadow-black">
+                        <div
+                            className="w-full max-w-5xl relative bg-black/90 overflow-visible shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                            style={{
+                                border: `2px solid ${NEON_CYAN}`,
+                                minHeight: '400px',
+                                height: '60vh'
+                            }}
+                        >
 
-                            {/* Grid Background */}
-                            <div className="absolute inset-0 opacity-10"
-                                style={{ backgroundImage: 'linear-gradient(#F59E0B 1px, transparent 1px), linear-gradient(90deg, #F59E0B 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-                            </div>
+                            {/* Corner Accents */}
+                            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2" style={{ borderColor: NEON_CYAN }}></div>
+                            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2" style={{ borderColor: NEON_CYAN }}></div>
+                            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2" style={{ borderColor: NEON_CYAN }}></div>
+                            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2" style={{ borderColor: NEON_CYAN }}></div>
 
-                            {/* Connection Lines (Behind Nodes) */}
-                            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                            {/* Connection Lines SVG */}
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
                                 {NODES.map(node =>
                                     node.connections.map(targetId => {
                                         const target = NODES.find(n => n.id === targetId);
@@ -100,10 +152,10 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                                                 y1={`${node.y}%`}
                                                 x2={`${target.x}%`}
                                                 y2={`${target.y}%`}
-                                                stroke="#F59E0B"
-                                                strokeOpacity="0.3"
-                                                strokeWidth="1"
-                                                strokeDasharray="6 6"
+                                                stroke={NEON_CYAN}
+                                                strokeOpacity="0.5"
+                                                strokeWidth="2"
+                                                strokeDasharray="5,5"
                                             />
                                         );
                                     })
@@ -126,43 +178,73 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                                                 setIsOpen(false);
                                             }}
                                         >
-                                            {/* Node Icon Circle */}
+                                            {/* Node Hexagon/Circle */}
                                             <div className={`
-                                            w-16 h-16 rounded-2xl flex items-center justify-center border transition-all duration-300 relative
-                                            ${isCurrent
-                                                    ? 'bg-gradient-to-br from-amber-600 to-amber-900 border-amber-300 shadow-[0_0_40px_rgba(245,158,11,0.5)] scale-110 z-20'
-                                                    : 'bg-black/60 border-white/10 hover:border-amber-500/50 hover:bg-amber-900/10 hover:scale-105 z-10'
+                                                w-20 h-20 flex items-center justify-center transition-all duration-300 relative clip-path-hexagon
+                                                ${isCurrent
+                                                    ? 'scale-110 z-20'
+                                                    : 'hover:scale-105 z-10'
                                                 }
-                                        `}>
-                                                <Icon className={`w-7 h-7 ${isCurrent ? 'text-white' : 'text-zinc-500 group-hover:text-amber-200'} transition-colors`} />
+                                            `}>
+                                                {/* Background Shape */}
+                                                <div
+                                                    className="absolute inset-0 border-2 transition-colors duration-300"
+                                                    style={{
+                                                        transform: 'rotate(45deg)',
+                                                        backgroundColor: isCurrent ? `${NEON_CYAN}30` : 'rgba(0,0,0,0.8)',
+                                                        borderColor: isCurrent ? NEON_CYAN : '#ffffff',
+                                                        boxShadow: isCurrent ? `0 0 30px ${NEON_CYAN}` : 'none'
+                                                    }}
+                                                ></div>
 
-                                                {/* Pulse Effect for Current */}
+                                                <Icon
+                                                    className="w-8 h-8 z-10 transition-colors"
+                                                    style={{ color: isCurrent ? NEON_CYAN : '#ffffff' }}
+                                                />
+
+                                                {/* Ripple for Current */}
                                                 {isCurrent && (
-                                                    <div className="absolute inset-0 rounded-2xl border border-amber-400 animate-ping opacity-50"></div>
+                                                    <div
+                                                        className="absolute inset-0 border animate-ping opacity-50"
+                                                        style={{ transform: 'rotate(45deg)', borderColor: NEON_CYAN }}
+                                                    ></div>
                                                 )}
                                             </div>
 
-                                            {/* Label Tag - Styled like the reference image (Gold Button style) */}
-                                            <div className={`
-                                            px-4 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase transition-all
-                                            ${isCurrent
-                                                    ? 'bg-gradient-to-r from-amber-200 to-yellow-500 text-black shadow-lg shadow-amber-500/20 translate-y-1'
-                                                    : 'bg-white/5 text-zinc-500 border border-white/5 group-hover:border-amber-500/30 group-hover:text-amber-200'
-                                                }
-                                        `}>
+                                            {/* Label */}
+                                            <div
+                                                className="px-3 py-1 text-[10px] font-mono tracking-widest uppercase transition-all border"
+                                                style={{
+                                                    backgroundColor: isCurrent ? NEON_CYAN : 'rgba(0,0,0,0.9)',
+                                                    color: isCurrent ? 'black' : '#ffffff',
+                                                    borderColor: isCurrent ? NEON_CYAN : '#ffffff',
+                                                    fontWeight: isCurrent ? 'bold' : 'normal'
+                                                }}
+                                            >
                                                 {node.label}
                                             </div>
 
                                             {isCurrent && (
-                                                <div className="absolute -top-10 text-amber-400 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 animate-bounce">
-                                                    <Target className="w-3 h-3" />
-                                                    Current Location
+                                                <div
+                                                    className="absolute -top-12 text-[10px] font-mono animate-bounce flex flex-col items-center"
+                                                    style={{ color: NEON_LIME }}
+                                                >
+                                                    <Target className="w-4 h-4 mb-1" />
+                                                    YOU_ARE_HERE
                                                 </div>
                                             )}
                                         </div>
                                     );
                                 })}
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Footer Info */}
+                    <div className="absolute bottom-6 left-6 text-xs font-mono text-gray-400">
+                        <div className="flex items-center gap-2">
+                            <Cpu className="w-4 h-4" />
+                            <span>SYSTEM_READY</span>
                         </div>
                     </div>
                 </div>

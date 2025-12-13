@@ -18,6 +18,8 @@ const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = f
         setPrevCoins(coins);
     }, [coins]);
 
+    const NEON_CYAN = '#00F0FF';
+
     const sizeClasses = {
         sm: 'text-xs px-2 py-1',
         md: 'text-sm px-3 py-1.5',
@@ -27,19 +29,26 @@ const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = f
     return (
         <div
             className={`
-                glass-medium rounded-lg flex items-center gap-2 font-medium
-                transition-all duration-300
+                flex items-center gap-2 font-mono uppercase tracking-wider
+                transition-all duration-300 border bg-black/50 backdrop-blur-md
                 ${sizeClasses[size]}
-                ${celebrating ? 'scale-110 border-white/20' : 'border-white/5'}
+                ${celebrating ? 'scale-110' : ''}
             `}
+            style={{
+                borderColor: celebrating ? '#39FF14' : NEON_CYAN,
+                color: celebrating ? '#39FF14' : NEON_CYAN,
+                boxShadow: celebrating ? `0 0 15px #39FF14` : `0 0 5px ${NEON_CYAN}40`
+            }}
             title={`${coins} VoteQuest Coins`}
         >
             <div className={`
-                w-2 h-2 rounded-full bg-white
+                w-2 h-2 rounded-full
                 ${celebrating ? 'animate-pulse' : ''}
-            `}></div>
-            <span className="tracking-tight">{coins.toLocaleString()}</span>
-            {showLabel && <span className="text-gray-500 text-xs">VQC</span>}
+            `}
+                style={{ backgroundColor: celebrating ? '#39FF14' : NEON_CYAN }}
+            ></div>
+            <span>{coins.toLocaleString()}</span>
+            {showLabel && <span className="opacity-70 text-[10px]">VQC</span>}
         </div>
     );
 };

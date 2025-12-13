@@ -4,6 +4,42 @@ module.exports = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Safelist ensures these classes are always generated even if not detected in content
+  safelist: [
+    // Text colors
+    'text-neon-cyan',
+    'text-neon-magenta',
+    'text-neon-lime',
+    'text-neon-yellow',
+    // Background colors
+    'bg-neon-cyan',
+    'bg-neon-magenta',
+    'bg-neon-lime',
+    'bg-neon-yellow',
+    'bg-neon-cyan/5',
+    'bg-neon-cyan/10',
+    'bg-neon-cyan/20',
+    'bg-neon-magenta/5',
+    'bg-neon-magenta/10',
+    'bg-neon-magenta/20',
+    'bg-neon-lime/5',
+    'bg-neon-lime/10',
+    // Border colors
+    'border-neon-cyan',
+    'border-neon-magenta',
+    'border-neon-lime',
+    'border-neon-yellow',
+    'border-neon-cyan/20',
+    'border-neon-cyan/30',
+    'border-neon-cyan/50',
+    // Hover variants
+    'hover:text-neon-cyan',
+    'hover:bg-neon-cyan/20',
+    'hover:border-neon-cyan',
+    'hover:border-neon-cyan/30',
+    // Shadow variants
+    'shadow-neon-cyan',
+  ],
   theme: {
     extend: {
       colors: {
@@ -28,6 +64,13 @@ module.exports = {
           success: '#10b981',
           warning: '#f59e0b',
           error: '#ef4444',
+        },
+        // Arcade Protocol Neon
+        neon: {
+          cyan: '#00F0FF',
+          magenta: '#FF003C',
+          lime: '#39FF14',
+          yellow: '#FCEE0A',
         }
       },
       fontFamily: {

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, Filter, Clock, Users, TrendingUp, Check, ArrowUpRight, X, ChevronDown, Sparkles } from 'lucide-react';
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
+import CyberCard from './CyberCard';
 
 interface ProposalsListScreenProps {
     proposals: ProposalWithOptions[];
@@ -11,6 +12,10 @@ interface ProposalsListScreenProps {
 
 type SortOption = 'recent' | 'popular' | 'ending-soon';
 type FilterOption = 'all' | 'active' | 'voted' | 'not-voted';
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_LIME = '#39FF14';
 
 const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
     proposals,
@@ -28,7 +33,7 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
         const now = new Date();
         const diff = end.getTime() - now.getTime();
 
-        if (diff <= 0) return { text: 'Ended', urgent: false, ended: true, sortValue: 0 };
+        if (diff <= 0) return { text: 'EXPIRED', urgent: false, ended: true, sortValue: 0 };
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -37,11 +42,11 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
         const urgent = diff < 24 * 60 * 60 * 1000;
 
         if (days > 0) {
-            return { text: `${days}d ${hours}h`, urgent, ended: false, sortValue: diff };
+            return { text: `${days}D ${hours}H`, urgent, ended: false, sortValue: diff };
         } else if (hours > 0) {
-            return { text: `${hours}h ${minutes}m`, urgent, ended: false, sortValue: diff };
+            return { text: `${hours}H ${minutes}M`, urgent, ended: false, sortValue: diff };
         } else {
-            return { text: `${minutes}m`, urgent: true, ended: false, sortValue: diff };
+            return { text: `${minutes}M LEFT`, urgent: true, ended: false, sortValue: diff };
         }
     };
 
@@ -99,34 +104,40 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
 
     return (
         <div className="min-h-screen pb-32 relative">
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
             {/* Header Section */}
-            <div className="sticky top-0 z-40 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+            <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6">
-                    <div className="mb-6">
-                        <h1 className="text-display mb-2">All Proposals</h1>
-                        <p className="text-body text-mono-60">
-                            Showing {processedProposals.length} of {proposals.length} proposals
-                        </p>
+                    <div className="mb-6 flex items-end justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold uppercase tracking-widest text-white glitch-text" data-text="MISSION_LOG">MISSION_LOG</h1>
+                            <p className="text-xs font-mono text-gray-400 mt-1 uppercase">
+                                {'>'} DISPLAYING {processedProposals.length} / {proposals.length} RECORDS
+                            </p>
+                        </div>
                     </div>
 
                     {/* Search and Filters */}
                     <div className="flex items-center gap-4">
                         {/* Search Bar */}
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-mono-50" strokeWidth={2} />
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-[color:var(--neon-cyan)]" style={{ '--neon-cyan': NEON_CYAN } as React.CSSProperties} />
                             <input
                                 type="text"
-                                placeholder="Search proposals..."
+                                placeholder="SEARCH_DATABASE..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="input pl-12 pr-12"
+                                className="w-full bg-black border border-gray-800 py-2 pl-12 pr-12 text-sm font-mono text-white focus:outline-none transition-colors"
+                                style={{ borderColor: searchQuery ? NEON_CYAN : undefined }}
                             />
                             {searchQuery && (
                                 <button
                                     onClick={() => setSearchQuery('')}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-fast"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center hover:text-white text-gray-500"
                                 >
-                                    <X className="w-3.5 h-3.5" strokeWidth={2} />
+                                    <X className="w-3 h-3" />
                                 </button>
                             )}
                         </div>
@@ -136,73 +147,64 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                className="input w-48 appearance-none cursor-pointer pr-10"
+                                className="appearance-none bg-black border border-gray-800 text-white text-xs font-mono uppercase px-4 py-2.5 pr-10 cursor-pointer focus:outline-none hover:border-gray-500"
                             >
-                                <option value="recent">Most Recent</option>
-                                <option value="popular">Most Popular</option>
-                                <option value="ending-soon">Ending Soon</option>
+                                <option value="recent">SORT: MOST_RECENT</option>
+                                <option value="popular">SORT: POPULARITY</option>
+                                <option value="ending-soon">SORT: TIME_REMAINING</option>
                             </select>
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-mono-50 pointer-events-none" strokeWidth={2} />
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
                         </div>
 
                         {/* Filter Toggle */}
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`btn ${showFilters ? 'btn-secondary' : 'btn-ghost'}`}
+                            className="flex items-center gap-2 px-4 py-2.5 border bg-black text-xs font-mono uppercase hover:bg-white/5 transition-colors"
+                            style={{
+                                borderColor: showFilters ? NEON_CYAN : '#1F2937',
+                                color: showFilters ? NEON_CYAN : '#9CA3AF'
+                            }}
                         >
-                            <Filter className="w-4 h-4" strokeWidth={2} />
-                            <span>Filters</span>
-                            {filterBy !== 'all' && (
-                                <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
-                            )}
+                            <Filter className="w-3 h-3" />
+                            <span>FILTERS</span>
                         </button>
                     </div>
 
                     {/* Filter Pills */}
                     {showFilters && (
-                        <div className="mt-4 flex items-center gap-3 animate-slide-down">
-                            <span className="text-caption text-mono-50 uppercase">Filter by:</span>
+                        <div className="mt-4 flex items-center gap-3 animate-slide-down border-t border-gray-800 pt-4">
+                            <span className="text-[10px] text-gray-500 font-mono uppercase">FILTER_BY:</span>
                             <div className="flex items-center gap-2">
                                 {[
-                                    { value: 'all' as FilterOption, label: 'All', count: proposals.length },
-                                    { value: 'active' as FilterOption, label: 'Active', count: activeCount },
-                                    { value: 'voted' as FilterOption, label: 'Voted', count: votedCount },
-                                    { value: 'not-voted' as FilterOption, label: 'Not Voted', count: activeCount - votedCount }
+                                    { value: 'all' as FilterOption, label: 'ALL', count: proposals.length },
+                                    { value: 'active' as FilterOption, label: 'ACTIVE', count: activeCount },
+                                    { value: 'voted' as FilterOption, label: 'COMPLETED', count: votedCount },
+                                    { value: 'not-voted' as FilterOption, label: 'PENDING', count: activeCount - votedCount }
                                 ].map((filter) => (
                                     <button
                                         key={filter.value}
                                         onClick={() => setFilterBy(filter.value)}
-                                        className={`
-                                            badge transition-all
-                                            ${filterBy === filter.value
-                                                ? 'badge-primary scale-105'
-                                                : 'badge-neutral hover:bg-glass-medium'
-                                            }
-                                        `}
+                                        className="px-3 py-1 text-[10px] font-mono border transition-all uppercase flex items-center gap-2"
+                                        style={{
+                                            borderColor: filterBy === filter.value ? NEON_CYAN : '#374151',
+                                            backgroundColor: filterBy === filter.value ? `${NEON_CYAN}10` : 'transparent',
+                                            color: filterBy === filter.value ? NEON_CYAN : '#6B7280'
+                                        }}
                                     >
                                         {filter.label}
-                                        <span className="text-mono-50">({filter.count})</span>
+                                        <span className="opacity-50">[{filter.count}]</span>
                                     </button>
                                 ))}
                             </div>
-
-                            {filterBy !== 'all' && (
-                                <button
-                                    onClick={() => setFilterBy('all')}
-                                    className="text-caption text-mono-50 hover:text-mono-95 transition-fast"
-                                >
-                                    Clear filters
-                                </button>
-                            )}
                         </div>
                     )}
                 </div>
             </div>
 
             {/* Proposals Grid */}
-            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-6 md:pt-8">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-6 md:pt-8 bg-transparent">
                 {processedProposals.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {processedProposals.map((proposal, index) => {
                             const timeLeft = formatTimeLeft(proposal.end_date);
                             const voted = hasVoted(proposal.id);
@@ -213,127 +215,96 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                                 : 0;
 
                             return (
-                                <div
+                                <CyberCard
                                     key={proposal.id}
-                                    className="card card-interactive relative overflow-hidden group animate-slide-up"
+                                    className="h-full flex flex-col cursor-pointer group hover:bg-white/[0.02]"
                                     onClick={() => onSelectProposal(proposal)}
-                                    onMouseEnter={() => setHoveredCard(proposal.id)}
-                                    onMouseLeave={() => setHoveredCard(null)}
-                                    style={{ animationDelay: `${Math.min(index * 0.05, 0.5)}s` }}
+                                    title={`WQ-${proposal.id.slice(0, 4)}`}
+                                    cornerStyle="tech"
                                 >
                                     {/* Featured Badge */}
                                     {proposal.featured && (
-                                        <div className="absolute top-0 left-0 z-20 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-br-lg shadow-lg flex items-center gap-1">
+                                        <div className="absolute top-0 right-0 z-20 bg-yellow-500/10 border-l border-b border-yellow-500/50 text-yellow-500 text-[10px] uppercase font-bold px-3 py-1 flex items-center gap-1">
                                             <Sparkles className="w-3 h-3" />
-                                            Featured
+                                            PRIORITY
                                         </div>
                                     )}
-                                    {/* Hover Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                                    {/* Status Indicator */}
-                                    {timeLeft.urgent && !timeLeft.ended && (
-                                        <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-orange-400 to-transparent animate-pulse"></div>
-                                    )}
-
-                                    <div className="relative z-10 p-6">
+                                    <div className="flex-1 flex flex-col h-full">
                                         {/* Header */}
-                                        <div className={`flex items-start justify-between mb-4 ${proposal.featured ? 'mt-2' : ''}`}>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="text-subheading mb-2 line-clamp-2 group-hover:text-mono-100 transition-colors">
-                                                    {proposal.title}
-                                                </h3>
-                                                <p className="text-body-small text-mono-50 line-clamp-2">
-                                                    {proposal.description}
-                                                </p>
-                                            </div>
-                                            {voted && (
-                                                <Tooltip content="You voted" position="left">
-                                                    <div className="flex-shrink-0 ml-3">
-                                                        <div className="w-8 h-8 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                                                            <Check className="w-4 h-4 text-green-400" strokeWidth={2.5} />
-                                                        </div>
-                                                    </div>
-                                                </Tooltip>
-                                            )}
+                                        <div className="mb-4">
+                                            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 uppercase group-hover:text-[color:var(--neon-cyan)] transition-colors" style={{ '--neon-cyan': NEON_CYAN } as React.CSSProperties}>
+                                                {proposal.title}
+                                            </h3>
+                                            <p className="text-xs text-gray-500 line-clamp-2 font-mono">
+                                                {'>'} {proposal.description}
+                                            </p>
                                         </div>
 
-                                        {/* Leading Option Stats */}
-                                        {leadingOption && (
-                                            <div className="mb-6 p-4 rounded-lg bg-white/[0.03] border border-white/5">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-caption text-mono-50 uppercase flex items-center gap-2">
-                                                        <TrendingUp className="w-3.5 h-3.5" strokeWidth={2} />
-                                                        Leading Option
-                                                    </span>
-                                                    <span className="text-sm text-mono-95 font-bold">
-                                                        {leadingPercentage}%
-                                                    </span>
-                                                </div>
-                                                <p className="text-body-small text-mono-70 line-clamp-1">
-                                                    {leadingOption.title}
-                                                </p>
-                                                <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-white/25 rounded-full transition-all duration-700"
-                                                        style={{ width: `${leadingPercentage}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Footer */}
-                                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                                            <div className="flex items-center gap-4">
-                                                <Tooltip content="Total Votes" position="top">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Users className="w-4 h-4 text-mono-50" strokeWidth={2} />
-                                                        <span className="text-sm text-mono-70 font-medium">
-                                                            {totalVotes.toLocaleString()}
-                                                        </span>
+                                        {/* Quick Stats */}
+                                        <div className="mt-auto space-y-4">
+                                            {/* Leading Option */}
+                                            {leadingOption && (
+                                                <div className="p-3 bg-white/[0.03] border border-white/10">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-[10px] text-gray-500 uppercase font-mono">CURRENT_LEAD</span>
+                                                        <span className="text-xs font-bold text-white font-mono">{leadingPercentage}%</span>
                                                     </div>
-                                                </Tooltip>
-
-                                                <div className={`flex items-center gap-1.5 ${timeLeft.urgent ? 'text-orange-400' : timeLeft.ended ? 'text-mono-40' : 'text-mono-50'
-                                                    }`}>
-                                                    <Clock className="w-4 h-4" strokeWidth={2} />
-                                                    <span className="text-sm font-medium">
-                                                        {timeLeft.text}
-                                                    </span>
+                                                    <div className="h-1 bg-gray-800 w-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-white transition-all duration-1000"
+                                                            style={{
+                                                                width: `${leadingPercentage}%`,
+                                                                backgroundColor: NEON_CYAN,
+                                                                boxShadow: `0 0 5px ${NEON_CYAN}`
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
 
-                                            <ArrowUpRight
-                                                className="w-5 h-5 text-mono-40 group-hover:text-mono-95 transition-all group-hover:translate-x-1 group-hover:-translate-y-1"
-                                                strokeWidth={2}
-                                            />
+                                            {/* Footer Metadata */}
+                                            <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-1.5 text-xs text-gray-400 font-mono">
+                                                        <Users className="w-3 h-3" />
+                                                        <span>{totalVotes.toLocaleString()}</span>
+                                                    </div>
+                                                    <div className={`flex items-center gap-1.5 text-xs font-mono ${timeLeft.urgent ? 'text-orange-400 animate-pulse' : 'text-gray-400'}`}>
+                                                        <Clock className="w-3 h-3" />
+                                                        <span>{timeLeft.text}</span>
+                                                    </div>
+                                                </div>
+
+                                                {voted ? (
+                                                    <div className="px-2 py-1 border text-[10px] font-bold uppercase flex items-center gap-1" style={{ borderColor: NEON_LIME, color: NEON_LIME, backgroundColor: `${NEON_LIME}10` }}>
+                                                        <Check className="w-3 h-3" />
+                                                        LOGGED
+                                                    </div>
+                                                ) : (
+                                                    <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </CyberCard>
                             );
                         })}
                     </div>
                 ) : (
-                    <div className="card p-20 text-center animate-fade-in">
-                        <div className="w-16 h-16 rounded-full bg-white/5 mx-auto mb-6 flex items-center justify-center">
-                            <Search className="w-8 h-8 text-mono-50" strokeWidth={1.5} />
+                    <div className="text-center py-20 border border-dashed border-gray-800">
+                        <div className="inline-block p-4 rounded-full bg-white/5 mb-4">
+                            <Search className="w-8 h-8 text-gray-600" />
                         </div>
-                        <h3 className="text-heading mb-3">No Proposals Found</h3>
-                        <p className="text-body text-mono-60 mb-6 max-w-md mx-auto">
-                            {searchQuery
-                                ? `No proposals match your search "${searchQuery}". Try different keywords or adjust your filters.`
-                                : 'No proposals match your current filters. Try adjusting your selection.'
-                            }
-                        </p>
-                        <button
-                            onClick={() => {
-                                setSearchQuery('');
-                                setFilterBy('all');
-                            }}
-                            className="btn btn-secondary mx-auto"
-                        >
-                            Clear All Filters
-                        </button>
+                        <h3 className="text-lg font-bold text-white uppercase tracking-widest mb-2">NO_DATA_FOUND</h3>
+                        <div className="flex gap-2 justify-center mt-4">
+                            <button
+                                onClick={() => { setSearchQuery(''); setFilterBy('all'); }}
+                                className="text-xs text-gray-500 hover:text-white uppercase font-mono underline"
+                            >
+                                [ RESET_PARAMETERS ]
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
