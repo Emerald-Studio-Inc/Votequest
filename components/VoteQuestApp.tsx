@@ -508,13 +508,16 @@ const VoteQuestApp = () => {
 
     const handleCreateProposal = async (proposalData: any) => {
         try {
-            const response = await fetch('/api/proposal/create', {
+            const payload = {
+                ...proposalData,
+                userId: userData.userId
+            };
+            console.log('[DEBUG] Creating proposal payload:', payload);
+
+            const response = await fetch('/api/proposal/create-simple', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...proposalData,
-                    createdBy: userData.userId
-                })
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();
