@@ -243,20 +243,50 @@ export async function POST(request: Request) {
         }
 
         // 3. Record vote
-        const { error: voteError } = await supabaseAdmin
-            .from('votes')
-            .insert([{
-                user_id: userId,
-                proposal_id: proposalId,
-                option_id: optionId,
-                tx_hash: txHash || null,
-                voting_power: voteCount,
-                coin_cost: coinCost
-            }]);
+        // 3. Record vote
+        try {
+            const { error: voteError } = await supabaseAdmin
+                .from('votes')
+                .insert([{
+                    user_id: userId,
+                    proposal_id: proposalId,
+                    option_id: optionId,
+                    tx_hash: txHash || null,
+                    voting_power: voteCount,
+                    coin_cost: coinCost
+                }]);
 
-        if (voteError) {
-            console.error('Error recording vote:', voteError);
-            return NextResponse.json({ error: 'Database error' }, { status: 500 });
+            if (voteError) {
+                console.error('Error recording vote:', voteError);
+                throw new Error('Database error recording vote');
+            }
+        } catch (voteInsertError: any) {
+            console.error('VOTE FAILED, INITIATING REFUND:', voteInsertError);
+
+            // REFUND LOGIC
+            if (strategy === 'quadratic' && coinCost > 0) {
+                try {
+                    const { spendCoins } = await import('@/lib/coins');
+                    // Refund by "spending" negative amount (adding coins) with a refund reason
+                    // Actually spendCoins logic does negative check?
+                    // Let's use awardCoins or a new refund function. 
+                    // Re-using spendCoins with negative amount works based on my read of lib/coins.ts (it subtracts amount, so subtracting negative adds)
+                    // But explicitly:
+                    const { awardCoins } = await import('@/lib/coins');
+                    await awardCoins(userId, coinCost, 'refund_failed_vote', proposalId);
+                    console.log(`[REFUND] Refunded ${coinCost} coins to ${userId}`);
+                } catch (refundError) {
+                    console.error('CRITICAL: FAILED TO REFUND USER', userId, coinCost, refundError);
+                    // This is a critical system failure - log strictly
+                }
+            }
+
+            // Return the specific error to user
+            if (voteInsertError.message.includes('duplicate key') || voteInsertError.message.includes('Already voted')) {
+                return NextResponse.json({ error: 'You have already voted on this proposal' }, { status: 400 });
+            }
+
+            return NextResponse.json({ error: 'Failed to record vote. Coins have been refunded.' }, { status: 500 });
         }
 
         // 4. Update counts (Weighted)

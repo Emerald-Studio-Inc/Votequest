@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle, Circle } from 'lucide-react';
+import ArcadeButton from './ArcadeButton';
 
 interface VotingInterfaceProps {
     room: any;
@@ -195,24 +196,27 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
             {/* Submit Button */}
             <div className="sticky bottom-0 left-0 right-0 p-6 bg-black/80 backdrop-blur-xl border-t border-white/10">
                 <div className="max-w-4xl mx-auto">
-                    <button
+                    <ArcadeButton
                         onClick={handleSubmit}
                         disabled={selectedOptions.length === 0 || submitting}
-                        className="btn-gold w-full btn-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        variant="lime"
+                        size="lg"
+                        className="w-full flex items-center justify-center gap-3"
+                        tooltip={isQuadratic ? `Cost: ${totalCost} VQC` : "Submit your final decision"}
                     >
                         {submitting ? (
                             <>
-                                <div className="loading-spinner w-5 h-5" />
-                                Submitting Vote...
+                                <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" />
+                                PROCESSING...
                             </>
                         ) : (
                             isQuadratic
-                                ? `Cast Votes (${totalCost} Coins)`
-                                : `Submit Vote${selectedOptions.length > 1 ? 's' : ''} (${selectedOptions.length})`
+                                ? `EXECUTE_VOTE (${totalCost} VQC)`
+                                : `CONFIRM_SELECTION${selectedOptions.length > 1 ? 'S' : ''} (${selectedOptions.length})`
                         )}
-                    </button>
-                    <p className="text-sm text-center text-mono-50 mt-3">
-                        Your vote is anonymous and cannot be changed
+                    </ArcadeButton>
+                    <p className="text-sm text-center text-mono-50 mt-3 font-mono">
+                        // CAUTION: ACTION_IRREVERSIBLE
                     </p>
                 </div>
             </div>

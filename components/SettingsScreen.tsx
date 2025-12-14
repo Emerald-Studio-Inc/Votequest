@@ -124,14 +124,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                             <h2 className="text-xl font-bold mb-2 uppercase tracking-wider text-white">
                                 {userData.address ? `${userData.address.slice(0, 6)}...${userData.address.slice(-4)}` : 'UNKNOWN_VOTER'}
                             </h2>
-                            <p className="text-xs font-mono text-gray-500 mb-6 uppercase">
+                            <p className="text-xs font-mono text-gray-300 mb-6 uppercase">
                                 REGISTERED_SINCE: {new Date().toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' })}
                             </p>
 
                             {/* Stats */}
                             <div className="grid grid-cols-3 gap-6 p-4 bg-white/5 border border-white/10">
                                 <div>
-                                    <p className="text-[10px] text-gray-400 font-mono uppercase mb-1">ACCESS_LEVEL</p>
+                                    <p className="text-[10px] text-gray-300 font-mono uppercase mb-1">ACCESS_LEVEL</p>
                                     <p className="text-xl font-bold font-mono text-white">{userData.level}</p>
                                 </div>
                                 <div>

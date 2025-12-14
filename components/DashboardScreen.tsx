@@ -135,17 +135,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                             }}
                                         />
                                     </div>
-                                    <p className="text-[10px] text-gray-500 mt-1 font-mono">NEXT RANK: {userData.nextLevelXP - userData.xp} XP REQ</p>
+                                    <p className="text-[10px] text-gray-300 mt-1 font-mono">NEXT RANK: {userData.nextLevelXP - userData.xp} XP REQ</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 text-right">
                                 <div>
-                                    <p className="text-[10px] text-gray-400 font-mono">GLOBAL RANK</p>
+                                    <p className="text-[10px] text-gray-300 font-mono">GLOBAL RANK</p>
                                     <p className="text-2xl font-bold" style={{ color: NEON_MAGENTA }}>#{userData.globalRank}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-400 font-mono">VOTING POWER</p>
+                                    <p className="text-[10px] text-gray-300 font-mono">VOTING POWER</p>
                                     <p className="text-2xl font-bold" style={{ color: NEON_LIME }}>{userData.votingPower.toLocaleString()}</p>
                                 </div>
                             </div>
@@ -171,33 +171,29 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="mb-8 flex items-end justify-between pb-2" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
                     <div>
                         <h3 className="text-xl font-bold" style={{ color: NEON_CYAN }}>ACTIVE_QUESTS</h3>
-                        <p className="text-xs text-gray-400 font-mono">SELECT MISSION TO ENGAGE</p>
+                        <p className="text-xs text-gray-300 font-mono">SELECT MISSION TO ENGAGE</p>
                     </div>
 
                     {/* Retro Filter Toggle */}
                     <div className="flex gap-2">
-                        <button
+                        <ArcadeButton
                             onClick={() => setProposalFilter('active')}
-                            className="px-4 py-1 text-xs font-mono border"
-                            style={{
-                                backgroundColor: proposalFilter === 'active' ? NEON_CYAN : 'transparent',
-                                color: proposalFilter === 'active' ? '#000000' : '#6B7280',
-                                borderColor: proposalFilter === 'active' ? NEON_CYAN : '#1F2937'
-                            }}
+                            variant="cyan"
+                            size="sm"
+                            className={proposalFilter === 'active' ? 'bg-cyan-500/20' : 'opacity-60 hover:opacity-100'}
+                            glow={proposalFilter === 'active'}
                         >
                             ACTIVE
-                        </button>
-                        <button
+                        </ArcadeButton>
+                        <ArcadeButton
                             onClick={() => setProposalFilter('history')}
-                            className="px-4 py-1 text-xs font-mono border"
-                            style={{
-                                backgroundColor: proposalFilter === 'history' ? NEON_CYAN : 'transparent',
-                                color: proposalFilter === 'history' ? '#000000' : '#6B7280',
-                                borderColor: proposalFilter === 'history' ? NEON_CYAN : '#1F2937'
-                            }}
+                            variant="cyan"
+                            size="sm"
+                            className={proposalFilter === 'history' ? 'bg-cyan-500/20' : 'opacity-60 hover:opacity-100'}
+                            glow={proposalFilter === 'history'}
                         >
                             HISTORY
-                        </button>
+                        </ArcadeButton>
                     </div>
                 </div>
 

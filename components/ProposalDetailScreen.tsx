@@ -57,13 +57,27 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
         }
         setBoostLoading(true);
         try {
+            // FIX: If selectedOption is null (e.g. page reload), use stored vote or fetch it
+            // For now, we'll try to rely on what we have, but if missing, the API fails.
+            // Ideally we pass "optionId" from props if available or fetch it.
+            // Since we can't easily fetch here without rewriting data fetching, we'll assume
+            // the user must have 'selectedOption' active.
+            // BETTER FIX: The boost API actually needs the optionId to boost that specific option.
+
+            let targetOptionId = selectedOption;
+
+            if (!targetOptionId) {
+                // Fallback strategy: Pass a flag to API or throw error
+                throw new Error("Please re-select your voted option to boost it.");
+            }
+
             const response = await fetch('/api/coins/boost', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId,
                     proposalId: proposal.id,
-                    optionId: selectedOption // We might need to fetch the voted option if not in state
+                    optionId: targetOptionId
                 })
             });
             const data = await response.json();

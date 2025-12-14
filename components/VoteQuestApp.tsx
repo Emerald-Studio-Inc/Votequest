@@ -592,7 +592,7 @@ const VoteQuestApp = () => {
                                 <button
                                     onClick={() => setActiveDashboardTab(item.value)}
                                     className="relative group flex flex-col items-center justify-center w-14 h-14 transition-all duration-300"
-                                    style={{ color: isActive ? NEON_CYAN : '#9CA3AF' }}
+                                    style={{ color: isActive ? NEON_CYAN : 'rgba(255,255,255,0.6)' }}
                                 >
                                     <div
                                         className="absolute inset-0 transition-all duration-300"
@@ -624,11 +624,6 @@ const VoteQuestApp = () => {
                     })}
                 </div>
             </div>
-            {/* Global Quest Guide */}
-            <QuestGuide
-                currentScreen={currentScreen}
-                onNavigate={setCurrentScreen}
-            />
         </div>
     );
 
@@ -684,6 +679,10 @@ const VoteQuestApp = () => {
                     <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                 )}
                 <BottomNavigation />
+                <QuestGuide
+                    currentScreen={currentScreen}
+                    onNavigate={setCurrentScreen}
+                />
                 <AdminPassphraseModal
                     open={showAdminModal}
                     onClose={() => setShowAdminModal(false)}

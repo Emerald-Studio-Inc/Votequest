@@ -114,40 +114,45 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                 </button>
             </div>
 
-            {/* The Map Overlay - Z-INDEX 40 to sit BEHIND Header (z-50) and Bottom Nav (z-50) */}
+            {/* The Map Overlay - HIGH VISIBILITY Z-INDEX [100] */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/80 backdrop-blur-md animate-fade-in flex flex-col items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl animate-fade-in flex flex-col items-center justify-center overflow-hidden"
                     onWheel={handleWheel}
-                    onClick={() => setIsOpen(false)} // Click outside to close
+                    onClick={() => setIsOpen(false)}
                 >
 
                     {/* Header Info */}
-                    <div className="absolute top-24 left-0 w-full text-center pointer-events-none">
-                        <h2 className="text-3xl font-bold font-mono tracking-tighter" style={{ color: NEON_CYAN }}>
+                    <div className="absolute top-12 left-0 w-full text-center pointer-events-none z-10">
+                        <h2 className="text-4xl font-bold font-mono tracking-tighter glow-text-cyan mb-2" style={{ color: NEON_CYAN }}>
                             NAV_SYSTEM
                         </h2>
-                        <p className="text-xs font-mono tracking-[0.2em] uppercase mt-1 text-gray-400">
-                            SCROLL TO NAVIGATE
-                        </p>
+                        <div className="flex justify-center gap-4 text-xs font-mono uppercase tracking-widest">
+                            <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
+                                SCROLL TO ROTATE
+                            </span>
+                            <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
+                                CLICK TO ENTER
+                            </span>
+                        </div>
                     </div>
 
                     {/* 3D Wheel Container */}
                     <div
-                        className="relative w-full max-w-lg h-[400px] flex items-center justify-center"
-                        style={{ perspective: '1000px' }}
-                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking wheel area
+                        className="relative w-full max-w-lg h-[500px] flex items-center justify-center"
+                        style={{ perspective: '1200px' }}
+                        onClick={(e) => e.stopPropagation()}
                     >
                         <div
                             className="relative w-full h-full transition-transform duration-500 ease-out"
                             style={{
                                 transformStyle: 'preserve-3d',
-                                transform: `rotateX(-10deg) rotateY(${wheelRotation}deg)`
+                                transform: `rotateX(-5deg) rotateY(${wheelRotation}deg)`
                             }}
                         >
                             {NODES.map((node, index) => {
                                 const angle = (index * 360) / NODES.length;
-                                const radius = 250;
+                                const radius = 300; // Larger radius for separation
 
                                 return (
                                     <div
@@ -163,26 +168,26 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                                         }}
                                     >
                                         <div
-                                            className="w-40 h-48 bg-black/80 border-2 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_30px_rgba(0,240,255,0.4)]"
+                                            className="w-56 h-64 bg-black border-2 flex flex-col items-center justify-center gap-6 transition-all duration-300 hover:scale-110 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
                                             style={{
                                                 borderColor: NEON_CYAN,
-                                                boxShadow: `0 0 15px ${NEON_CYAN}20`
+                                                boxShadow: `0 0 20px ${NEON_CYAN}40`
                                             }}
                                         >
-                                            <div className="p-3 rounded-full border bg-black" style={{ borderColor: NEON_MAGENTA }}>
-                                                <node.icon className="w-8 h-8" style={{ color: NEON_CYAN }} />
+                                            <div className="p-4 rounded-full border-2 bg-black/50" style={{ borderColor: NEON_MAGENTA }}>
+                                                <node.icon className="w-10 h-10" style={{ color: NEON_CYAN }} />
                                             </div>
 
-                                            <div className="text-center">
-                                                <p className="text-sm font-bold font-mono text-white mb-1">{node.label}</p>
-                                                <p className="text-[10px] text-gray-400 uppercase tracking-wide">{node.desc}</p>
+                                            <div className="text-center px-4">
+                                                <p className="text-lg font-bold font-mono text-white mb-2 tracking-wider">{node.label}</p>
+                                                <p className="text-xs text-white/80 font-bold uppercase tracking-wide bg-white/10 py-1 px-2 rounded">{node.desc}</p>
                                             </div>
 
-                                            {/* Corner Accents */}
-                                            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: NEON_CYAN }} />
-                                            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r" style={{ borderColor: NEON_CYAN }} />
-                                            <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l" style={{ borderColor: NEON_CYAN }} />
-                                            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r" style={{ borderColor: NEON_CYAN }} />
+                                            {/* Corner Accents - HIGH VISIBILITY */}
+                                            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4" style={{ borderColor: NEON_CYAN }} />
+                                            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4" style={{ borderColor: NEON_CYAN }} />
+                                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4" style={{ borderColor: NEON_CYAN }} />
+                                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4" style={{ borderColor: NEON_CYAN }} />
                                         </div>
                                     </div>
                                 );
@@ -190,14 +195,14 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                         </div>
                     </div>
 
-                    {/* Close Button - Floating reasonably */}
+                    {/* Close Button - High contrast at bottom */}
                     <button
                         onClick={() => setIsOpen(false)}
-                        className="absolute bottom-32 flex items-center gap-2 px-6 py-2 border bg-black/50 hover:bg-black transition-colors z-50 pointer-events-auto"
+                        className="absolute bottom-20 flex items-center gap-2 px-8 py-3 border-2 bg-black hover:bg-white/10 transition-colors z-50 pointer-events-auto shadow-[0_0_20px_rgba(255,0,60,0.3)]"
                         style={{ borderColor: NEON_MAGENTA }}
                     >
-                        <X className="w-4 h-4" style={{ color: NEON_MAGENTA }} />
-                        <span className="font-mono text-xs font-bold text-white uppercase">CLOSE_MAP</span>
+                        <X className="w-5 h-5" style={{ color: NEON_MAGENTA }} />
+                        <span className="font-mono text-sm font-bold text-white uppercase tracking-widest">CLOSE MAP</span>
                     </button>
 
                 </div>

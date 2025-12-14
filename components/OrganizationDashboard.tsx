@@ -143,7 +143,7 @@ export default function OrganizationDashboard({
                     <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-2">
                             <Vote className="w-5 h-5 text-gray-400" />
-                            <p className="text-[10px] text-gray-500 uppercase font-mono">ACTIVE_ROOMS</p>
+                            <p className="text-[10px] text-gray-300 uppercase font-mono">ACTIVE_ROOMS</p>
                         </div>
                         <p className="text-3xl font-bold text-white font-mono">{rooms.filter(r => r.status === 'active').length}</p>
                     </CyberCard>
@@ -193,7 +193,7 @@ export default function OrganizationDashboard({
                                     onClick={() => onNavigate?.('room', room)}
                                 >
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-800 group-hover:bg-[color:var(--status-color)] transition-colors"
-                                        style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : '#6B7280' } as React.CSSProperties}
+                                        style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : '#E5E7EB' } as React.CSSProperties}
                                     />
 
                                     <div className="flex items-start justify-between pl-4">

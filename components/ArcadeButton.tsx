@@ -1,10 +1,11 @@
-import React from 'react';
+import Tooltip from './Tooltip';
 
 interface ArcadeButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'cyan' | 'magenta' | 'lime';
     size?: 'sm' | 'md' | 'lg';
     glow?: boolean;
     children: React.ReactNode;
+    tooltip?: string;
 }
 
 // Neon color hex values - guaranteed to work
@@ -21,6 +22,7 @@ export default function ArcadeButton({
     className = '',
     children,
     style,
+    tooltip,
     ...props
 }: ArcadeButtonProps) {
 
@@ -32,7 +34,7 @@ export default function ArcadeButton({
         lg: 'px-8 py-3 text-base'
     };
 
-    return (
+    const ButtonContent = (
         <button
             className={`
                 group relative uppercase tracking-widest font-bold font-mono transition-all duration-200
@@ -45,6 +47,7 @@ export default function ArcadeButton({
                 color: color,
                 borderColor: color,
                 backgroundColor: `${color}15`,
+                textShadow: `0 0 5px ${color}`,
                 ...style,
             }}
             {...props}
@@ -68,6 +71,16 @@ export default function ArcadeButton({
             </span>
         </button>
     );
+
+    if (tooltip) {
+        return (
+            <Tooltip content={tooltip}>
+                {ButtonContent}
+            </Tooltip>
+        );
+    }
+
+    return ButtonContent;
 }
 
 

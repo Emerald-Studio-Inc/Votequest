@@ -237,7 +237,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                 onFocus={() => setFocusedField('title')}
                                 onBlur={() => setFocusedField(null)}
                                 placeholder="ENTER_MISSION_TITLE..."
-                                className="w-full bg-black/50 border px-4 py-3 text-white font-mono focus:outline-none transition-all placeholder:text-gray-700 uppercase"
+                                className="w-full bg-black/50 border px-4 py-3 text-white font-mono focus:outline-none transition-all placeholder:text-gray-500 uppercase"
                                 style={{
                                     borderColor: errors.title ? NEON_MAGENTA : focusedField === 'title' ? NEON_CYAN : 'rgba(255,255,255,0.1)',
                                     boxShadow: focusedField === 'title' ? `0 0 15px ${NEON_CYAN}20` : 'none'

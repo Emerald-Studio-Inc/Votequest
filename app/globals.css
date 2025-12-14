@@ -40,12 +40,19 @@
     --accent-glow: rgba(0, 240, 255, 0.5);
 
     /* MISSING MONO VARIABLES - Fixed for Visibility */
-    --mono-95: #F5F5F5;
-    --mono-80: #CCCCCC;
-    --mono-70: #B3B3B3;
-    --mono-60: #999999;
-    --mono-50: #808080;
-    --mono-40: #666666;
+    /* VISIBILITY BOOST: Lighter Mono Scale */
+    --mono-95: #FFFFFF;
+    /* Pure White */
+    --mono-80: #E5E5E5;
+    /* Very Light Gray */
+    --mono-70: #CCCCCC;
+    /* Light Gray */
+    --mono-60: #B3B3B3;
+    /* Mid Light Gray - previously too dark */
+    --mono-50: #999999;
+    /* Mid Gray */
+    --mono-40: #808080;
+    /* Visible Gray - previously #666666 */
 
     /* MISSING GLASS VARIABLES */
     --glass-light: rgba(255, 255, 255, 0.03);
@@ -400,47 +407,43 @@ h6 {
     color: #000000;
     /* Pure black text for contrast */
     border: 1px solid #00F0FF;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(0, 240, 255, 0.5);
-    font-weight: 700;
+    background-color: var(--neon-cyan);
+    color: black !important;
+    /* Keep black text on Cyan BG for contrast */
+    text-shadow: none;
+    /* No shadow on black text */
+    font-weight: 800;
 }
 
 .btn-primary:hover {
-    background: #00C0CC;
-    /* Slightly darker cyan */
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.5);
-}
-
-.btn-primary:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    background-color: var(--accent-hover);
+    box-shadow: 0 0 15px var(--neon-cyan);
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.05);
-    /* glass-medium */
-    color: #FFFFFF;
-    /* White text for visibility */
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: transparent;
+    border: 1px solid var(--neon-cyan);
+    color: var(--neon-cyan) !important;
+    box-shadow: 0 0 5px rgba(0, 240, 255, 0.2);
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
+    background-color: rgba(0, 240, 255, 0.1);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    text-shadow: 0 0 8px var(--neon-cyan);
 }
 
 .btn-ghost {
     background: transparent;
-    color: #CCCCCC;
-    /* Visible gray */
+    color: var(--neon-cyan);
+    /* Was gray/white */
     border: 1px solid transparent;
 }
 
 .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.03);
-    color: #FFFFFF;
-    border-color: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    text-shadow: 0 0 10px #fff;
 }
 
 .btn-danger {

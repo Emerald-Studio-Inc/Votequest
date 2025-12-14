@@ -3,6 +3,7 @@ import { Search, Filter, Clock, Users, TrendingUp, Check, ArrowUpRight, X, Chevr
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
 
 interface ProposalsListScreenProps {
     proposals: ProposalWithOptions[];
@@ -157,17 +158,17 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                         </div>
 
                         {/* Filter Toggle */}
-                        <button
+                        {/* Filter Toggle */}
+                        <ArcadeButton
                             onClick={() => setShowFilters(!showFilters)}
-                            className="flex items-center gap-2 px-4 py-2.5 border bg-black text-xs font-mono uppercase hover:bg-white/5 transition-colors"
-                            style={{
-                                borderColor: showFilters ? NEON_CYAN : '#1F2937',
-                                color: showFilters ? NEON_CYAN : '#9CA3AF'
-                            }}
+                            variant="cyan"
+                            size="sm"
+                            className={!showFilters ? 'opacity-60 hover:opacity-100' : ''}
+                            glow={showFilters}
                         >
-                            <Filter className="w-3 h-3" />
-                            <span>FILTERS</span>
-                        </button>
+                            <Filter className="w-3 h-3 mr-2" />
+                            FILTERS
+                        </ArcadeButton>
                     </div>
 
                     {/* Filter Pills */}
@@ -181,19 +182,16 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                                     { value: 'voted' as FilterOption, label: 'COMPLETED', count: votedCount },
                                     { value: 'not-voted' as FilterOption, label: 'PENDING', count: activeCount - votedCount }
                                 ].map((filter) => (
-                                    <button
+                                    <ArcadeButton
                                         key={filter.value}
                                         onClick={() => setFilterBy(filter.value)}
-                                        className="px-3 py-1 text-[10px] font-mono border transition-all uppercase flex items-center gap-2"
-                                        style={{
-                                            borderColor: filterBy === filter.value ? NEON_CYAN : '#374151',
-                                            backgroundColor: filterBy === filter.value ? `${NEON_CYAN}10` : 'transparent',
-                                            color: filterBy === filter.value ? NEON_CYAN : '#6B7280'
-                                        }}
+                                        variant="cyan"
+                                        size="sm"
+                                        className={`text-[10px] ${filterBy !== filter.value ? 'opacity-60 hover:opacity-100' : ''}`}
+                                        glow={filterBy === filter.value}
                                     >
-                                        {filter.label}
-                                        <span className="opacity-50">[{filter.count}]</span>
-                                    </button>
+                                        {filter.label} <span className="opacity-50 ml-1">[{filter.count}]</span>
+                                    </ArcadeButton>
                                 ))}
                             </div>
                         </div>
@@ -247,7 +245,7 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                                             {leadingOption && (
                                                 <div className="p-3 bg-white/[0.03] border border-white/10">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-[10px] text-gray-500 uppercase font-mono">CURRENT_LEAD</span>
+                                                        <span className="text-[10px] text-gray-300 uppercase font-mono">CURRENT_LEAD</span>
                                                         <span className="text-xs font-bold text-white font-mono">{leadingPercentage}%</span>
                                                     </div>
                                                     <div className="h-1 bg-gray-800 w-full overflow-hidden">
