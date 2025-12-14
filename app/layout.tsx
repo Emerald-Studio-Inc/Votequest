@@ -5,8 +5,18 @@ import './mobile.css'
 import './mobile-enhancements.css'
 
 export const metadata: Metadata = {
-  title: 'VoteQuest - Decentralized Governance',
-  description: 'A gamified blockchain voting platform',
+  title: {
+    template: '%s | VoteQuest',
+    default: 'VoteQuest | Gamified Decentralized Governance',
+  },
+  description: 'Participate in the future of governance. Cast immutable votes, earn VQC tokens, and influence organizations in a high-fidelity cyberpunk environment.',
+  themeColor: '#000000',
+  manifest: '/manifest.json',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+  },
 }
 
 import { Providers } from './providers'

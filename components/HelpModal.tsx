@@ -92,12 +92,14 @@ export default function HelpModal({ onClose }: HelpModalProps) {
                             <p className="text-xs text-gray-500 uppercase">V.2.0.4 MANUAL</p>
                         </div>
                     </div>
-                    <button
+                    <ArcadeButton
                         onClick={onClose}
-                        className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors border border-transparent hover:border-red-500/50"
+                        variant="magenta"
+                        size="sm"
+                        className="w-10 h-10 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
                     >
-                        <X className="w-6 h-6 text-gray-400 hover:text-red-500" />
-                    </button>
+                        <X className="w-6 h-6" strokeWidth={2.5} />
+                    </ArcadeButton>
                 </div>
 
                 {/* Content */}

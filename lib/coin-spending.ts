@@ -72,7 +72,30 @@ export async function boostVotingPower(
             });
 
         if (updateError || !updatedUser) {
-            return { success: false, error: 'Insufficient coins or update failed' };
+            console.warn('RPC deduction failed, attempting fallback...', updateError);
+
+            // Fallback: Optimistic Locking
+            // 1. Get fresh balance
+            const { data: freshUser } = await supabase
+                .from('users')
+                .select('coins')
+                .eq('id', userId)
+                .single();
+
+            if (!freshUser || (freshUser.coins || 0) < SPENDING_COSTS.VOTING_BOOST) {
+                return { success: false, error: 'Insufficient coins' };
+            }
+
+            // 2. Attempt update with version check (coins must match what we just saw)
+            const { error: fallbackError } = await supabase
+                .from('users')
+                .update({ coins: freshUser.coins - SPENDING_COSTS.VOTING_BOOST })
+                .eq('id', userId)
+                .eq('coins', freshUser.coins); // Optimistic lock
+
+            if (fallbackError) {
+                return { success: false, error: 'Transaction failed (Concurrency). Please retry.' };
+            }
         }
 
         // 4. Record transaction
@@ -154,7 +177,28 @@ export async function highlightProposal(
             });
 
         if (updateError || !updatedUser) {
-            return { success: false, error: 'Insufficient coins or update failed' };
+            console.warn('RPC deduction failed, attempting fallback...', updateError);
+
+            // Fallback: Optimistic Locking
+            const { data: freshUser } = await supabase
+                .from('users')
+                .select('coins')
+                .eq('id', userId)
+                .single();
+
+            if (!freshUser || (freshUser.coins || 0) < SPENDING_COSTS.PROPOSAL_HIGHLIGHT) {
+                return { success: false, error: 'Insufficient coins' };
+            }
+
+            const { error: fallbackError } = await supabase
+                .from('users')
+                .update({ coins: freshUser.coins - SPENDING_COSTS.PROPOSAL_HIGHLIGHT })
+                .eq('id', userId)
+                .eq('coins', freshUser.coins);
+
+            if (fallbackError) {
+                return { success: false, error: 'Transaction failed (Concurrency). Please retry.' };
+            }
         }
 
         // 4. Record transaction

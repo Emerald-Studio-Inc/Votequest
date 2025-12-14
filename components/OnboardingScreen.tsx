@@ -113,12 +113,14 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ currentScreen, onNe
                                 </span>
                             </ArcadeButton>
 
-                            <button
+                            <ArcadeButton
                                 onClick={() => onNext('login')}
-                                className="text-xs text-gray-600 hover:text-white transition-colors uppercase tracking-widest"
+                                variant="magenta"
+                                size="sm"
+                                className="w-full max-w-[120px] text-[10px]"
                             >
                                 [ SKIP_TUTORIAL ]
-                            </button>
+                            </ArcadeButton>
                         </div>
 
                         {/* Dots Indicator */}

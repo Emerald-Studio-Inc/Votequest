@@ -210,12 +210,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                                             </div>
                                             {item.action && (
                                                 <Tooltip content={item.actionLabel || 'Action'} position="left">
-                                                    <button
+                                                    <ArcadeButton
                                                         onClick={item.action}
-                                                        className="px-3 py-1 text-[10px] font-mono border border-gray-700 text-gray-400 hover:text-white hover:border-white transition-all uppercase"
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="text-[10px] py-1 h-auto"
                                                     >
                                                         [{item.actionLabel}]
-                                                    </button>
+                                                    </ArcadeButton>
                                                 </Tooltip>
                                             )}
                                         </div>
@@ -300,13 +302,13 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <button
+                                <ArcadeButton
                                     onClick={() => setShowDisconnectConfirm(false)}
-                                    className="flex-1 py-3 text-xs font-mono border border-gray-700 transition-all uppercase hover:border-white"
-                                    style={{ color: '#FFFFFF' }}
+                                    variant="secondary"
+                                    className="flex-1"
                                 >
                                     [ CANCEL ]
-                                </button>
+                                </ArcadeButton>
                                 <ArcadeButton
                                     variant="magenta"
                                     onClick={handleDisconnect}

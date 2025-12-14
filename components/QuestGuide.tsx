@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Map, X, LayoutDashboard, Building2, Vote, Zap, Globe, Target, Cpu } from 'lucide-react';
+import ArcadeButton from './ArcadeButton';
 
 interface QuestGuideProps {
     currentScreen: string;
@@ -17,10 +18,41 @@ interface MapNode {
 }
 
 const NODES: MapNode[] = [
-    { id: 'dashboard', label: 'CMD_CENTER', icon: LayoutDashboard, screenId: 'dashboard', desc: 'Main Operations' },
-    { id: 'create-org', label: 'INIT_ORG', icon: Zap, screenId: 'org-setup', desc: 'Create Organization' },
-    { id: 'org-list', label: 'ORG_NEXUS', icon: Building2, screenId: 'organization', desc: 'Browse Organizations' },
-    { id: 'vote', label: 'VOTE_NODE', icon: Vote, screenId: 'organization', desc: 'Active Votes' }, // Simplified routing
+    {
+        id: 'dashboard',
+        label: 'CMD_CENTER',
+        icon: LayoutDashboard,
+        screenId: 'dashboard',
+        desc: 'Your central hub for operations. Monitor your Voting Power, track Global Rank, and manage your active mission status. This is where your governance journey begins.'
+    },
+    {
+        id: 'create-org',
+        label: 'INIT_ORG',
+        icon: Zap,
+        screenId: 'org-setup',
+        desc: 'Launch a new Decentralized Organization. Establish governance protocols, set voting thresholds, and deploy smart contracts to bring your community on-chain.'
+    },
+    {
+        id: 'org-list',
+        label: 'ORG_NEXUS',
+        icon: Building2,
+        screenId: 'organization',
+        desc: 'The directory of all active organizations. Discover communities, join causes, and analyze governance metrics across the entire VoteQuest ecosystem.'
+    },
+    {
+        id: 'vote',
+        label: 'VOTE_NODE',
+        icon: Vote,
+        screenId: 'proposals',
+        desc: 'Execute your civic duty. Cast immutable votes on active proposals, earn VQC tokens for participation, and influence the future of your organizations.'
+    },
+    {
+        id: 'about',
+        label: 'SYSTEM_INTEL',
+        icon: Cpu,
+        screenId: 'dashboard', // Stays on dashboard but shows info
+        desc: 'VoteQuest solves the transparency crisis in modern governance. By gamifying civic engagement and securing votes on-chain, we ensure every voice matters and every action is verifiable.'
+    },
 ];
 
 export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProps) {
@@ -52,12 +84,43 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
     const NEON_LIME = '#39FF14';
 
     const handleWheel = (e: React.WheelEvent) => {
-        setWheelRotation(prev => prev + (e.deltaY * 0.1));
+        // Increased sensitivity from 0.1 to 0.3 for snappier feel
+        setWheelRotation(prev => prev + (e.deltaY * 0.3));
 
         // Clear existing snap
         if (snapTimeout.current) clearTimeout(snapTimeout.current);
 
-        // Set new snap
+        // Set new snap with faster 300ms delay (was 500ms)
+        snapTimeout.current = setTimeout(() => {
+            const step = 360 / NODES.length;
+            setWheelRotation(prev => {
+                const remainder = prev % step;
+                return prev - remainder + (remainder > step / 2 ? step : 0);
+            });
+        }, 300);
+    };
+
+    // Touch support for mobile
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchStart(e.touches[0].clientY);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (touchStart === null) return;
+        const currentY = e.touches[0].clientY;
+        const deltaY = touchStart - currentY; // Drag up to rotate forward
+
+        // Increased sensitivity from 0.5 to 0.8
+        setWheelRotation(prev => prev + (deltaY * 0.8));
+        setTouchStart(currentY);
+    };
+
+    const handleTouchEnd = () => {
+        setTouchStart(null);
+        // Snap logic
+        if (snapTimeout.current) clearTimeout(snapTimeout.current);
         snapTimeout.current = setTimeout(() => {
             const step = 360 / NODES.length;
             setWheelRotation(prev => {
@@ -75,8 +138,8 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
 
     return (
         <>
-            {/* The Floating Orb - Z-index fixed to be above content but below HUD if needed, essentially float z-[60] */}
-            <div className="fixed bottom-24 right-6 z-[60] flex items-center gap-4">
+            {/* The Floating Orb - Still visible in Ambient Mode, but acts as toggle */}
+            <div className={`fixed bottom-24 right-6 z-[2100] flex items-center gap-4 transition-all duration-500 ${isOpen ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100'}`}>
                 {showTip && !isOpen && (
                     <div
                         className="bg-black/90 px-4 py-2 text-sm border animate-fade-in shadow-[0_0_15px_rgba(0,240,255,0.3)] font-mono glitch-text"
@@ -114,99 +177,139 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                 </button>
             </div>
 
-            {/* The Map Overlay - HIGH VISIBILITY Z-INDEX [100] */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl animate-fade-in flex flex-col items-center justify-center overflow-hidden"
-                    onWheel={handleWheel}
-                    onClick={() => setIsOpen(false)}
-                >
+            {/* The Map Overlay - AMBIENT vs ACTIVE MODES */}
+            <div
+                className={`fixed inset-0 transition-all duration-700 ease-in-out flex flex-col items-center justify-center overflow-hidden
+                    ${isOpen
+                        ? 'z-[2000] bg-black/95 backdrop-blur-xl opacity-100 pointer-events-auto'
+                        : 'z-0 bg-black/20 opacity-40 pointer-events-none scale-110 blur-sm'
+                    }
+                `}
+                style={{ touchAction: isOpen ? 'none' : 'auto' }}
+                onWheel={isOpen ? handleWheel : undefined}
+                onTouchStart={isOpen ? handleTouchStart : undefined}
+                onTouchMove={isOpen ? handleTouchMove : undefined}
+                onTouchEnd={isOpen ? handleTouchEnd : undefined}
+                onClick={() => isOpen && setIsOpen(false)}
+            >
+                {/* Click Handler for Ambient Mode - Invisible Layer */}
+                {!isOpen && (
+                    <div
+                        className="absolute inset-0 pointer-events-auto cursor-pointer"
+                        onClick={() => setIsOpen(true)}
+                        title="Tap to Open Map"
+                    />
+                )}
 
-                    {/* Header Info */}
-                    <div className="absolute top-12 left-0 w-full text-center pointer-events-none z-10">
-                        <h2 className="text-4xl font-bold font-mono tracking-tighter glow-text-cyan mb-2" style={{ color: NEON_CYAN }}>
-                            NAV_SYSTEM
-                        </h2>
-                        <div className="flex justify-center gap-4 text-xs font-mono uppercase tracking-widest">
-                            <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
-                                SCROLL TO ROTATE
-                            </span>
-                            <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
-                                CLICK TO ENTER
+                {/* Header Info - Only visible when Open */}
+                <div className={`absolute top-12 left-0 w-full text-center pointer-events-none z-10 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                    <h2 className="text-4xl font-bold font-mono tracking-tighter glow-text-cyan mb-2" style={{ color: NEON_CYAN }}>
+                        NAV_SYSTEM
+                    </h2>
+                    <div className="flex justify-center gap-4 text-xs font-mono uppercase tracking-widest">
+                        <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
+                            SCROLL TO ROTATE
+                        </span>
+                        <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
+                            CLICK TO ENTER
+                        </span>
+                    </div>
+                </div>
+
+                {/* Contextual Info Panel - Dynamic based on Active Node */}
+                <div className={`absolute top-24 md:top-32 w-full max-w-md px-6 text-center z-20 transition-all duration-300 transform 
+                    ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                    <div className="bg-black/90 border border-cyan-500/30 p-6 rounded-xl backdrop-blur-md shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+                        <h3 className="text-2xl font-bold font-mono text-white mb-2 tracking-wider animate-pulse uppercase">
+                            {activeNode.label}
+                        </h3>
+                        <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent mb-4" />
+                        <p className="text-sm md:text-base text-gray-300 font-mono leading-relaxed">
+                            {activeNode.desc}
+                        </p>
+                        <div className="mt-4 flex justify-center gap-2 items-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping" />
+                            <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
+                                TARGET LOCKED
                             </span>
                         </div>
                     </div>
+                </div>
 
-                    {/* 3D Wheel Container */}
+                {/* 3D Wheel Container */}
+                <div
+                    className="relative w-full max-w-lg h-[500px] flex items-center justify-center mt-20"
+                    style={{ perspective: '1200px' }}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div
-                        className="relative w-full max-w-lg h-[500px] flex items-center justify-center"
-                        style={{ perspective: '1200px' }}
-                        onClick={(e) => e.stopPropagation()}
+                        className={`relative w-full h-full transition-transform duration-500 ease-out`}
+                        style={{
+                            transformStyle: 'preserve-3d',
+                            // Removed rotateX(-5deg) for pure axis stability, added subtle tilt only
+                            transform: `rotateX(0deg) rotateY(${wheelRotation + (isOpen ? 0 : rotation * 0.5)}deg)`
+                        }}
                     >
-                        <div
-                            className="relative w-full h-full transition-transform duration-500 ease-out"
-                            style={{
-                                transformStyle: 'preserve-3d',
-                                transform: `rotateX(-5deg) rotateY(${wheelRotation}deg)`
-                            }}
-                        >
-                            {NODES.map((node, index) => {
-                                const angle = (index * 360) / NODES.length;
-                                const radius = 300; // Larger radius for separation
+                        {NODES.map((node, index) => {
+                            const angle = (index * 360) / NODES.length;
+                            const radius = 300;
 
-                                return (
-                                    <div
-                                        key={node.id}
-                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                                        style={{
-                                            transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
-                                            transformStyle: 'preserve-3d'
-                                        }}
-                                        onClick={() => {
+                            // Calculate if this node is currently "active" / facing front
+                            // This is a rough visual approximation based on rotation
+                            // normalizedRotation (0-360) reversed matches index
+
+                            return (
+                                <div
+                                    key={node.id}
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+                                    style={{
+                                        transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                                        transformStyle: 'preserve-3d'
+                                    }}
+                                    onClick={() => {
+                                        if (isOpen) {
                                             onNavigate(node.screenId);
                                             setIsOpen(false);
+                                        }
+                                    }}
+                                >
+                                    <div
+                                        className={`w-56 h-64 bg-black border-2 flex flex-col items-center justify-center gap-6 transition-all duration-300 shadow-[0_0_50px_rgba(0,0,0,0.8)]
+                                            ${isOpen ? 'hover:scale-105' : 'opacity-80 scale-90'}
+                                            ${activeNode.id === node.id ? 'border-cyan-400 shadow-[0_0_30px_rgba(0,240,255,0.4)] scale-105' : 'border-cyan-900/50 opacity-60'}
+                                        `}
+                                        style={{
+                                            borderColor: activeNode.id === node.id ? NEON_CYAN : `${NEON_CYAN}40`,
                                         }}
                                     >
-                                        <div
-                                            className="w-56 h-64 bg-black border-2 flex flex-col items-center justify-center gap-6 transition-all duration-300 hover:scale-110 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
-                                            style={{
-                                                borderColor: NEON_CYAN,
-                                                boxShadow: `0 0 20px ${NEON_CYAN}40`
-                                            }}
-                                        >
-                                            <div className="p-4 rounded-full border-2 bg-black/50" style={{ borderColor: NEON_MAGENTA }}>
-                                                <node.icon className="w-10 h-10" style={{ color: NEON_CYAN }} />
-                                            </div>
+                                        <div className={`p-4 rounded-full border-2 transition-colors duration-300 ${activeNode.id === node.id ? 'bg-cyan-900/20 border-cyan-400' : 'bg-black/50 border-gray-800'}`}>
+                                            <node.icon className="w-10 h-10 transition-colors" style={{ color: activeNode.id === node.id ? NEON_CYAN : 'gray' }} />
+                                        </div>
 
-                                            <div className="text-center px-4">
-                                                <p className="text-lg font-bold font-mono text-white mb-2 tracking-wider">{node.label}</p>
-                                                <p className="text-xs text-white/80 font-bold uppercase tracking-wide bg-white/10 py-1 px-2 rounded">{node.desc}</p>
-                                            </div>
-
-                                            {/* Corner Accents - HIGH VISIBILITY */}
-                                            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4" style={{ borderColor: NEON_CYAN }} />
-                                            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4" style={{ borderColor: NEON_CYAN }} />
-                                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4" style={{ borderColor: NEON_CYAN }} />
-                                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4" style={{ borderColor: NEON_CYAN }} />
+                                        <div className="text-center px-4">
+                                            <p className={`text-lg font-bold font-mono mb-2 tracking-wider ${activeNode.id === node.id ? 'text-white' : 'text-gray-500'}`}>{node.label}</p>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                </div>
+                            );
+                        })}
                     </div>
-
-                    {/* Close Button - High contrast at bottom */}
-                    <button
-                        onClick={() => setIsOpen(false)}
-                        className="absolute bottom-20 flex items-center gap-2 px-8 py-3 border-2 bg-black hover:bg-white/10 transition-colors z-50 pointer-events-auto shadow-[0_0_20px_rgba(255,0,60,0.3)]"
-                        style={{ borderColor: NEON_MAGENTA }}
-                    >
-                        <X className="w-5 h-5" style={{ color: NEON_MAGENTA }} />
-                        <span className="font-mono text-sm font-bold text-white uppercase tracking-widest">CLOSE MAP</span>
-                    </button>
-
                 </div>
-            )}
+
+                {/* Close Button - Only visible when Open */}
+                {isOpen && (
+                    <ArcadeButton
+                        onClick={() => setIsOpen(false)}
+                        variant="magenta"
+                        size="md"
+                        className="absolute bottom-20 z-50 pointer-events-auto"
+                    >
+                        <X className="w-5 h-5 mr-2" />
+                        CLOSE MAP
+                    </ArcadeButton>
+                )}
+
+            </div>
         </>
     );
 }

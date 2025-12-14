@@ -73,9 +73,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     const NEON_LIME = '#39FF14';
 
     return (
-        <div className="min-h-screen pb-32 relative overflow-hidden" style={{ backgroundColor: '#050505' }}>
-            {/* Header - Arcade Style */}
-            <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
+        <div className="min-h-screen pb-32 relative overflow-hidden" style={{ backgroundColor: 'rgba(5, 5, 5, 0.4)' }}>
+            {/* Header - Arcade Style - FIXED POS DEBUG */}
+            <div className="fixed top-0 left-0 right-0 z-[9999] bg-black/90 backdrop-blur-md" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         {/* Branding */}
@@ -86,13 +86,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             >
                                 <Vote className="w-6 h-6" style={{ color: NEON_CYAN }} />
                             </div>
-                            <h1 className="text-2xl font-bold tracking-tight uppercase glitch-text" data-text="VoteQuest">
+                            <h1 className="text-xl md:text-2xl font-bold tracking-tight uppercase glitch-text" data-text="VoteQuest">
                                 VoteQuest
                             </h1>
                         </div>
 
                         {/* Top Right Actions */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
                             <div
                                 className="hidden md:flex items-center gap-2 px-3 py-1 bg-black/50"
                                 style={{ border: `1px solid ${NEON_CYAN}50` }}
@@ -100,7 +100,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 <Cpu className="w-4 h-4" style={{ color: NEON_CYAN }} />
                                 <span className="text-xs font-mono" style={{ color: NEON_CYAN }}>SYS.ONLINE</span>
                             </div>
-                            <CoinBadge coins={userData.coins || 0} size="md" />
+                            <CoinBadge
+                                coins={userData.coins || 0}
+                                size="md"
+                                showLabel={true}
+                                onClick={() => setShowCoinModal(true)}
+                            />
                             <NotificationBell userId={userData.userId} address={userData.address} />
                         </div>
                     </div>
@@ -108,19 +113,28 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-8 relative z-10">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-8 relative z-[900]">
 
                 {/* HUD / Mission Status */}
                 <div className="mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* User Profile HUD */}
                     <CyberCard className="lg:col-span-2" title="PILOT_DATA">
-                        <div className="flex items-start justify-between">
-                            <div>
+                        <div className="flex flex-col md:flex-row items-start justify-between relative z-20 gap-6 md:gap-0">
+                            <div className="w-full md:w-auto">
                                 <p className="text-xs font-mono mb-1" style={{ color: NEON_CYAN }}>ID: {userData.address?.slice(0, 8)}...</p>
-                                <h2 className="text-3xl font-bold mb-4 text-white">WELCOME, VOTER</h2>
+                                <h2
+                                    className="text-3xl font-bold mb-4 relative z-50 inline-block px-4 py-2 rounded-xl bg-black border-2 border-white/20 shadow-lg"
+                                    style={{
+                                        color: '#FFFFFF',
+                                        WebkitTextFillColor: '#FFFFFF',
+                                        opacity: 1,
+                                    }}
+                                >
+                                    WELCOME, VOTER
+                                </h2>
 
                                 {/* Level Bar */}
-                                <div className="max-w-md">
+                                <div className="max-w-md w-full">
                                     <div className="flex justify-between text-xs font-mono mb-1" style={{ color: NEON_CYAN }}>
                                         <span>LVL {userData.level}</span>
                                         <span>{Math.round(progressPercent)}%</span>
@@ -139,12 +153,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 text-right">
-                                <div>
+                            <div className="grid grid-cols-2 gap-4 text-left md:text-right w-full md:w-auto">
+                                <div className="p-3 rounded bg-white/5 border border-white/10 md:bg-transparent md:border-0 md:p-0">
                                     <p className="text-[10px] text-gray-300 font-mono">GLOBAL RANK</p>
                                     <p className="text-2xl font-bold" style={{ color: NEON_MAGENTA }}>#{userData.globalRank}</p>
                                 </div>
-                                <div>
+                                <div className="p-3 rounded bg-white/5 border border-white/10 md:bg-transparent md:border-0 md:p-0">
                                     <p className="text-[10px] text-gray-300 font-mono">VOTING POWER</p>
                                     <p className="text-2xl font-bold" style={{ color: NEON_LIME }}>{userData.votingPower.toLocaleString()}</p>
                                 </div>

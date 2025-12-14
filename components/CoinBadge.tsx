@@ -4,19 +4,21 @@ interface CoinBadgeProps {
     coins: number;
     size?: 'sm' | 'md' | 'lg';
     showLabel?: boolean;
+    onClick?: () => void;
 }
 
-const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = false }) => {
-    const [prevCoins, setPrevCoins] = useState(coins);
+const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = false, onClick }) => {
+    const safeCoins = coins ?? 0;
+    const [prevCoins, setPrevCoins] = useState(safeCoins);
     const [celebrating, setCelebrating] = useState(false);
 
     useEffect(() => {
-        if (coins > prevCoins) {
+        if (safeCoins > prevCoins) {
             setCelebrating(true);
             setTimeout(() => setCelebrating(false), 1000);
         }
-        setPrevCoins(coins);
-    }, [coins]);
+        setPrevCoins(safeCoins);
+    }, [safeCoins]);
 
     const NEON_CYAN = '#00F0FF';
 
@@ -33,6 +35,7 @@ const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = f
                 transition-all duration-300 border bg-black/50 backdrop-blur-md
                 ${sizeClasses[size]}
                 ${celebrating ? 'scale-110' : ''}
+                ${onClick ? 'cursor-pointer hover:bg-white/5 active:scale-95' : ''}
             `}
             style={{
                 borderColor: celebrating ? '#39FF14' : NEON_CYAN,
@@ -40,6 +43,7 @@ const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = f
                 boxShadow: celebrating ? `0 0 15px #39FF14` : `0 0 5px ${NEON_CYAN}40`
             }}
             title={`${coins} VoteQuest Coins`}
+            onClick={onClick}
         >
             <div className={`
                 w-2 h-2 rounded-full
@@ -47,7 +51,7 @@ const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = f
             `}
                 style={{ backgroundColor: celebrating ? '#39FF14' : NEON_CYAN }}
             ></div>
-            <span>{coins.toLocaleString()}</span>
+            <span>{safeCoins.toLocaleString()}</span>
             {showLabel && <span className="opacity-70 text-[10px]">VQC</span>}
         </div>
     );

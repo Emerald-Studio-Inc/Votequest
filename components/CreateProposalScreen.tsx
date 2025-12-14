@@ -352,13 +352,14 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                             </div>
                             {options.length < 10 && (
                                 <Tooltip content="Add Vector" position="left">
-                                    <button
+                                    <ArcadeButton
                                         onClick={addOption}
-                                        className="w-8 h-8 flex items-center justify-center border hover:bg-white/10 transition-colors"
-                                        style={{ borderColor: NEON_CYAN, color: NEON_CYAN }}
+                                        variant="cyan"
+                                        size="sm"
+                                        className="w-8 h-8 !p-0 flex items-center justify-center"
                                     >
                                         <Plus className="w-4 h-4" strokeWidth={2.5} />
-                                    </button>
+                                    </ArcadeButton>
                                 </Tooltip>
                             )}
                         </div>
@@ -409,13 +410,14 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
 
                                         {options.length > 2 && (
                                             <Tooltip content="Remove Vector" position="left">
-                                                <button
+                                                <ArcadeButton
                                                     onClick={() => removeOption(option.id)}
-                                                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-fast hover:bg-red-900/20"
-                                                    style={{ color: NEON_MAGENTA }}
+                                                    variant="magenta"
+                                                    size="sm"
+                                                    className="w-8 h-8 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
                                                 >
                                                     <X className="w-4 h-4" strokeWidth={2} />
-                                                </button>
+                                                </ArcadeButton>
                                             </Tooltip>
                                         )}
                                     </div>
@@ -459,6 +461,39 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                             </div>
                         </div>
                     )}
+                </div>
+                {/* Action Footer */}
+                <div className="sticky bottom-0 left-0 right-0 p-6 bg-black/90 backdrop-blur-xl border-t border-white/10 mt-12">
+                    <div className="max-w-[900px] mx-auto flex gap-4">
+                        <ArcadeButton
+                            onClick={onBack}
+                            variant="secondary"
+                            size="lg"
+                            className="flex-1"
+                            disabled={loading}
+                        >
+                            CANCEL_MISSION
+                        </ArcadeButton>
+                        <ArcadeButton
+                            onClick={() => onSubmit({ title, description, endDate, options })}
+                            variant="lime"
+                            size="lg"
+                            className="flex-[2]"
+                            disabled={!validateForm() || loading}
+                            glow={validateForm()}
+                        >
+                            {loading ? (
+                                <span className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" />
+                                    TRANSMITTING...
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-2">
+                                    DEPLOY_PROPOSAL <ChevronRight className="w-5 h-5" />
+                                </span>
+                            )}
+                        </ArcadeButton>
+                    </div>
                 </div>
             </div>
         </div>

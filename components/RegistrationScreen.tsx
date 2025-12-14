@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Mail, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { createUserProfile, checkUsernameAvailable } from '@/lib/supabase-auth';
+import ArcadeButton from './ArcadeButton';
 
 interface RegistrationScreenProps {
     authUser: any; // Supabase auth user
@@ -109,13 +110,14 @@ export default function RegistrationScreen({ authUser, onComplete }: Registratio
                             </div>
                         )}
 
-                        <button
+                        <ArcadeButton
                             onClick={handleUsernameCheck}
                             disabled={!username || !ageVerified || loading}
-                            className="w-full btn btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                            variant="cyan"
+                            className="w-full justify-center"
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Continue <ArrowRight className="w-5 h-5" /></>}
-                        </button>
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <>CONTINUE</>}
+                        </ArcadeButton>
                     </div>
                 </div>
             </div>
@@ -165,20 +167,22 @@ export default function RegistrationScreen({ authUser, onComplete }: Registratio
                     )}
 
                     <div className="flex gap-3">
-                        <button
+                        <ArcadeButton
                             onClick={() => handleComplete()}
-                            className="flex-1 btn btn-secondary"
+                            variant="secondary"
+                            className="flex-1 justify-center"
                             disabled={loading}
                         >
-                            Skip
-                        </button>
-                        <button
+                            SKIP
+                        </ArcadeButton>
+                        <ArcadeButton
                             onClick={handleComplete}
                             disabled={loading}
-                            className="flex-1 btn btn-primary flex items-center justify-center gap-2"
+                            variant="cyan"
+                            className="flex-1 justify-center"
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Complete <CheckCircle className="w-5 h-5" /></>}
-                        </button>
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <>COMPLETE</>}
+                        </ArcadeButton>
                     </div>
                 </div>
             </div>

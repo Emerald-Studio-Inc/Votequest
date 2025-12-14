@@ -7,11 +7,14 @@ import TurnoutHeatmap from './analytics/TurnoutHeatmap';
 import VoterDemographics from './analytics/VoterDemographics';
 import CyberCard from './CyberCard';
 import ArcadeButton from './ArcadeButton';
+import CoinBadge from './CoinBadge';
+import CoinsPurchaseModal from './CoinsPurchaseModal';
 
 interface OrganizationDashboardProps {
     organizationId: string;
     userId: string;
     email: string;
+    currentCoins?: number;
     onNavigate?: (screen: string, data?: any) => void;
 }
 
@@ -23,12 +26,14 @@ export default function OrganizationDashboard({
     organizationId,
     userId,
     email,
+    currentCoins = 0,
     onNavigate
 }: OrganizationDashboardProps) {
     const [organization, setOrganization] = useState<any>(null);
     const [rooms, setRooms] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showSubscriptionPicker, setShowSubscriptionPicker] = useState(false);
+    const [showCoinsModal, setShowCoinsModal] = useState(false);
 
     useEffect(() => {
         loadOrganization();
@@ -69,7 +74,7 @@ export default function OrganizationDashboard({
             if (response.ok) {
                 const data = await response.json();
                 setRooms(data.rooms || []);
-                console.log('Loaded rooms:', data.rooms);
+                // Log removed('Loaded rooms:', data.rooms);
             }
         } catch (error) {
             console.error('Error loading rooms:', error);
@@ -90,13 +95,13 @@ export default function OrganizationDashboard({
     }
 
     return (
-        <div className="min-h-screen pb-32 relative bg-black font-mono">
+        <div className="min-h-screen pb-32 relative font-mono relative z-10" style={{ backgroundColor: 'rgba(5, 5, 5, 0.4)' }}>
             {/* Cyber Grid Background */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             {/* Header */}
-            <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
-                <div className="max-w-[1200px] mx-auto px-8 py-6">
+            <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
+                <div className="max-w-7xl mx-auto px-4 py-4 md:px-8 md:py-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
@@ -107,12 +112,12 @@ export default function OrganizationDashboard({
                                 <div className="w-8 h-8 flex items-center justify-center border group-hover:bg-white/10 transition-colors" style={{ borderColor: NEON_CYAN }}>
                                     <Vote className="w-4 h-4" style={{ color: NEON_CYAN }} strokeWidth={2.5} />
                                 </div>
-                                <div className="flex flex-col items-start">
+                                <div className="hidden md:flex flex-col items-start">
                                     <span className="font-bold text-sm uppercase text-white tracking-wider">VOTEQUEST</span>
                                     <span className="text-[10px] text-gray-500 uppercase group-hover:text-gray-300"><ChevronRight className="w-3 h-3 inline" /> RETURN</span>
                                 </div>
                             </button>
-                            <div className="h-8 w-px bg-gray-800"></div>
+                            <div className="h-8 w-px bg-gray-800 hidden md:block"></div>
                             <div>
                                 <h1 className="text-xl font-bold uppercase tracking-wider text-white glitch-text" data-text={organization.name}>{organization.name}</h1>
                                 <p className="text-[10px] font-mono uppercase flex items-center gap-2">
@@ -124,22 +129,39 @@ export default function OrganizationDashboard({
                                 </p>
                             </div>
                         </div>
-                        <ArcadeButton
-                            onClick={() => onNavigate?.('create-room')}
-                            variant="cyan"
-                            className="flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            CREATE_ROOM
-                        </ArcadeButton>
+
+                        <div className="flex items-center gap-4">
+                            <CoinBadge
+                                coins={currentCoins}
+                                onClick={() => setShowCoinsModal(true)}
+                                showLabel={true}
+                            />
+                            <ArcadeButton
+                                onClick={() => onNavigate?.('create-room')}
+                                variant="cyan"
+                                className="hidden md:flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                CREATE_ROOM
+                            </ArcadeButton>
+                            {/* Mobile Create Button */}
+                            <ArcadeButton
+                                onClick={() => onNavigate?.('create-room')}
+                                variant="cyan"
+                                size="sm"
+                                className="flex md:hidden items-center justify-center w-10 h-10 p-0"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </ArcadeButton>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1200px] mx-auto px-8 pt-12 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 pt-6 md:pt-12 relative z-10">
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-6 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
                     <CyberCard className="p-6">
                         <div className="flex items-center gap-3 mb-2">
                             <Vote className="w-5 h-5 text-gray-400" />
@@ -247,6 +269,17 @@ export default function OrganizationDashboard({
                 onSuccess={() => {
                     setShowSubscriptionPicker(false);
                     loadOrganization(); // Refresh org data
+                }}
+            />
+
+            {/* Coin Purchase Modal */}
+            <CoinsPurchaseModal
+                userId={userId}
+                email={email}
+                isOpen={showCoinsModal}
+                onClose={() => setShowCoinsModal(false)}
+                onSuccess={() => {
+                    setShowCoinsModal(false);
                 }}
             />
         </div>

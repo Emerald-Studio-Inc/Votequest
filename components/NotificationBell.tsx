@@ -86,7 +86,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address, userId }) 
                 className="relative p-2 transition-all hover:scale-110 group"
             >
                 <div className="absolute inset-0 border border-transparent group-hover:border-cyan-500/50 rounded-sm transition-colors" />
-                <Bell className="w-5 h-5 text-gray-400 group-hover:text-cyan-400 transition-colors" strokeWidth={2} />
+                <Bell className="w-5 h-5 text-gray-200 group-hover:text-cyan-400 transition-colors" strokeWidth={2} />
                 {unreadCount > 0 && (
                     <div className="absolute -top-1 -right-1 w-5 h-5 bg-black border border-red-500 rounded-none flex items-center justify-center shadow-[0_0_5px_#FF003C]">
                         <span className="text-[#FF003C] text-[10px] font-bold animate-pulse">{unreadCount}</span>
@@ -102,7 +102,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ address, userId }) 
                     ></div>
 
                     {/* Fixed positioning to escape overflow-hidden/scroll containers in header */}
-                    <div className="fixed top-20 right-4 w-80 max-w-[calc(100vw-2rem)] bg-black/90 border border-cyan-500/30 backdrop-blur-md shadow-[0_0_20px_rgba(0,240,255,0.1)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="fixed top-20 right-4 w-80 max-w-[calc(100vw-2rem)] bg-black/90 border border-cyan-500/30 backdrop-blur-md shadow-[0_0_20px_rgba(0,240,255,0.1)] z-[2000] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         {/* Scanline overlay */}
                         <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[size:100%_4px] pointer-events-none opacity-20" />
 

@@ -175,7 +175,7 @@ const VoteQuestApp = () => {
         if (currentScreen === 'dashboard' && proposals.length > 0) {
             const targetProposalId = localStorage.getItem('targetProposalId');
             if (targetProposalId) {
-                console.log('[SHARE LINK] Auto-opening proposal:', targetProposalId);
+                // Log removed('[SHARE LINK] Auto-opening proposal:', targetProposalId);
 
                 // Find proposal by blockchain_id
                 const proposal = proposals.find(p => p.blockchain_id?.toString() === targetProposalId);
@@ -263,7 +263,7 @@ const VoteQuestApp = () => {
             const checkTimeout = setInterval(() => {
                 const elapsed = Date.now() - adminSessionStart;
                 if (elapsed >= ADMIN_SESSION_TIMEOUT) {
-                    console.log('[ADMIN] Session timeout - logging out');
+                    // Log removed('[ADMIN] Session timeout - logging out');
                     setCurrentScreen('dashboard');
                     setAdminSessionStart(null);
                     alert('Admin session expired after 5 minutes. Please re-authenticate.');
@@ -290,7 +290,7 @@ const VoteQuestApp = () => {
             setCurrentScreen('admin');
             setShowAdminModal(false);
 
-            console.log('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes');
+            // Log removed('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes');
         } catch (error) {
             console.error('[ADMIN] Error during access check:', error);
             alert('Error granting admin access. Please try again.');
@@ -317,17 +317,17 @@ const VoteQuestApp = () => {
     }, []);
 
     const loadUserProfile = async (authId: string) => {
-        console.log('[AUTH] Loading user profile for authId:', authId);
+        // Log removed('[AUTH] Loading user profile for authId:', authId);
         try {
             const profile = await getUserProfile(authId);
-            console.log('[AUTH] Profile loaded:', profile);
+            // Log removed('[AUTH] Profile loaded:', profile);
 
             if (profile) {
                 const nextLevelXP = profile.level * 1000;
 
                 // Load user's voted proposals from database
                 const votedProposalIds = await getUserVotedProposals(profile.id);
-                console.log('[AUTH] Loaded voted proposals:', votedProposalIds.length);
+                // Log removed('[AUTH] Loaded voted proposals:', votedProposalIds.length);
 
                 setUserData({
                     address: profile.email,
@@ -344,10 +344,10 @@ const VoteQuestApp = () => {
                     votedProposals: votedProposalIds, // Now loaded from database!
                     coins: profile.coins
                 });
-                console.log('[AUTH] User data set successfully. userId:', profile.id);
+                // Log removed('[AUTH] User data set successfully. userId:', profile.id);
             } else {
                 console.warn('[AUTH] No profile found for authId:', authId);
-                console.log('[AUTH] Attempting to create profile...');
+                // Log removed('[AUTH] Attempting to create profile...');
 
                 // Create profile
                 const user = await getCurrentUser();
@@ -387,11 +387,11 @@ const VoteQuestApp = () => {
                             votedProposals: [], // New profile, no votes yet
                             coins: newProfile.coins
                         });
-                        console.log('[AUTH] Profile created! userId:', newProfile.id);
+                        // Log removed('[AUTH] Profile created! userId:', newProfile.id);
                     } else {
                         // Check if error is due to unique constraint violation (duplicate profile)
                         if (error?.code === '23505') {
-                            console.log('[AUTH] Profile already exists (unique constraint), fetching existing profile...');
+                            // Log removed('[AUTH] Profile already exists (unique constraint), fetching existing profile...');
                             // Try to fetch the existing profile by email or auth_id
                             const existingProfile = await getUserProfile(authId);
                             if (existingProfile) {
@@ -415,7 +415,7 @@ const VoteQuestApp = () => {
                                     votedProposals: votedProposalIds, // Load from database
                                     coins: existingProfile.coins
                                 });
-                                console.log('[AUTH] Using existing profile! userId:', existingProfile.id);
+                                // Log removed('[AUTH] Using existing profile! userId:', existingProfile.id);
                             } else {
                                 console.error('[AUTH] Unique constraint error but could not fetch existing profile');
                             }
@@ -512,7 +512,7 @@ const VoteQuestApp = () => {
                 ...proposalData,
                 userId: userData.userId
             };
-            console.log('[DEBUG] Creating proposal payload:', payload);
+            // Log removed('[DEBUG] Creating proposal payload:', payload);
 
             const response = await fetch('/api/proposal/create-simple', {
                 method: 'POST',
@@ -566,17 +566,23 @@ const VoteQuestApp = () => {
     const NEON_CYAN = '#00F0FF';
 
     const BottomNavigation = () => (
-        <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
+        <div className="fixed bottom-0 sm:bottom-6 left-0 right-0 z-[2000] flex justify-center px-0 sm:px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
             <div
-                className="relative bg-black/80 backdrop-blur-xl w-full max-w-sm"
-                style={{ border: `1px solid ${NEON_CYAN}`, boxShadow: `0 0 20px rgba(0,240,255,0.2)` }}
+                className="relative bg-black/90 sm:bg-black/80 backdrop-blur-xl w-full sm:max-w-sm pb-safe pt-2 sm:pb-0 sm:pt-0"
+                style={{
+                    borderTop: `1px solid ${NEON_CYAN}`,
+                    borderLeft: '1px solid transparent',
+                    borderRight: '1px solid transparent',
+                    borderBottom: '1px solid transparent',
+                    // Only show box shadow on desktop/sm+
+                    boxShadow: typeof window !== 'undefined' && window.innerWidth >= 640 ? `0 0 20px rgba(0,240,255,0.2)` : 'none'
+                }}
             >
-
-                {/* Decorative Tech Lines */}
-                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: NEON_CYAN }}></div>
-                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r" style={{ borderColor: NEON_CYAN }}></div>
-                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l" style={{ borderColor: NEON_CYAN }}></div>
-                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r" style={{ borderColor: NEON_CYAN }}></div>
+                {/* Decorative Tech Lines - Desktop Only */}
+                <div className="hidden sm:block absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: NEON_CYAN }}></div>
+                <div className="hidden sm:block absolute top-0 right-0 w-2 h-2 border-t border-r" style={{ borderColor: NEON_CYAN }}></div>
+                <div className="hidden sm:block absolute bottom-0 left-0 w-2 h-2 border-b border-l" style={{ borderColor: NEON_CYAN }}></div>
+                <div className="hidden sm:block absolute bottom-0 right-0 w-2 h-2 border-b border-r" style={{ borderColor: NEON_CYAN }}></div>
 
                 <div className="flex items-center justify-between p-2">
                     {[
@@ -679,9 +685,19 @@ const VoteQuestApp = () => {
                     <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                 )}
                 <BottomNavigation />
+                <BottomNavigation />
                 <QuestGuide
                     currentScreen={currentScreen}
-                    onNavigate={setCurrentScreen}
+                    onNavigate={(screen) => {
+                        if (screen === 'proposals') {
+                            setCurrentScreen('dashboard');
+                            setActiveDashboardTab('proposals');
+                        } else {
+                            setCurrentScreen(screen);
+                            // If navigating to dashboard via map, reset to overview
+                            if (screen === 'dashboard') setActiveDashboardTab('overview');
+                        }
+                    }}
                 />
                 <AdminPassphraseModal
                     open={showAdminModal}
@@ -774,6 +790,7 @@ const VoteQuestApp = () => {
                 organizationId={selectedOrganizationId}
                 userId={userData.userId || ''}
                 email={userData.email || ''}
+                currentCoins={userData.coins}
                 onNavigate={(screen, data) => {
                     if (screen === 'organization-list') {
                         setCurrentScreen('organization');

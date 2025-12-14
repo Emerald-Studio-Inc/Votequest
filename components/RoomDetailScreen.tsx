@@ -135,13 +135,14 @@ export default function RoomDetailScreen({
                 <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-5">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                         <div className="flex items-center gap-3">
-                            <button
+                            <ArcadeButton
                                 onClick={onBack}
-                                className="group flex items-center justify-center w-10 h-10 border hover:bg-white/10 transition-colors"
-                                style={{ borderColor: NEON_CYAN }}
+                                variant="cyan"
+                                size="sm"
+                                className="w-10 h-10 !p-0 flex items-center justify-center"
                             >
-                                <ArrowLeft className="w-5 h-5" style={{ color: NEON_CYAN }} />
-                            </button>
+                                <ArrowLeft className="w-5 h-5" />
+                            </ArcadeButton>
 
                             {/* Status Badge */}
                             <div className="flex items-center gap-2 px-3 py-1.5 border"
@@ -196,23 +197,25 @@ export default function RoomDetailScreen({
                                 </ArcadeButton>
                             )}
 
-                            <button
+                            <ArcadeButton
                                 onClick={() => setShowEditModal(true)}
-                                className="px-4 py-2 border flex items-center gap-2 hover:bg-white/5 transition-colors uppercase text-xs font-bold"
-                                style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                                variant="secondary"
+                                size="sm"
+                                className="flex items-center gap-2"
                             >
                                 <Edit className="w-4 h-4" />
                                 <span>CONFIG</span>
-                            </button>
+                            </ArcadeButton>
 
-                            <button
+                            <ArcadeButton
                                 onClick={() => setShowCoinFeatures(true)}
-                                className="px-4 py-2 border flex items-center gap-2 hover:bg-yellow-500/10 transition-colors uppercase text-xs font-bold"
-                                style={{ borderColor: '#EAB308', color: '#EAB308' }}
+                                variant="lime"
+                                size="sm"
+                                className="flex items-center gap-2"
                             >
                                 <Zap className="w-4 h-4" />
                                 <span>BOOST_CHAMBER</span>
-                            </button>
+                            </ArcadeButton>
                         </div>
                     </div>
 
@@ -252,7 +255,7 @@ export default function RoomDetailScreen({
 
             {/* Tabs */}
             <div className="max-w-[1200px] mx-auto px-4 md:px-8 mt-8 relative z-10">
-                <div className="flex gap-1 border-b mb-8" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                <div className="flex gap-1 border-b mb-8 overflow-x-auto pb-2 scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                     {[
                         { id: 'overview', label: 'SYSTEM_OVERVIEW', icon: BarChart3 },
                         { id: 'voters', label: 'PARTICIPANTS', icon: Users },

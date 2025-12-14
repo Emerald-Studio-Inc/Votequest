@@ -177,7 +177,7 @@ export default function CreateRoomWizard({
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="ENTER_TITLE_HERE..."
-                                    className="w-full bg-black border p-3 text-white font-mono focus:outline-none transition-all placeholder-gray-700"
+                                    className="w-full bg-black border p-3 text-base sm:text-sm text-white font-mono focus:outline-none transition-all placeholder-gray-700"
                                     style={{ borderColor: 'rgba(255,255,255,0.2)' }}
                                     onFocus={(e) => e.target.style.borderColor = NEON_CYAN}
                                     onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
@@ -193,7 +193,7 @@ export default function CreateRoomWizard({
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="ENTER_MISSION_BRIEF..."
-                                    className="w-full bg-black border p-3 text-white font-mono focus:outline-none transition-all h-32 resize-none placeholder-gray-700"
+                                    className="w-full bg-black border p-3 text-base sm:text-sm text-white font-mono focus:outline-none transition-all h-32 resize-none placeholder-gray-700"
                                     style={{ borderColor: 'rgba(255,255,255,0.2)' }}
                                     onFocus={(e) => e.target.style.borderColor = NEON_CYAN}
                                     onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
@@ -289,14 +289,15 @@ export default function CreateRoomWizard({
                                 <label className="text-xs font-bold font-mono text-gray-400 uppercase" style={{ color: NEON_CYAN }}>
                                     {'>'} CANDIDATE_ENTITIES
                                 </label>
-                                <button
+                                <ArcadeButton
                                     onClick={addOption}
                                     disabled={options.length >= 10}
-                                    className="flex items-center gap-2 px-3 py-1 border hover:bg-white/5 transition-colors text-xs font-mono uppercase"
-                                    style={{ borderColor: NEON_LIME, color: NEON_LIME }}
+                                    variant="lime"
+                                    size="sm"
+                                    className="flex items-center gap-2"
                                 >
                                     <Plus className="w-3 h-3" /> ADD_ENTITY
-                                </button>
+                                </ArcadeButton>
                             </div>
 
                             <div className="space-y-4">

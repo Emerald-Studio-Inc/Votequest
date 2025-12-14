@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Building2, Plus, Users, ChevronRight, Vote } from 'lucide-react';
+import ArcadeButton from './ArcadeButton';
+import CyberCard from './CyberCard';
 
 interface OrganizationListScreenProps {
     userId: string;
@@ -43,16 +45,16 @@ export default function OrganizationListScreen({
             <div className="sticky top-0 z-40 border-b border-white/5 bg-black/80 backdrop-blur-xl">
                 <div className="max-w-[1200px] mx-auto px-8 py-6">
                     <div className="flex items-center justify-between">
-                        <button onClick={onBack} className="btn btn-ghost flex items-center gap-2">
+                        <button onClick={onBack} className="flex items-center gap-2 text-white hover:text-cyan-400 transition-colors">
                             <div className="w-6 h-6 rounded bg-white flex items-center justify-center">
                                 <Vote className="w-4 h-4 text-black" strokeWidth={2.5} />
                             </div>
-                            <span className="font-bold">VoteQuest</span>
+                            <span className="font-bold tracking-wider">VOTEQUEST</span>
                         </button>
-                        <button onClick={onCreateNew} className="btn btn-primary flex items-center gap-2">
-                            <Plus className="w-4 h-4" />
-                            Create Organization
-                        </button>
+                        <ArcadeButton onClick={onCreateNew} variant="cyan" size="sm">
+                            <Plus className="w-4 h-4 mr-2" />
+                            CREATE_ORG
+                        </ArcadeButton>
                     </div>
                 </div>
             </div>
@@ -77,10 +79,10 @@ export default function OrganizationListScreen({
                         <p className="text-mono-60 mb-6">
                             Create your first organization to start managing voting rooms
                         </p>
-                        <button onClick={onCreateNew} className="btn btn-primary">
-                            <Plus className="w-4 h-4" />
-                            Create Organization
-                        </button>
+                        <ArcadeButton onClick={onCreateNew} variant="cyan" className="mx-auto">
+                            <Plus className="w-4 h-4 mr-2" />
+                            CREATE_FIRST_ORG
+                        </ArcadeButton>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

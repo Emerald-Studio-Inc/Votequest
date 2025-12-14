@@ -77,12 +77,14 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                                 OPEN EMAIL CLIENT
                             </a>
 
-                            <button
+                            <ArcadeButton
                                 onClick={() => { setSent(false); setEmail(''); }}
-                                className="text-gray-500 hover:text-white text-xs font-mono transition-colors uppercase tracking-wider"
+                                variant="magenta"
+                                size="sm"
+                                className="w-full mt-4"
                             >
                                 [ USE_DIFFERENT_EMAIL ]
-                            </button>
+                            </ArcadeButton>
                         </div>
                     </div>
                 </div>

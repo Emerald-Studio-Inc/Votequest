@@ -72,7 +72,7 @@ export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onS
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono overflow-y-auto custom-scrollbar">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono overflow-y-auto custom-scrollbar">
       {/* Cyber Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
@@ -93,12 +93,14 @@ export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onS
                 <p className="text-[10px] text-gray-500 uppercase">SECURE_PAYMENT_GATEWAY</p>
               </div>
             </div>
-            <button
+            <ArcadeButton
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center hover:bg-white/10 transition-colors border border-transparent hover:border-red-500/50"
+              variant="magenta"
+              size="sm"
+              className="w-8 h-8 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
             >
-              <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
-            </button>
+              <X className="w-5 h-5" strokeWidth={2.5} />
+            </ArcadeButton>
           </div>
 
           {/* Content */}
