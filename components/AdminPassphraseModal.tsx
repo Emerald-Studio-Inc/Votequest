@@ -66,7 +66,7 @@ export default function AdminPassphraseModal({ open, onClose, onSuccess }: Props
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-xl animate-fade-in">
       {/* Scanline overlay */}
       <div className="absolute inset-0 pointer-events-none bg-[url('/scanlines.png')] opacity-10"></div>
 

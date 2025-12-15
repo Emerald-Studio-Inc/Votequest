@@ -91,10 +91,10 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                         <CyberCard className="h-full" hoverEffect={true} title="PARTICIPATION">
                             <div className="flex items-center gap-2 mb-3">
                                 <TrendingUp className="w-4 h-4" style={{ color: NEON_CYAN }} />
-                                <div className="text-gray-500 text-[9px] uppercase tracking-widest">COVERAGE</div>
+                                <div className="text-gray-400 text-[9px] uppercase tracking-widest">COVERAGE</div>
                             </div>
                             <div className="text-3xl font-bold tracking-tight mb-1" style={{ textShadow: `0 0 10px ${NEON_CYAN}` }}>{participationRate}%</div>
-                            <div className="text-gray-600 text-[9px] uppercase">{votedProposals}/{totalProposals} PROPOSALS</div>
+                            <div className="text-gray-400 text-[9px] uppercase">{votedProposals || 0}/{totalProposals || 0} PROPOSALS</div>
                         </CyberCard>
                     </Tooltip>
 
@@ -145,7 +145,7 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                                             className="w-full transition-all duration-300 group-hover:opacity-80 relative"
                                             style={{
                                                 height: `${barHeightPx}px`,
-                                                backgroundColor: day.votes > 0 ? NEON_CYAN : 'rgba(255,255,255,0.1)',
+                                                backgroundColor: day.votes > 0 ? NEON_CYAN : 'rgba(255,255,255,0.15)', // Visible inactive bars
                                                 boxShadow: day.votes > 0 ? `0 0 10px ${NEON_CYAN}` : 'none'
                                             }}
                                             title={`${day.votes} votes`}
@@ -239,8 +239,8 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                         {'>'} {userData.nextLevelXP - userData.xp} XP_REQUIRED_FOR_UPGRADE
                     </div>
                 </CyberCard>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
