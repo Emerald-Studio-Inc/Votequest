@@ -251,7 +251,7 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                         </div>
 
                         <div className="flex gap-2">
-                            <ArcadeButton onClick={exportCSV} variant="secondary" size="sm" className="flex items-center gap-2">
+                            <ArcadeButton onClick={exportCSV} variant="magenta" size="sm" className="flex items-center gap-2">
                                 <Download className="w-4 h-4" />
                                 <span className="hidden md:inline">EXPORT_CSV</span>
                             </ArcadeButton>
@@ -407,8 +407,8 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                                             <td className="py-3 px-4 text-gray-400 capitalize">{org.type}</td>
                                             <td className="py-3 px-4">
                                                 <span className={`px-2 py-0.5 text-[9px] uppercase font-bold border ${org.verified
-                                                        ? 'border-green-500/30 text-green-400 bg-green-500/10'
-                                                        : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
+                                                    ? 'border-green-500/30 text-green-400 bg-green-500/10'
+                                                    : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
                                                     }`}>
                                                     {org.verified ? 'VERIFIED' : 'PENDING'}
                                                 </span>
