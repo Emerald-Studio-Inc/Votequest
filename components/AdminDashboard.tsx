@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Download, Users, Coins, FileText, TrendingUp, Calendar, Upload, Building2 } from 'lucide-react';
+import { Download, Users, Coins, FileText, TrendingUp, Calendar, Upload, Building2, ArrowLeft } from 'lucide-react';
+import CyberCard from './CyberCard';
+import ArcadeButton from './ArcadeButton';
+import LoadingSpinner from './LoadingSpinner';
+
+const NEON_CYAN = '#00F0FF';
+const NEON_MAGENTA = '#FF003C';
+const NEON_YELLOW = '#F0FF00';
 
 interface AdminDashboardProps {
     onBack: () => void;
@@ -210,137 +217,150 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
     if (loading) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="loading-spinner w-12 h-12" />
+                <LoadingSpinner size="large" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-black">
+        <div className="min-h-screen bg-black font-mono relative overflow-hidden">
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
             {/* Header */}
-            <div className="sticky top-0 z-10 glass border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
+                <div className="max-w-7xl mx-auto px-4 py-4 md:px-8 md:py-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <button
+                            <ArcadeButton
                                 onClick={onBack}
-                                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center"
+                                variant="cyan"
+                                size="sm"
+                                className="w-10 h-10 !p-0 flex items-center justify-center"
                             >
-                                ←
-                            </button>
+                                <ArrowLeft className="w-5 h-5" />
+                            </ArcadeButton>
                             <div>
-                                <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-                                <p className="text-sm text-mono-60">Platform Analytics & Receipts</p>
+                                <h1 className="text-xl md:text-2xl font-bold uppercase tracking-widest glitch-text" data-text="ADMIN_CONSOLE" style={{ color: 'white' }}>
+                                    ADMIN_CONSOLE
+                                </h1>
+                                <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">
+                                    {'>'} SYSTEM_OVERRIDE_ACTIVE
+                                </p>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <button onClick={exportCSV} className="btn btn-secondary flex items-center gap-2">
+                            <ArcadeButton onClick={exportCSV} variant="secondary" size="sm" className="flex items-center gap-2">
                                 <Download className="w-4 h-4" />
-                                Export CSV
-                            </button>
-                            <button onClick={exportJSON} className="btn btn-primary flex items-center gap-2">
+                                <span className="hidden md:inline">EXPORT_CSV</span>
+                            </ArcadeButton>
+                            <ArcadeButton onClick={exportJSON} variant="cyan" size="sm" className="flex items-center gap-2">
                                 <Download className="w-4 h-4" />
-                                Export JSON
-                            </button>
+                                <span className="hidden md:inline">EXPORT_JSON</span>
+                            </ArcadeButton>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="max-w-7xl mx-auto px-6 mt-8 mb-4">
-                <div className="flex gap-4 border-b border-white/10">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 mt-8 mb-6 relative z-10">
+                <div className="flex gap-1 border-b overflow-x-auto pb-0 scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                     {['overview', 'organizations', 'coins', 'users'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
-                            className={`pb-4 px-2 text-sm font-medium transition-colors relative ${activeTab === tab ? 'text-white' : 'text-mono-60 hover:text-white'}`}
+                            className={`
+                                py-3 px-6 text-xs font-mono font-bold uppercase tracking-widest transition-all relative
+                                ${activeTab === tab ? 'text-white bg-white/5' : 'text-gray-600 hover:text-gray-300 hover:bg-white/5'}
+                            `}
+                            style={{
+                                borderBottom: activeTab === tab ? `2px solid ${NEON_CYAN}` : '2px solid transparent',
+                                color: activeTab === tab ? NEON_CYAN : undefined
+                            }}
                         >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            {activeTab === tab && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
-                            )}
+                            {tab}
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Content Area */}
-            <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 pb-32 relative z-10">
                 {activeTab === 'overview' && (
                     <>
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-5 gap-4 mb-8">
-                            {/* ... existing stats ... */}
-                            <div className="card p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Users className="w-5 h-5 text-blue-400" />
-                                    <p className="text-sm text-mono-60">Users</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                            <CyberCard className="p-4" cornerStyle="tech">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Users className="w-4 h-4" style={{ color: NEON_CYAN }} />
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">USERS</p>
                                 </div>
-                                <p className="text-3xl font-bold text-white">{stats.totalUsers}</p>
-                            </div>
-                            <div className="card p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <FileText className="w-5 h-5 text-green-400" />
-                                    <p className="text-sm text-mono-60">Receipts</p>
+                                <p className="text-2xl font-bold text-white font-mono">{stats.totalUsers}</p>
+                            </CyberCard>
+                            <CyberCard className="p-4" cornerStyle="tech">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FileText className="w-4 h-4" style={{ color: NEON_MAGENTA }} />
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">RECEIPTS</p>
                                 </div>
-                                <p className="text-3xl font-bold text-white">{stats.totalReceipts}</p>
-                            </div>
-                            <div className="card p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Coins className="w-5 h-5 text-yellow-400" />
-                                    <p className="text-sm text-mono-60">Total Coins</p>
+                                <p className="text-2xl font-bold text-white font-mono">{stats.totalReceipts}</p>
+                            </CyberCard>
+                            <CyberCard className="p-4" cornerStyle="tech">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Coins className="w-4 h-4" style={{ color: NEON_YELLOW }} />
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">VQC_SUPPLY</p>
                                 </div>
-                                <p className="text-3xl font-bold text-white">{stats.totalCoins.toLocaleString()}</p>
-                            </div>
-                            <div className="card p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <TrendingUp className="w-5 h-5 text-purple-400" />
-                                    <p className="text-sm text-mono-60">Proposals</p>
+                                <p className="text-2xl font-bold text-white font-mono">{stats.totalCoins.toLocaleString()}</p>
+                            </CyberCard>
+                            <CyberCard className="p-4" cornerStyle="tech">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <TrendingUp className="w-4 h-4" style={{ color: '#9900FF' }} />
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">PROPOSALS</p>
                                 </div>
-                                <p className="text-3xl font-bold text-white">{stats.totalProposals}</p>
-                            </div>
-                            <div className="card p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Building2 className="w-5 h-5 text-orange-400" />
-                                    <p className="text-sm text-mono-60">Orgs</p>
+                                <p className="text-2xl font-bold text-white font-mono">{stats.totalProposals}</p>
+                            </CyberCard>
+                            <CyberCard className="p-4" cornerStyle="tech">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Building2 className="w-4 h-4" style={{ color: '#FF9900' }} />
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">ORGS</p>
                                 </div>
-                                <p className="text-3xl font-bold text-white">{organizations.length}</p>
-                            </div>
+                                <p className="text-2xl font-bold text-white font-mono">{organizations.length}</p>
+                            </CyberCard>
                         </div>
 
-                        {/* Recent Receipts Table (Existing) */}
-                        <div className="card p-6">
-                            <h2 className="text-xl font-bold text-white mb-4">Recent Receipts</h2>
+                        {/* Recent Receipts List */}
+                        <CyberCard title="RECENT_TRANSACTIONS" className="p-6">
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="border-b border-white/10">
-                                            <th className="text-left py-3 px-4 text-sm text-mono-60">Date</th>
-                                            <th className="text-left py-3 px-4 text-sm text-mono-60">User</th>
-                                            <th className="text-left py-3 px-4 text-sm text-mono-60">Action</th>
-                                            <th className="text-left py-3 px-4 text-sm text-mono-60">Amount</th>
-                                            <th className="text-left py-3 px-4 text-sm text-mono-60">Receipt Hash</th>
+                                        <tr className="border-b border-white/10 text-[10px] uppercase text-gray-500 font-mono tracking-widest">
+                                            <th className="py-3 px-4">TIMESTAMP</th>
+                                            <th className="py-3 px-4">USER_ID</th>
+                                            <th className="py-3 px-4">ACTION</th>
+                                            <th className="py-3 px-4">AMOUNT</th>
+                                            <th className="py-3 px-4">HASH_REF</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="text-xs font-mono">
                                         {receipts.slice(0, 20).map((receipt) => (
-                                            <tr key={receipt.id} className="border-b border-white/5 hover:bg-white/5">
-                                                <td className="py-3 px-4 text-sm text-mono-70">
+                                            <tr key={receipt.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                                                <td className="py-3 px-4 text-gray-400">
                                                     {new Date(receipt.created_at).toLocaleString()}
                                                 </td>
-                                                <td className="py-3 px-4 text-sm text-white">
+                                                <td className="py-3 px-4 text-white group-hover:text-cyan-400 transition-colors">
                                                     {receipt.users?.username || receipt.users?.email || 'Unknown'}
                                                 </td>
                                                 <td className="py-3 px-4">
-                                                    <span className="badge badge-sm">{receipt.reason}</span>
+                                                    <span className="px-2 py-0.5 rounded-sm bg-white/10 border border-white/10 text-[10px] uppercase">
+                                                        {receipt.reason}
+                                                    </span>
                                                 </td>
-                                                <td className="py-3 px-4 text-sm font-bold text-yellow-400">
+                                                <td className="py-3 px-4 font-bold" style={{ color: NEON_YELLOW }}>
                                                     +{receipt.amount}
                                                 </td>
                                                 <td className="py-3 px-4">
-                                                    <code className="text-xs text-green-400">
+                                                    <code className="text-[10px] opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: NEON_CYAN }}>
                                                         {receipt.receipt_hash?.slice(0, 16)}...
                                                     </code>
                                                 </td>
@@ -349,85 +369,89 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </CyberCard>
                     </>
                 )}
 
                 {activeTab === 'organizations' && (
-                    <div className="card p-6">
-                        <h2 className="text-xl font-bold text-white mb-4">Organizations Management</h2>
+                    <CyberCard title="ORG_MANAGEMENT" className="p-6">
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-white/10">
-                                        <th className="text-left py-3 px-4 text-sm text-mono-60">Name</th>
-                                        <th className="text-left py-3 px-4 text-sm text-mono-60">Type</th>
-                                        <th className="text-left py-3 px-4 text-sm text-mono-60">Status</th>
-                                        <th className="text-left py-3 px-4 text-sm text-mono-60">Members</th>
-                                        <th className="text-left py-3 px-4 text-sm text-mono-60">Created</th>
+                                    <tr className="border-b border-white/10 text-[10px] uppercase text-gray-500 font-mono tracking-widest">
+                                        <th className="py-3 px-4">ENTITY_NAME</th>
+                                        <th className="py-3 px-4">TYPE</th>
+                                        <th className="py-3 px-4">STATUS</th>
+                                        <th className="py-3 px-4">MEMBERS</th>
+                                        <th className="py-3 px-4">CREATED</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="text-xs font-mono">
                                     {organizations.map((org) => (
-                                        <tr key={org.id} className="border-b border-white/5 hover:bg-white/5">
+                                        <tr key={org.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                             <td className="py-3 px-4">
                                                 <div className="flex items-center gap-3">
                                                     {org.logo_url ? (
-                                                        <img src={org.logo_url} alt="" className="w-8 h-8 rounded-full" />
+                                                        <img src={org.logo_url} alt="" className="w-8 h-8 rounded-sm grayscale" />
                                                     ) : (
-                                                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                                        <div className="w-8 h-8 rounded-sm bg-white/10 flex items-center justify-center">
                                                             <Building2 className="w-4 h-4 text-white/50" />
                                                         </div>
                                                     )}
                                                     <div>
-                                                        <p className="font-semibold text-white">{org.name}</p>
-                                                        <p className="text-xs text-mono-60">{org.id}</p>
+                                                        <p className="font-bold text-white uppercase tracking-wide">{org.name}</p>
+                                                        <p className="text-[9px] text-gray-600">{org.id}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-4 text-sm text-mono-70 capitalize">{org.type}</td>
+                                            <td className="py-3 px-4 text-gray-400 capitalize">{org.type}</td>
                                             <td className="py-3 px-4">
-                                                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${org.verified ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                                                <span className={`px-2 py-0.5 text-[9px] uppercase font-bold border ${org.verified
+                                                        ? 'border-green-500/30 text-green-400 bg-green-500/10'
+                                                        : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
                                                     }`}>
-                                                    {org.verified ? 'Verified' : 'Pending'}
+                                                    {org.verified ? 'VERIFIED' : 'PENDING'}
                                                 </span>
                                             </td>
-                                            <td className="py-3 px-4 text-sm text-white">
+                                            <td className="py-3 px-4 text-white">
                                                 {org.members_count || 0}
                                             </td>
-                                            <td className="py-3 px-4 text-sm text-mono-60">
+                                            <td className="py-3 px-4 text-gray-500">
                                                 {new Date(org.created_at).toLocaleDateString()}
                                             </td>
                                         </tr>
                                     ))}
                                     {organizations.length === 0 && (
                                         <tr>
-                                            <td colSpan={5} className="py-8 text-center text-mono-60">
-                                                No organizations found
+                                            <td colSpan={5} className="py-12 text-center text-gray-600 font-mono uppercase">
+                                                NO_DATA_FOUND
                                             </td>
                                         </tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </CyberCard>
                 )}
 
                 {activeTab === 'coins' && (
                     <div className="max-w-2xl mx-auto">
-                        <div className="card p-6 mb-8">
-                            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <CyberCard title="MANUAL_LEDGER_OVERRIDE" className="p-8">
+                            <div className="flex items-center gap-3 mb-6 p-4 border border-yellow-500/20 bg-yellow-500/5">
                                 <Coins className="w-5 h-5 text-yellow-400" />
-                                Manual Coin Adjustment
-                            </h2>
+                                <p className="text-xs text-yellow-200 font-mono uppercase">
+                                    WARNING: DIRECT_DATABASE_MUTATION. THIS ACTION IS IRREVERSIBLE AND LOGGED.
+                                </p>
+                            </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div>
-                                    <label className="block text-sm text-mono-60 mb-1">Target User ID (UUID)</label>
+                                    <label className="block text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-2">Target User UUID</label>
                                     <input
                                         type="text"
                                         placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
-                                        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                                        className="w-full px-4 py-3 bg-black border text-white font-mono text-sm focus:outline-none transition-all placeholder:text-gray-800"
+                                        style={{ borderColor: `${NEON_CYAN}40`, boxShadow: 'none' }}
                                         value={coinForm.userId}
                                         onChange={e => setCoinForm({ ...coinForm, userId: e.target.value })}
                                     />
@@ -435,50 +459,55 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm text-mono-60 mb-1">Amount</label>
+                                        <label className="block text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-2">Amount (VQC)</label>
                                         <input
                                             type="number"
                                             placeholder="100"
-                                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                                            className="w-full px-4 py-3 bg-black border text-white font-mono text-sm focus:outline-none transition-all"
+                                            style={{ borderColor: `${NEON_CYAN}40` }}
                                             value={coinForm.amount}
                                             onChange={e => setCoinForm({ ...coinForm, amount: parseInt(e.target.value) || 0 })}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm text-mono-60 mb-1">Action</label>
+                                        <label className="block text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-2">Action Type</label>
                                         <select
-                                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                                            className="w-full px-4 py-3 bg-black border text-white font-mono text-sm focus:outline-none transition-all"
+                                            style={{ borderColor: `${NEON_CYAN}40` }}
                                             value={coinForm.type}
                                             onChange={e => setCoinForm({ ...coinForm, type: e.target.value as 'credit' | 'debit' })}
                                         >
-                                            <option value="credit">Credit (+)</option>
-                                            <option value="debit">Debit (-)</option>
+                                            <option value="credit">CREDIT (+)</option>
+                                            <option value="debit">DEBIT (-)</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm text-mono-60 mb-1">Reason (for receipt)</label>
+                                    <label className="block text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-2">Reason Code</label>
                                     <input
                                         type="text"
-                                        placeholder="admin_adjustment_refund"
-                                        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                                        placeholder="ADMIN_ADJUSTMENT_REF"
+                                        className="w-full px-4 py-3 bg-black border text-white font-mono text-sm focus:outline-none transition-all"
+                                        style={{ borderColor: `${NEON_CYAN}40` }}
                                         value={coinForm.reason}
                                         onChange={e => setCoinForm({ ...coinForm, reason: e.target.value })}
                                     />
                                 </div>
 
-                                <div className="pt-4">
-                                    <button
+                                <div className="pt-6">
+                                    <ArcadeButton
                                         onClick={handleCoinAdjustment}
                                         disabled={loading || !coinForm.userId || coinForm.amount <= 0}
-                                        className="btn btn-primary w-full"
+                                        variant={coinForm.type === 'credit' ? 'cyan' : 'magenta'}
+                                        glow
+                                        className="w-full py-4 text-center"
                                     >
-                                        {loading ? 'Processing...' : `Confirm ${coinForm.type === 'credit' ? 'Credit' : 'Debit'} ${coinForm.amount} Coins`}
-                                    </button>
+                                        {loading ? 'PROCESSING...' : `CONFIRM ${coinForm.type.toUpperCase()} ${coinForm.amount} VQC`}
+                                    </ArcadeButton>
                                 </div>
                             </div>
-                        </div>
+                        </CyberCard>
                     </div>
                 )}
             </div>

@@ -177,12 +177,12 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                 </button>
             </div>
 
-            {/* The Map Overlay - AMBIENT vs ACTIVE MODES */}
+            {/* The Map Overlay - Active Only */}
             <div
                 className={`fixed inset-0 transition-all duration-700 ease-in-out flex flex-col items-center justify-center overflow-hidden
                     ${isOpen
                         ? 'z-[2000] bg-black/95 backdrop-blur-xl opacity-100 pointer-events-auto'
-                        : 'z-0 bg-black/20 opacity-40 pointer-events-none scale-110 blur-sm'
+                        : 'z-[-1] opacity-0 pointer-events-none scale-110' // Moved to z-[-1] and fully transparent
                     }
                 `}
                 style={{ touchAction: isOpen ? 'none' : 'auto' }}
@@ -192,14 +192,7 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
                 onTouchEnd={isOpen ? handleTouchEnd : undefined}
                 onClick={() => isOpen && setIsOpen(false)}
             >
-                {/* Click Handler for Ambient Mode - Invisible Layer */}
-                {!isOpen && (
-                    <div
-                        className="absolute inset-0 pointer-events-auto cursor-pointer"
-                        onClick={() => setIsOpen(true)}
-                        title="Tap to Open Map"
-                    />
-                )}
+                {/* Click Handler Removed - No more ambient map opening */}
 
                 {/* Header Info - Only visible when Open */}
                 <div className={`absolute top-12 left-0 w-full text-center pointer-events-none z-10 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
