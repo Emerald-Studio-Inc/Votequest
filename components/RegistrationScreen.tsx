@@ -169,7 +169,7 @@ export default function RegistrationScreen({ authUser, onComplete }: Registratio
                     <div className="flex gap-3">
                         <ArcadeButton
                             onClick={() => handleComplete()}
-                            variant="secondary"
+                            variant="magenta"
                             className="flex-1 justify-center"
                             disabled={loading}
                         >

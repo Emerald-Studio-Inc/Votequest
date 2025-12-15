@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import './gold.css'
 import './mobile.css'
@@ -12,11 +12,6 @@ export const metadata: Metadata = {
   description: 'Participate in the future of governance. Cast immutable votes, earn VQC tokens, and influence organizations in a high-fidelity cyberpunk environment.',
   themeColor: '#000000',
   manifest: '/manifest.json',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
 }
 
 import { Providers } from './providers'

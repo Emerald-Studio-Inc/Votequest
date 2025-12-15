@@ -212,7 +212,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                                                 <Tooltip content={item.actionLabel || 'Action'} position="left">
                                                     <ArcadeButton
                                                         onClick={item.action}
-                                                        variant="secondary"
+                                                        variant="magenta"
                                                         size="sm"
                                                         className="text-[10px] py-1 h-auto"
                                                     >
@@ -304,7 +304,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                             <div className="flex items-center gap-3">
                                 <ArcadeButton
                                     onClick={() => setShowDisconnectConfirm(false)}
-                                    variant="secondary"
+                                    variant="magenta"
                                     className="flex-1"
                                 >
                                     [ CANCEL ]

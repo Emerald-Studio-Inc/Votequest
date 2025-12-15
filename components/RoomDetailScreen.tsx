@@ -199,7 +199,7 @@ export default function RoomDetailScreen({
 
                             <ArcadeButton
                                 onClick={() => setShowEditModal(true)}
-                                variant="secondary"
+                                variant="cyan"
                                 size="sm"
                                 className="flex items-center gap-2"
                             >
