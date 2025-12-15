@@ -50,7 +50,7 @@ export default function OrganizationSetup({ userId, onComplete, onCancel }: Orga
                 throw new Error(data.error || 'Failed to create organization');
             }
 
-            console.log('Organization created:', data.organization);
+            // Log removed('Organization created:', data.organization);
             onComplete(data.organization.id);
 
         } catch (error: any) {

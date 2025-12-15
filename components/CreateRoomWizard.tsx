@@ -115,7 +115,7 @@ export default function CreateRoomWizard({
                 throw new Error(data.error || 'Failed to create room');
             }
 
-            console.log('Room created:', data.room);
+            // Log removed('Room created:', data.room);
             onComplete(data.room.id);
 
         } catch (error: any) {

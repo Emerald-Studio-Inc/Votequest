@@ -467,7 +467,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                     <div className="max-w-[900px] mx-auto flex gap-4">
                         <ArcadeButton
                             onClick={onBack}
-                            variant="secondary"
+                            variant="magenta"
                             size="lg"
                             className="flex-1"
                             disabled={loading}

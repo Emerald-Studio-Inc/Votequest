@@ -30,7 +30,7 @@ export default function OrganizationListScreen({
             if (response.ok) {
                 const data = await response.json();
                 setOrganizations(data.organizations || []);
-                console.log('Loaded organizations:', data.organizations);
+                // Log removed('Loaded organizations:', data.organizations);
             }
         } catch (error) {
             console.error('Error loading organizations:', error);

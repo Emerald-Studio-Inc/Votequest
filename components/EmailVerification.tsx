@@ -43,7 +43,7 @@ export default function EmailVerification({
 
             // Show test code in development
             if (data.testCode) {
-                console.log('🔐 TEST CODE:', data.testCode);
+                // Log removed('🔐 TEST CODE:', data.testCode);
                 setCode(data.testCode); // Auto-fill for convenience
                 alert(`[DEV MODE] Your verification code is: ${data.testCode}`);
             }
