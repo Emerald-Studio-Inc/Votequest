@@ -63,8 +63,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     const progressPercent = (userData.xp / userData.nextLevelXP) * 100;
 
     const displayedProposals = proposals.filter(p => {
-        if (proposalFilter === 'active') return p.status === 'active';
-        return p.status === 'closed';
+        if (proposalFilter === 'active') {
+            // Strict check: Status must be active AND end date must be in the future
+            return p.status === 'active' && new Date(p.end_date) > new Date();
+        }
+        // For history, show closed OR active ones that have expired
+        return p.status === 'closed' || (p.status === 'active' && new Date(p.end_date) <= new Date());
     });
 
     // Neon color constants for inline styles
