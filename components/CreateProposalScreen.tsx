@@ -239,9 +239,9 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                 onFocus={() => setFocusedField('title')}
                                 onBlur={() => setFocusedField(null)}
                                 placeholder="ENTER_MISSION_TITLE..."
-                                className="w-full bg-black/50 border px-4 py-3 text-white font-mono focus:outline-none transition-all placeholder:text-gray-500 uppercase"
+                                className="w-full bg-black/80 border px-4 py-3 text-white font-mono focus:outline-none transition-all placeholder:text-gray-400 uppercase"
                                 style={{
-                                    borderColor: errors.title ? NEON_MAGENTA : focusedField === 'title' ? NEON_CYAN : 'rgba(255,255,255,0.1)',
+                                    borderColor: errors.title ? NEON_MAGENTA : focusedField === 'title' ? NEON_CYAN : 'rgba(255,255,255,0.2)',
                                     boxShadow: focusedField === 'title' ? `0 0 15px ${NEON_CYAN}20` : 'none'
                                 }}
                                 maxLength={200}
@@ -253,7 +253,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                 </div>
                             )}
                             {focusedField === 'title' && !errors.title && (
-                                <p className="text-xs text-cyan-400/70 mt-3 font-mono">
+                                <p className="text-xs text-cyan-400/90 mt-3 font-mono">
                                     {'>'} SYSTEM_TIP: USE_CLEAR_AND_SPECIFIC_DESIGNATION.
                                 </p>
                             )}
@@ -261,7 +261,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                     </CyberCard>
 
                     {/* Description Section */}
-                    <CyberCard className="p-8" title="MISSION_Intel" cornerStyle="tech">
+                    <CyberCard className="p-8 bg-black/80" title="MISSION_Intel" cornerStyle="tech">
                         <div className="mb-6">
                             <div className="flex items-center justify-between mb-3">
                                 <label className="flex items-center gap-2 font-bold uppercase text-white tracking-wide text-sm">
@@ -269,7 +269,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                     DETAILED_BRIEFING
                                     <span style={{ color: NEON_MAGENTA }}>*</span>
                                 </label>
-                                <span className={`font-mono text-xs ${charCount.description > 2000 ? 'text-red-500' : 'text-gray-500'}`}>
+                                <span className={`font-mono text-xs ${charCount.description > 2000 ? 'text-red-500' : 'text-gray-400'}`}>
                                     [{charCount.description}/2000]
                                 </span>
                             </div>
@@ -286,9 +286,9 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                 onFocus={() => setFocusedField('description')}
                                 onBlur={() => setFocusedField(null)}
                                 placeholder="ENTER_DETAILED_DESCRIPTION..."
-                                className="w-full bg-black/50 border px-4 py-3 text-white font-mono focus:outline-none transition-all placeholder:text-gray-700 min-h-[150px]"
+                                className="w-full bg-black/80 border px-4 py-3 text-white font-mono focus:outline-none transition-all placeholder:text-gray-500 min-h-[150px]"
                                 style={{
-                                    borderColor: errors.description ? NEON_MAGENTA : focusedField === 'description' ? NEON_CYAN : 'rgba(255,255,255,0.1)',
+                                    borderColor: errors.description ? NEON_MAGENTA : focusedField === 'description' ? NEON_CYAN : 'rgba(255,255,255,0.2)',
                                     boxShadow: focusedField === 'description' ? `0 0 15px ${NEON_CYAN}20` : 'none'
                                 }}
                                 rows={6}

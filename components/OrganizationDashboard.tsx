@@ -162,43 +162,43 @@ export default function OrganizationDashboard({
             <div className="max-w-7xl mx-auto px-4 md:px-8 pt-6 md:pt-12 relative z-10">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-                    <CyberCard className="p-6">
+                    <CyberCard className="p-6 bg-black/80 border-white/10">
                         <div className="flex items-center gap-3 mb-2">
-                            <Vote className="w-5 h-5 text-gray-300" />
-                            <p className="text-[10px] text-gray-200 uppercase font-mono">ACTIVE_ROOMS</p>
+                            <Vote className="w-5 h-5 text-gray-200" />
+                            <p className="text-[10px] text-gray-100 uppercase font-mono">ACTIVE_ROOMS</p>
                         </div>
                         <p className="text-3xl font-bold text-white font-mono">{rooms.filter(r => r.status === 'active').length}</p>
                     </CyberCard>
 
-                    <CyberCard className="p-6">
+                    <CyberCard className="p-6 bg-black/80 border-white/10">
                         <div className="flex items-center gap-3 mb-2">
-                            <Users className="w-5 h-5 text-gray-300" />
-                            <p className="text-[10px] text-gray-400 uppercase font-mono">TOTAL_VOTERS</p>
+                            <Users className="w-5 h-5 text-gray-200" />
+                            <p className="text-[10px] text-gray-300 uppercase font-mono">TOTAL_VOTERS</p>
                         </div>
                         <p className="text-3xl font-bold text-white font-mono">0</p>
                     </CyberCard>
 
-                    <CyberCard className="p-6">
+                    <CyberCard className="p-6 bg-black/80 border-white/10">
                         <div className="flex items-center gap-3 mb-2">
-                            <BarChart3 className="w-5 h-5 text-gray-300" />
-                            <p className="text-[10px] text-gray-400 uppercase font-mono">TURNOUT_RATE</p>
+                            <BarChart3 className="w-5 h-5 text-gray-200" />
+                            <p className="text-[10px] text-gray-300 uppercase font-mono">TURNOUT_RATE</p>
                         </div>
                         <p className="text-3xl font-bold text-white font-mono">-%</p>
                     </CyberCard>
                 </div>
 
                 {/* Rooms List */}
-                <CyberCard className="p-8" title="VOTING_CHAMBERS" cornerStyle="tech">
+                <CyberCard className="p-8 bg-black/80 border-white/10" title="VOTING_CHAMBERS" cornerStyle="tech">
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
                             <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${NEON_CYAN}40`, borderTopColor: NEON_CYAN }}></div>
                         </div>
                     ) : rooms.length === 0 ? (
-                        <div className="text-center py-12 border border-dashed border-gray-800 bg-black/50">
+                        <div className="text-center py-12 border border-dashed border-gray-700 bg-black/50">
                             <div className="w-16 h-16 mx-auto mb-4 border flex items-center justify-center rounded-none" style={{ borderColor: NEON_CYAN, backgroundColor: `${NEON_CYAN}10` }}>
                                 <Vote className="w-8 h-8 animate-pulse" style={{ color: NEON_CYAN }} />
                             </div>
-                            <p className="text-gray-300 mb-6 font-mono text-sm uppercase">NO_ACTIVE_CHAMBERS_DETECTED</p>
+                            <p className="text-gray-200 mb-6 font-mono text-sm uppercase">NO_ACTIVE_CHAMBERS_DETECTED</p>
                             <ArcadeButton
                                 onClick={() => onNavigate?.('create-room')}
                                 variant="cyan"
@@ -211,10 +211,10 @@ export default function OrganizationDashboard({
                             {rooms.map((room) => (
                                 <div
                                     key={room.id}
-                                    className="p-4 bg-black/40 border border-white/5 hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer group relative overflow-hidden"
+                                    className="p-4 bg-black/60 border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all cursor-pointer group relative overflow-hidden"
                                     onClick={() => onNavigate?.('room', room)}
                                 >
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-800 group-hover:bg-[color:var(--status-color)] transition-colors"
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-700 group-hover:bg-[color:var(--status-color)] transition-colors"
                                         style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : '#E5E7EB' } as React.CSSProperties}
                                     />
 
@@ -225,11 +225,11 @@ export default function OrganizationDashboard({
                                             >
                                                 {room.title}
                                             </h4>
-                                            <p className="text-xs text-gray-400 font-mono line-clamp-1">{'>'} {room.description}</p>
+                                            <p className="text-xs text-gray-300 font-mono line-clamp-1">{'>'} {room.description}</p>
                                         </div>
                                         <div className={`px-2 py-1 text-[10px] font-bold uppercase border ${room.status === 'active' ? 'border-green-500/50 text-green-400 bg-green-500/10' :
                                             room.status === 'draft' ? 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10' :
-                                                'border-gray-700 text-gray-500 bg-gray-800/50'
+                                                'border-gray-600 text-gray-400 bg-gray-800/50'
                                             }`}>
                                             {room.status === 'active' ? 'LIVE_STATUS' : room.status}
                                         </div>

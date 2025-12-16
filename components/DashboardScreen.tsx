@@ -230,18 +230,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             return (
                                 <CyberCard
                                     key={proposal.id}
-                                    className="h-full flex flex-col cursor-pointer group p-4"
+                                    className="h-full flex flex-col cursor-pointer group p-4 bg-black/80 hover:bg-black/90 border-white/10"
                                     title={`WQ-${proposal.id.slice(0, 4)}`}
                                 >
                                     <div onClick={() => onSelectProposal(proposal)} className="flex-1">
                                         <div className="flex justify-between items-start mb-2">
-                                            <h4 className="text-lg font-bold line-clamp-2 group-hover:text-neon-cyan transition-colors text-white">
+                                            <h4 className="text-lg font-bold line-clamp-2 group-hover:text-neon-cyan transition-colors text-white text-shadow-sm">
                                                 {proposal.title}
                                             </h4>
                                             {voted && <Check className="w-5 h-5 text-neon-lime" />}
                                         </div>
 
-                                        <p className="text-sm text-gray-200 font-mono mb-4 line-clamp-2">
+                                        <p className="text-sm text-gray-100 font-mono mb-4 line-clamp-2">
                                             {proposal.description}
                                         </p>
 
@@ -250,14 +250,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                             {proposal.options.slice(0, 2).map((opt: any) => (
                                                 <div key={opt.id} className="text-xs font-mono">
                                                     <div className="flex justify-between mb-1">
-                                                        <span className="text-gray-300">{opt.title}</span>
-                                                        <span className="text-[var(--neon-cyan)]">
+                                                        <span className="text-gray-200">{opt.title}</span>
+                                                        <span className="text-[var(--neon-cyan)] font-bold">
                                                             {totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0}%
                                                         </span>
                                                     </div>
-                                                    <div className="h-1 bg-gray-800">
+                                                    <div className="h-1 bg-gray-700">
                                                         <div
-                                                            className="h-full bg-[var(--neon-cyan)]/50"
+                                                            className="h-full bg-[var(--neon-cyan)] shadow-[0_0_10px_var(--neon-cyan)]"
                                                             style={{ width: `${totalVotes > 0 ? (opt.votes / totalVotes) * 100 : 0}%` }}
                                                         />
                                                     </div>
@@ -267,9 +267,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                     </div>
 
                                     {/* Footer */}
-                                    <div className="mt-auto pt-4 border-t border-gray-800 flex justify-between items-center text-xs font-mono">
+                                    <div className="mt-auto pt-4 border-t border-gray-700 flex justify-between items-center text-xs font-mono">
                                         <div className="flex gap-4">
-                                            <span className="flex items-center gap-1 text-[var(--neon-magenta)]">
+                                            <span className="flex items-center gap-1 text-[var(--neon-magenta)] font-bold">
                                                 <Users className="w-3 h-3" /> {totalVotes}
                                             </span>
                                             <span className={`flex items-center gap-1 ${timeLeft.urgent ? 'text-[var(--neon-magenta)] animate-pulse' : 'text-gray-200'}`}>

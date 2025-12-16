@@ -543,37 +543,8 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                                                     <span className="text-gray-500">#{user.global_rank}</span>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-4 text-right">
-                                                <span style={{ color: NEON_YELLOW }} className="font-bold">{user.coins?.toLocaleString()}</span>
-                                            </td>
-                                            <td className="py-3 px-4 text-right">
-                                                <span style={{ color: NEON_CYAN }} className="font-bold">{user.voting_power?.toLocaleString()}</span>
-                                            </td>
-                                            <td className="py-3 px-4 text-gray-500">
-                                                {new Date(user.created_at).toLocaleDateString()}
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <ArcadeButton
-                                                    size="sm"
-                                                    variant="magenta"
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={() => {
-                                                        setActiveTab('coins');
-                                                        setCoinForm(prev => ({ ...prev, userId: user.id }));
-                                                    }}
-                                                >
-                                                    MANAGE
-                                                </ArcadeButton>
-                                            </td>
                                         </tr>
                                     ))}
-                                    {users.length === 0 && (
-                                        <tr>
-                                            <td colSpan={6} className="py-12 text-center text-gray-600 font-mono uppercase">
-                                                NO_USERS_FOUND
-                                            </td>
-                                        </tr>
-                                    )}
                                 </tbody>
                             </table>
                         </div>

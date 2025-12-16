@@ -177,7 +177,7 @@ export default function CreateRoomWizard({
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="ENTER_TITLE_HERE..."
-                                    className="w-full bg-black border p-3 text-base sm:text-sm text-white font-mono focus:outline-none transition-all placeholder-gray-700"
+                                    className="w-full bg-black/80 border p-3 text-base sm:text-sm text-white font-mono focus:outline-none transition-all placeholder-gray-400"
                                     style={{ borderColor: 'rgba(255,255,255,0.2)' }}
                                     onFocus={(e) => e.target.style.borderColor = NEON_CYAN}
                                     onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
