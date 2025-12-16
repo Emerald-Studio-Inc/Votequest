@@ -510,6 +510,75 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                         </CyberCard>
                     </div>
                 )}
+
+                {activeTab === 'users' && (
+                    <CyberCard title="USER_DATABASE" className="p-6">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-white/10 text-[10px] uppercase text-gray-500 font-mono tracking-widest">
+                                        <th className="py-3 px-4">USER_ID / EMAIL</th>
+                                        <th className="py-3 px-4">RANK</th>
+                                        <th className="py-3 px-4 text-right">COINS</th>
+                                        <th className="py-3 px-4 text-right">VOTING_POWER</th>
+                                        <th className="py-3 px-4">JOINED</th>
+                                        <th className="py-3 px-4">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-xs font-mono">
+                                    {users.map((user) => (
+                                        <tr key={user.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                                            <td className="py-3 px-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold">{user.username || user.email?.split('@')[0] || 'Unknown'}</span>
+                                                    <span className="text-[10px] text-gray-600 font-mono">{user.email}</span>
+                                                    <span className="text-[9px] text-gray-700 font-mono">{user.id}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-[10px] font-bold">
+                                                        {user.level}
+                                                    </div>
+                                                    <span className="text-gray-500">#{user.global_rank}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-4 text-right">
+                                                <span style={{ color: NEON_YELLOW }} className="font-bold">{user.coins?.toLocaleString()}</span>
+                                            </td>
+                                            <td className="py-3 px-4 text-right">
+                                                <span style={{ color: NEON_CYAN }} className="font-bold">{user.voting_power?.toLocaleString()}</span>
+                                            </td>
+                                            <td className="py-3 px-4 text-gray-500">
+                                                {new Date(user.created_at).toLocaleDateString()}
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <ArcadeButton
+                                                    size="sm"
+                                                    variant="magenta"
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => {
+                                                        setActiveTab('coins');
+                                                        setCoinForm(prev => ({ ...prev, userId: user.id }));
+                                                    }}
+                                                >
+                                                    MANAGE
+                                                </ArcadeButton>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {users.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="py-12 text-center text-gray-600 font-mono uppercase">
+                                                NO_USERS_FOUND
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CyberCard>
+                )}
             </div>
         </div>
     );

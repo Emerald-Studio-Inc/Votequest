@@ -63,9 +63,9 @@ export async function updateUserXP(userId: string, xpGained: number): Promise<bo
 }
 
 // Proposal Functions
-export async function getActiveProposals() {
+export async function getProposals(filter: 'active' | 'all' = 'active') {
   // Optimized: Single query with nested select (eliminates N+1 problem)
-  const { data, error } = await supabase
+  let query = supabase
     .from('proposals')
     .select(`
       *,
@@ -80,9 +80,16 @@ export async function getActiveProposals() {
         created_at
       )
     `)
-    .eq('status', 'active')
-    .gt('end_date', new Date().toISOString())  // Only proposals that haven't ended
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  // Apply filters only if not fetching all history
+  if (filter === 'active') {
+    query = query
+      .eq('status', 'active')
+      .gt('end_date', new Date().toISOString());
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching proposals:', error)
@@ -96,6 +103,9 @@ export async function getActiveProposals() {
     proposal_options: undefined
   })).filter(p => p.options && p.options.length > 0)
 }
+
+// Deprecated alias for backward compatibility
+export const getActiveProposals = () => getProposals('active');
 
 export async function getProposalWithOptions(proposalId: string) {
   // Optimized: Single query with nested select
