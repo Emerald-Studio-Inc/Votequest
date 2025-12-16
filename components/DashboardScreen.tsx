@@ -226,27 +226,27 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             return (
                                 <CyberCard
                                     key={proposal.id}
-                                    className="h-full flex flex-col cursor-pointer group"
+                                    className="h-full flex flex-col cursor-pointer group p-4"
                                     title={`WQ-${proposal.id.slice(0, 4)}`}
                                 >
                                     <div onClick={() => onSelectProposal(proposal)} className="flex-1">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h4 className="text-lg font-bold line-clamp-2 group-hover:text-neon-cyan transition-colors">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h4 className="text-lg font-bold line-clamp-2 group-hover:text-neon-cyan transition-colors text-white">
                                                 {proposal.title}
                                             </h4>
                                             {voted && <Check className="w-5 h-5 text-neon-lime" />}
                                         </div>
 
-                                        <p className="text-sm text-gray-300 font-mono mb-6 line-clamp-2">
+                                        <p className="text-sm text-gray-200 font-mono mb-4 line-clamp-2">
                                             {proposal.description}
                                         </p>
 
                                         {/* Mock Visualization of Options */}
-                                        <div className="space-y-2 mb-6">
+                                        <div className="space-y-2 mb-4">
                                             {proposal.options.slice(0, 2).map((opt: any) => (
                                                 <div key={opt.id} className="text-xs font-mono">
                                                     <div className="flex justify-between mb-1">
-                                                        <span className="text-gray-400">{opt.title}</span>
+                                                        <span className="text-gray-300">{opt.title}</span>
                                                         <span className="text-[var(--neon-cyan)]">
                                                             {totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0}%
                                                         </span>
@@ -268,7 +268,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                             <span className="flex items-center gap-1 text-[var(--neon-magenta)]">
                                                 <Users className="w-3 h-3" /> {totalVotes}
                                             </span>
-                                            <span className={`flex items-center gap-1 ${timeLeft.urgent ? 'text-[var(--neon-magenta)] animate-pulse' : 'text-gray-300'}`}>
+                                            <span className={`flex items-center gap-1 ${timeLeft.urgent ? 'text-[var(--neon-magenta)] animate-pulse' : 'text-gray-200'}`}>
                                                 <Clock className="w-3 h-3" /> {timeLeft.text}
                                             </span>
                                         </div>

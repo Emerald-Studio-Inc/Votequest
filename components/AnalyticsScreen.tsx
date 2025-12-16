@@ -91,10 +91,10 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                         <CyberCard className="h-full" hoverEffect={true} title="PARTICIPATION">
                             <div className="flex items-center gap-2 mb-3">
                                 <TrendingUp className="w-4 h-4" style={{ color: NEON_CYAN }} />
-                                <div className="text-gray-400 text-[9px] uppercase tracking-widest">COVERAGE</div>
+                                <div className="text-gray-300 text-[9px] uppercase tracking-widest">COVERAGE</div>
                             </div>
                             <div className="text-3xl font-bold tracking-tight mb-1" style={{ textShadow: `0 0 10px ${NEON_CYAN}` }}>{participationRate}%</div>
-                            <div className="text-gray-400 text-[9px] uppercase">{votedProposals || 0}/{totalProposals || 0} PROPOSALS</div>
+                            <div className="text-gray-300 text-[9px] uppercase">{votedProposals || 0}/{totalProposals || 0} PROPOSALS</div>
                         </CyberCard>
                     </Tooltip>
 
@@ -102,10 +102,10 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                         <CyberCard className="h-full" hoverEffect={true} title="IMPACT_FACTOR">
                             <div className="flex items-center gap-2 mb-3">
                                 <Zap className="w-4 h-4" style={{ color: NEON_MAGENTA }} />
-                                <div className="text-gray-500 text-[9px] uppercase tracking-widest">POWER_LEVEL</div>
+                                <div className="text-gray-400 text-[9px] uppercase tracking-widest">POWER_LEVEL</div>
                             </div>
                             <div className="text-3xl font-bold tracking-tight mb-1" style={{ textShadow: `0 0 10px ${NEON_MAGENTA}` }}>{impactScore}</div>
-                            <div className="text-gray-600 text-[9px] uppercase">VOTING_WEIGHT</div>
+                            <div className="text-gray-400 text-[9px] uppercase">VOTING_WEIGHT</div>
                         </CyberCard>
                     </Tooltip>
 
@@ -113,10 +113,10 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                         <CyberCard className="h-full" hoverEffect={true} title="STREAK_LOG">
                             <div className="flex items-center gap-2 mb-3">
                                 <Award className="w-4 h-4" style={{ color: NEON_LIME }} />
-                                <div className="text-gray-500 text-[9px] uppercase tracking-widest">CONSISTENCY</div>
+                                <div className="text-gray-400 text-[9px] uppercase tracking-widest">CONSISTENCY</div>
                             </div>
                             <div className="text-3xl font-bold tracking-tight mb-1" style={{ textShadow: `0 0 10px ${NEON_LIME}` }}>{userData.streak}D</div>
-                            <div className="text-gray-600 text-[9px] uppercase">CONSECUTIVE_DAYS</div>
+                            <div className="text-gray-400 text-[9px] uppercase">CONSECUTIVE_DAYS</div>
                         </CyberCard>
                     </Tooltip>
 
@@ -124,17 +124,17 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                         <CyberCard className="h-full" hoverEffect={true} title="GLOBAL_RANK">
                             <div className="flex items-center gap-2 mb-3">
                                 <Target className="w-4 h-4" style={{ color: NEON_YELLOW }} />
-                                <div className="text-gray-500 text-[9px] uppercase tracking-widest">POSITION</div>
+                                <div className="text-gray-400 text-[9px] uppercase tracking-widest">POSITION</div>
                             </div>
                             <div className="text-3xl font-bold tracking-tight mb-1" style={{ textShadow: `0 0 10px ${NEON_YELLOW}` }}>#{userData.globalRank}</div>
-                            <div className="text-gray-600 text-[9px] uppercase">LEADERBOARD</div>
+                            <div className="text-gray-400 text-[9px] uppercase">LEADERBOARD</div>
                         </CyberCard>
                     </Tooltip>
                 </div>
 
                 {/* Voting Activity Chart */}
                 <CyberCard className="mb-8 p-6" title="ACTIVITY_GRAPH" hoverEffect={false}>
-                    <h3 className="text-gray-400 text-xs uppercase mb-6 tracking-wide">VOTING_ACTIVITY (Last 7 Cycles)</h3>
+                    <h3 className="text-gray-300 text-xs uppercase mb-6 tracking-wide">VOTING_ACTIVITY (Last 7 Cycles)</h3>
                     <div className="flex items-end justify-between gap-2" style={{ height: '160px' }}>
                         {votingActivityData.map((day, idx) => {
                             const barHeightPx = maxVotes > 0 ? Math.max((day.votes / maxVotes) * 140, day.votes > 0 ? 20 : 4) : 4;
@@ -145,7 +145,7 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
                                             className="w-full transition-all duration-300 group-hover:opacity-80 relative"
                                             style={{
                                                 height: `${barHeightPx}px`,
-                                                backgroundColor: day.votes > 0 ? NEON_CYAN : 'rgba(255,255,255,0.15)', // Visible inactive bars
+                                                backgroundColor: day.votes > 0 ? NEON_CYAN : 'rgba(255,255,255,0.25)', // Visible inactive bars
                                                 boxShadow: day.votes > 0 ? `0 0 10px ${NEON_CYAN}` : 'none'
                                             }}
                                             title={`${day.votes} votes`}

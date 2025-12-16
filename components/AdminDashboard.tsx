@@ -244,7 +244,7 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                                 <h1 className="text-xl md:text-2xl font-bold uppercase tracking-widest glitch-text" data-text="ADMIN_CONSOLE" style={{ color: 'white' }}>
                                     ADMIN_CONSOLE
                                 </h1>
-                                <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">
+                                <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">
                                     {'>'} SYSTEM_OVERRIDE_ACTIVE
                                 </p>
                             </div>
