@@ -8,7 +8,8 @@ import type { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/su
 import {
     getUserByWallet,
     createUser,
-    getProposals,
+    getActiveProposals,
+    getAllProposals,
     castVote as dbCastVote,
     getUserVotedProposals,
     getAchievements,
@@ -437,8 +438,7 @@ const VoteQuestApp = () => {
 
     const loadProposals = async () => {
         try {
-            // Fetch ALL proposals so client-side filtering (Active/History) works
-            const data = await getProposals('all');
+            const data = await getAllProposals();
             setProposals(data);
         } catch (error) {
             console.error('Error loading proposals:', error);
