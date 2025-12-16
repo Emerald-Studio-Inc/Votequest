@@ -63,7 +63,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
         });
     };
 
-    const validateForm = (): boolean => {
+    const getValidationErrors = (): Record<string, string> => {
         const newErrors: Record<string, string> = {};
 
         // Validate title
@@ -112,12 +112,14 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
             }
         }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return newErrors;
     };
 
     const handleSubmit = () => {
-        if (validateForm()) {
+        const validationErrors = getValidationErrors();
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
             const filledOptions = options.filter(opt => opt.title.trim());
             onSubmit({
                 title: title.trim(),
@@ -148,7 +150,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
     return (
         <div className="min-h-screen pb-32 relative bg-black font-mono overflow-auto custom-scrollbar">
             {/* Cyber Grid Background */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             {/* Header */}
             <div className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
@@ -479,8 +481,8 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                             variant="lime"
                             size="lg"
                             className="flex-[2]"
-                            disabled={!validateForm() || loading}
-                            glow={validateForm()}
+                            disabled={!isFormValid || loading}
+                            glow={Boolean(isFormValid)}
                         >
                             {loading ? (
                                 <span className="flex items-center gap-2">

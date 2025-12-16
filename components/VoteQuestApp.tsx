@@ -686,7 +686,6 @@ const VoteQuestApp = () => {
                     <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                 )}
                 <BottomNavigation />
-                <BottomNavigation />
                 <QuestGuide
                     currentScreen={currentScreen}
                     onNavigate={(screen) => {
