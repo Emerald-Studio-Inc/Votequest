@@ -371,14 +371,21 @@ const VoteQuestApp = () => {
 
                 if (user) {
                     await loadUserProfile(user.id);
-                    // trigger welcome if user just logged in (handled by welcome effect below)
+                    setAuthLoading(false);
+                    setCurrentScreen('dashboard');
                 } else {
-                    setLoading(false);
-                    setCurrentScreen('login');
+                    setAuthLoading(false);
+                    // Don't force login here, let splash/landing handle it if needed, 
+                    // or if we were waiting for auth, go to login.
+                    // If we are on SPLASH, we might want to go to Onboarding.
+                    // If we are checking, go to login.
+                    if (currentScreen === 'checking') {
+                        setCurrentScreen('login');
+                    }
                 }
             } catch (error) {
                 console.error('Error checking user:', error);
-                setLoading(false);
+                setAuthLoading(false);
                 setCurrentScreen('login');
             }
         };
@@ -388,6 +395,8 @@ const VoteQuestApp = () => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
                 await loadUserProfile(session.user.id);
+                setAuthLoading(false);
+                setCurrentScreen('dashboard');
             } else if (event === 'SIGNED_OUT') {
                 setUserData({
                     address: null,
@@ -404,6 +413,7 @@ const VoteQuestApp = () => {
                     votedProposals: [],
                     coins: 0
                 });
+                setAuthLoading(false);
                 setCurrentScreen('login');
             }
         });
@@ -474,7 +484,8 @@ const VoteQuestApp = () => {
         }
     }, [currentScreen, proposals]);
 
-    // Auto-reconnect check
+    // Auto-reconnect check removed (conflicted with Supabase auth)
+    /*
     useEffect(() => {
         if (currentScreen === 'checking') {
             const timer = setTimeout(() => {
@@ -483,6 +494,7 @@ const VoteQuestApp = () => {
             return () => clearTimeout(timer);
         }
     }, [currentScreen, isConnected]);
+    */
 
     // Splash timer
     useEffect(() => {
