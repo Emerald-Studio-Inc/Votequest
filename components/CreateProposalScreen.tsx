@@ -150,7 +150,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
     return (
         <div className="min-h-screen pb-32 relative bg-black font-mono overflow-auto custom-scrollbar">
             {/* Cyber Grid Background */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+            <div className="absolute inset-0 z-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             {/* Header */}
             <div className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>

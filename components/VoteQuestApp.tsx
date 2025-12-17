@@ -848,7 +848,22 @@ const VoteQuestApp = () => {
         );
     }
 
-    return null;
+    // Fallback for navigation errors
+    return (
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
+            <h1 className="text-2xl font-bold text-red-500 mb-2">Navigation Error</h1>
+            <p className="text-gray-400 mb-6">
+                The application encountered an unexpected state.<br />
+                Current Screen: {currentScreen}
+            </p>
+            <button
+                onClick={() => setCurrentScreen('dashboard')}
+                className="btn btn-primary"
+            >
+                Return to Dashboard
+            </button>
+        </div>
+    );
 };
 
 export default VoteQuestApp;
