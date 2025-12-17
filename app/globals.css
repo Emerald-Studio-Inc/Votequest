@@ -108,8 +108,8 @@ h6 {
 .cyber-grid {
     background-size: 30px 30px;
     background-image:
-        linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+        linear-gradient(to right, rgba(0, 240, 255, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.15) 1px, transparent 1px);
     mask-image: radial-gradient(circle at center, black 85%, transparent 100%);
 }
 
