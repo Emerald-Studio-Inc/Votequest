@@ -367,18 +367,25 @@ const VoteQuestApp = () => {
     useEffect(() => {
         const checkUser = async () => {
             try {
-                const user = await getCurrentUser(); // Returns user object directly, not { user }
+                // Add race condition/timeout to avoid infinite hanging
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Auth timeout')), 10000)
+                );
+
+                const userPromise = getCurrentUser(); // Returns user object directly
+
+                const user = await Promise.race([userPromise, timeoutPromise]) as any;
 
                 if (user) {
-                    await loadUserProfile(user.id);
+                    // Also timeout the profile load
+                    await Promise.race([
+                        loadUserProfile(user.id),
+                        timeoutPromise
+                    ]);
                     setAuthLoading(false);
                     setCurrentScreen('dashboard');
                 } else {
                     setAuthLoading(false);
-                    // Don't force login here, let splash/landing handle it if needed, 
-                    // or if we were waiting for auth, go to login.
-                    // If we are on SPLASH, we might want to go to Onboarding.
-                    // If we are checking, go to login.
                     if (currentScreen === 'checking') {
                         setCurrentScreen('login');
                     }
@@ -386,6 +393,7 @@ const VoteQuestApp = () => {
             } catch (error) {
                 console.error('Error checking user:', error);
                 setAuthLoading(false);
+                // If it was a timeout, we still want to show login, maybe with a toast?
                 setCurrentScreen('login');
             }
         };
@@ -394,9 +402,14 @@ const VoteQuestApp = () => {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
-                await loadUserProfile(session.user.id);
-                setAuthLoading(false);
-                setCurrentScreen('dashboard');
+                try {
+                    await loadUserProfile(session.user.id);
+                    setAuthLoading(false);
+                    setCurrentScreen('dashboard');
+                } catch (e) {
+                    console.error('Sign-in profile load error:', e);
+                    setAuthLoading(false); // Ensure we don't hang
+                }
             } else if (event === 'SIGNED_OUT') {
                 setUserData({
                     address: null,

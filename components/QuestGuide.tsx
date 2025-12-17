@@ -120,51 +120,91 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
     const NEON_MAGENTA = '#FF003C';
     const NEON_LIME = '#39FF14';
 
-    const handleWheel = (e: React.WheelEvent) => {
-        // Increased sensitivity from 0.1 to 0.3 for snappier feel
-        setWheelRotation(prev => prev + (e.deltaY * 0.3));
+    // Momentum Physics State
+    const [velocity, setVelocity] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const requestRef = useRef<number>();
 
-        // Clear existing snap
-        if (snapTimeout.current) clearTimeout(snapTimeout.current);
-
-        // Set new snap with faster 300ms delay (was 500ms)
-        snapTimeout.current = setTimeout(() => {
-            const step = 360 / NODES.length;
-            setWheelRotation(prev => {
-                const remainder = prev % step;
-                return prev - remainder + (remainder > step / 2 ? step : 0);
-            });
-        }, 300);
+    // Physics Loop for Momentum
+    const animateLines = () => {
+        if (!isDragging && Math.abs(velocity) > 0.05) {
+            setWheelRotation(prev => prev + velocity);
+            setVelocity(prev => prev * 0.95); // Decay factor (Friction) => 0.95 = slippery, 0.85 = grippy
+            requestRef.current = requestAnimationFrame(animateLines);
+        } else if (!isDragging && Math.abs(velocity) <= 0.05 && velocity !== 0) {
+            setVelocity(0); // Stop completely
+            triggerSnap();
+        } else {
+            // Idle or dragging
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        }
     };
 
-    // Touch support for mobile
-    const [touchStart, setTouchStart] = useState<number | null>(null);
+    useEffect(() => {
+        requestRef.current = requestAnimationFrame(animateLines);
+        return () => {
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        };
+    }, [velocity, isDragging]);
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (snapTimeout.current) clearTimeout(snapTimeout.current);
+        // Direct control
+        setWheelRotation(prev => prev + (e.deltaY * 0.5));
+        // Add small velocity for "throw" feel
+        setVelocity(e.deltaY * 0.1);
+
+        // Debounce snap
+        if (snapTimeout.current) clearTimeout(snapTimeout.current);
+        snapTimeout.current = setTimeout(triggerSnap, 800);
+    };
+
+    // Touch support for mobile with Momentum
+    const lastTouchY = useRef<number>(0);
+    const lastTime = useRef<number>(0);
 
     const handleTouchStart = (e: React.TouchEvent) => {
-        setTouchStart(e.touches[0].clientY);
+        setIsDragging(true);
+        lastTouchY.current = e.touches[0].clientY;
+        lastTime.current = Date.now();
+        setVelocity(0); // Stop existing momentum
+        if (snapTimeout.current) clearTimeout(snapTimeout.current);
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
-        if (touchStart === null) return;
         const currentY = e.touches[0].clientY;
-        const deltaY = touchStart - currentY; // Drag up to rotate forward
+        const deltaY = lastTouchY.current - currentY;
+        const currentTime = Date.now();
 
-        // Increased sensitivity from 0.5 to 0.8
-        setWheelRotation(prev => prev + (deltaY * 0.8));
-        setTouchStart(currentY);
+        // Update rotation directly
+        setWheelRotation(prev => prev + (deltaY * 1.5)); // 1.5x sensitivity
+
+        // Calculate velocity for throw
+        const timeDelta = currentTime - lastTime.current;
+        if (timeDelta > 0) {
+            // Pixels per ms
+            const v = deltaY / timeDelta * 15; // Scale factor
+            setVelocity(v);
+        }
+
+        lastTouchY.current = currentY;
+        lastTime.current = currentTime;
     };
 
     const handleTouchEnd = () => {
-        setTouchStart(null);
-        // Snap logic
-        if (snapTimeout.current) clearTimeout(snapTimeout.current);
-        snapTimeout.current = setTimeout(() => {
-            const step = 360 / NODES.length;
-            setWheelRotation(prev => {
-                const remainder = prev % step;
-                return prev - remainder + (remainder > step / 2 ? step : 0);
-            });
-        }, 500);
+        setIsDragging(false);
+        // Momentum loop will take over based on 'velocity' state
+    };
+
+    const triggerSnap = () => {
+        if (isDragging) return;
+
+        const step = 360 / NODES.length;
+        setWheelRotation(prev => {
+            const remainder = prev % step;
+            // Find nearest slot
+            return prev - remainder + (remainder > step / 2 ? step : 0);
+        });
     };
 
     // Calculate current node based on rotation
