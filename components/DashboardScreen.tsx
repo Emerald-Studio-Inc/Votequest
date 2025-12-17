@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Users, Clock, Plus, Activity, TrendingUp, Zap, Award, Flame, ChevronRight, BarChart3, Vote, ArrowUpRight, Check, Building2, Terminal, Cpu } from 'lucide-react';
+import { ArrowRight, Users, Clock, Plus, Activity, TrendingUp, Zap, Award, Flame, ChevronRight, BarChart3, Vote, ArrowUpRight, Check, Building2, Terminal, Cpu, Map } from 'lucide-react';
 import { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import CoinBadge from './CoinBadge';
@@ -104,9 +104,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 <Cpu className="w-4 h-4" style={{ color: NEON_CYAN }} />
                                 <span className="text-xs font-mono" style={{ color: NEON_CYAN }}>SYS.ONLINE</span>
                             </div>
+                            <ArcadeButton
+                                variant="cyan"
+                                size="sm"
+                                className="hidden sm:flex"
+                                onClick={() => window.dispatchEvent(new CustomEvent('votequest:open-map'))}
+                                tooltip="Open Nav System"
+                            >
+                                <Map className="w-4 h-4 mr-2" />
+                                NAV
+                            </ArcadeButton>
                             <CoinBadge
                                 coins={userData.coins || 0}
-                                size="md"
                                 showLabel={true}
                                 onClick={() => setShowCoinModal(true)}
                             />

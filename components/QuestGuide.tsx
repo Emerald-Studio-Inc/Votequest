@@ -61,6 +61,13 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
     const [rotation, setRotation] = useState(0); // For Orb
     const [wheelRotation, setWheelRotation] = useState(0); // For 3D Wheel
 
+    // Listen for external open commands
+    useEffect(() => {
+        const handleOpenMap = () => setIsOpen(true);
+        window.addEventListener('votequest:open-map', handleOpenMap);
+        return () => window.removeEventListener('votequest:open-map', handleOpenMap);
+    }, []);
+
     // Auto-snap to nearest node
     const snapTimeout = useRef<NodeJS.Timeout>();
 

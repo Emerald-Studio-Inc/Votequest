@@ -131,6 +131,7 @@ const VoteQuestApp = () => {
             if (user) {
                 await loadUserProfile(user.id);
                 setCurrentScreen('dashboard');
+            } else {
                 setCurrentScreen('login');
                 setUserData({
                     address: null,
