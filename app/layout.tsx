@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   description: 'Participate in the future of governance. Cast immutable votes, earn VQC tokens, and influence organizations in a high-fidelity cyberpunk environment.',
   themeColor: '#000000',
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'VoteQuest',
+  },
 }
 
 import { Providers } from './providers'
