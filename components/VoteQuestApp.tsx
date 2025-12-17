@@ -403,12 +403,20 @@ const VoteQuestApp = () => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
                 try {
-                    await loadUserProfile(session.user.id);
+                    // Add timeout to prevent infinite hanging on slow DB
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Profile load timeout')), 10000)
+                    );
+                    await Promise.race([
+                        loadUserProfile(session.user.id),
+                        timeoutPromise
+                    ]);
                     setAuthLoading(false);
                     setCurrentScreen('dashboard');
                 } catch (e) {
                     console.error('Sign-in profile load error:', e);
-                    setAuthLoading(false); // Ensure we don't hang
+                    setAuthLoading(false);
+                    setCurrentScreen('dashboard'); // Go to dashboard anyway, user can retry
                 }
             } else if (event === 'SIGNED_OUT') {
                 setUserData({
