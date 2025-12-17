@@ -89,6 +89,7 @@ class AudioSynthesizer {
 
             // Arpeggio
             [440, 554, 659, 880].forEach((freq, i) => {
+                if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
 

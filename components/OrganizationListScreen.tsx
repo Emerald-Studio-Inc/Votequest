@@ -51,7 +51,7 @@ export default function OrganizationListScreen({
                             </div>
                             <span className="font-bold tracking-wider">VOTEQUEST</span>
                         </button>
-                        <ArcadeButton onClick={onCreateNew} variant="cyan" size="sm">
+                        <ArcadeButton onClick={onCreateNew} variant="cyan" size="sm" tooltip="Establish DAO">
                             <Plus className="w-4 h-4 mr-2" />
                             CREATE_ORG
                         </ArcadeButton>
@@ -79,7 +79,7 @@ export default function OrganizationListScreen({
                         <p className="text-mono-60 mb-6">
                             Create your first organization to start managing voting rooms
                         </p>
-                        <ArcadeButton onClick={onCreateNew} variant="cyan" className="mx-auto">
+                        <ArcadeButton onClick={onCreateNew} variant="cyan" className="mx-auto" tooltip="Launch Organization">
                             <Plus className="w-4 h-4 mr-2" />
                             CREATE_FIRST_ORG
                         </ArcadeButton>

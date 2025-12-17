@@ -140,6 +140,7 @@ export default function OrganizationDashboard({
                                 onClick={() => onNavigate?.('create-room')}
                                 variant="cyan"
                                 className="hidden md:flex items-center gap-2"
+                                tooltip="Initialize Chamber"
                             >
                                 <Plus className="w-4 h-4" />
                                 CREATE_ROOM
@@ -150,6 +151,7 @@ export default function OrganizationDashboard({
                                 variant="cyan"
                                 size="sm"
                                 className="flex md:hidden items-center justify-center w-10 h-10 p-0"
+                                tooltip="New Room"
                             >
                                 <Plus className="w-5 h-5" />
                             </ArcadeButton>

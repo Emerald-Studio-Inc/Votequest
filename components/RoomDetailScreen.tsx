@@ -140,6 +140,7 @@ export default function RoomDetailScreen({
                                 variant="cyan"
                                 size="sm"
                                 className="w-10 h-10 !p-0 flex items-center justify-center"
+                                tooltip="Return"
                             >
                                 <ArrowLeft className="w-5 h-5" />
                             </ArcadeButton>
@@ -169,6 +170,7 @@ export default function RoomDetailScreen({
                                     onClick={() => updateRoomStatus('active')}
                                     variant="cyan"
                                     className="flex items-center gap-2"
+                                    tooltip="Open Voting"
                                 >
                                     <Play className="w-4 h-4" />
                                     <span>ACTIVATE_PROTOCOL</span>
@@ -180,6 +182,7 @@ export default function RoomDetailScreen({
                                     onClick={() => updateRoomStatus('closed')}
                                     variant="magenta"
                                     className="flex items-center gap-2"
+                                    tooltip="Pause Voting"
                                 >
                                     <Pause className="w-4 h-4" />
                                     <span>HALT_VOTING</span>
@@ -191,6 +194,7 @@ export default function RoomDetailScreen({
                                     onClick={() => updateRoomStatus('archived')}
                                     variant="cyan"
                                     className="flex items-center gap-2"
+                                    tooltip="Store Data"
                                 >
                                     <Archive className="w-4 h-4" />
                                     <span>ARCHIVE_DATA</span>
@@ -202,6 +206,7 @@ export default function RoomDetailScreen({
                                 variant="cyan"
                                 size="sm"
                                 className="flex items-center gap-2"
+                                tooltip="Edit Settings"
                             >
                                 <Edit className="w-4 h-4" />
                                 <span>CONFIG</span>
@@ -212,6 +217,7 @@ export default function RoomDetailScreen({
                                 variant="lime"
                                 size="sm"
                                 className="flex items-center gap-2"
+                                tooltip="Purchase Features"
                             >
                                 <Zap className="w-4 h-4" />
                                 <span>BOOST_CHAMBER</span>
