@@ -110,7 +110,7 @@ h6 {
     background-image:
         linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
-    mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+    /* mask-image: radial-gradient(circle at center, black 40%, transparent 80%); - REMOVED for visibility */
 }
 
 /* 2. Scanlines */
