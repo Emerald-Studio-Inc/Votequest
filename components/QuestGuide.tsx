@@ -181,7 +181,7 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
             <div
                 className={`fixed inset-0 transition-all duration-700 ease-in-out flex flex-col items-center justify-center overflow-hidden
                     ${isOpen
-                        ? 'z-[2000] bg-black/95 backdrop-blur-xl opacity-100 pointer-events-auto'
+                        ? 'z-[10000] bg-black/95 backdrop-blur-xl opacity-100 pointer-events-auto'
                         : 'z-0 opacity-40 pointer-events-none blur-sm' // Ambient Mode: Visible (40%) but background (z-0)
                     }
                 `}
