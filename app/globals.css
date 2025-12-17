@@ -403,6 +403,13 @@ h6 {
     overflow: hidden;
 }
 
+/* Neon Button Text Glow - For Visibility */
+button,
+.btn,
+[class*="button"] {
+    text-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+}
+
 .btn::before {
     content: '';
     position: absolute;

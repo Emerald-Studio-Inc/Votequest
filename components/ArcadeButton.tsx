@@ -48,8 +48,9 @@ export default function ArcadeButton({
             style={{
                 color: color,
                 borderColor: color,
-                backgroundColor: `${color}15`,
-                textShadow: `0 0 5px ${color}`,
+                backgroundColor: `${color}25`,
+                textShadow: `0 0 10px ${color}, 0 0 20px ${color}`,
+                fontWeight: 700,
                 ...style,
             }}
             onMouseEnter={() => sfx.playHover()}
