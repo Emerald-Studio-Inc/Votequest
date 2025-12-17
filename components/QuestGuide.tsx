@@ -1,14 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Map, X, LayoutDashboard, Building2, Vote, Zap, Globe, Target, Cpu } from 'lucide-react';
+import { Map, X, LayoutDashboard, Building2, Vote, Zap, Globe, Target, Cpu, Send, MessageCircle } from 'lucide-react';
 import ArcadeButton from './ArcadeButton';
+
+interface ChatMessage {
+    role: 'user' | 'architect';
+    content: string;
+}
 
 interface QuestGuideProps {
     currentScreen: string;
     onNavigate: (screen: string) => void;
-    message?: string | null;  // AI Message trigger
+    message?: string | null;
     onMessageComplete?: () => void;
+    userData?: { level?: number; coins?: number };
 }
 
 interface MapNode {
@@ -66,6 +72,50 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
     // AI Dialogue State
     const [displayedText, setDisplayedText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+
+    // Chat State
+    const [showChat, setShowChat] = useState(false);
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [chatInput, setChatInput] = useState('');
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const chatEndRef = useRef<HTMLDivElement>(null);
+
+    // Scroll to bottom of chat on new message
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [chatMessages]);
+
+    // Ask The Architect
+    const askArchitect = async (query: string) => {
+        if (!query.trim() || isAiLoading) return;
+
+        const userMessage: ChatMessage = { role: 'user', content: query };
+        setChatMessages(prev => [...prev, userMessage]);
+        setChatInput('');
+        setIsAiLoading(true);
+
+        try {
+            const res = await fetch('/api/architect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query,
+                    context: {
+                        screen: currentScreen,
+                        level: (QuestGuide as any).userData?.level,
+                        coins: (QuestGuide as any).userData?.coins
+                    }
+                })
+            });
+            const data = await res.json();
+            const aiMessage: ChatMessage = { role: 'architect', content: data.response || 'SYSTEM_ERROR' };
+            setChatMessages(prev => [...prev, aiMessage]);
+        } catch (error) {
+            setChatMessages(prev => [...prev, { role: 'architect', content: 'CONNECTION_ERROR: Unable to reach AI core.' }]);
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
 
     // Auto-open if message exists
     useEffect(() => {
@@ -390,17 +440,78 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                     </div>
                 </div>
 
-                {/* Close Button - Only visible when Open */}
+                {/* Chat Panel Toggle */}
                 {isOpen && (
-                    <ArcadeButton
-                        onClick={() => setIsOpen(false)}
-                        variant="magenta"
-                        size="md"
-                        className="absolute bottom-20 z-50 pointer-events-auto"
-                    >
-                        <X className="w-5 h-5 mr-2" />
-                        CLOSE MAP
-                    </ArcadeButton>
+                    <div className="absolute bottom-4 left-4 right-4 z-50 pointer-events-auto max-w-lg mx-auto" onClick={e => e.stopPropagation()}>
+                        {/* Toggle Button */}
+                        <button
+                            onClick={() => setShowChat(!showChat)}
+                            className="mb-2 flex items-center gap-2 px-4 py-2 bg-black/80 border border-cyan-500/50 text-cyan-400 font-mono text-sm hover:bg-cyan-900/30 transition-colors"
+                        >
+                            <MessageCircle className="w-4 h-4" />
+                            {showChat ? 'HIDE_CHAT' : 'ASK_ARCHITECT'}
+                        </button>
+
+                        {/* Chat Panel */}
+                        {showChat && (
+                            <div className="bg-black/95 border border-cyan-500/30 rounded-lg overflow-hidden shadow-[0_0_30px_rgba(0,240,255,0.2)]">
+                                {/* Messages */}
+                                <div className="h-48 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                                    {chatMessages.length === 0 && (
+                                        <p className="text-gray-500 text-sm font-mono text-center">QUERY_THE_ARCHITECT...</p>
+                                    )}
+                                    {chatMessages.map((msg, i) => (
+                                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[80%] px-3 py-2 rounded font-mono text-sm ${msg.role === 'user'
+                                                    ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-500/30'
+                                                    : 'bg-white/5 text-gray-200 border border-white/10'
+                                                }`}>
+                                                {msg.content}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {isAiLoading && (
+                                        <div className="flex justify-start">
+                                            <div className="px-3 py-2 bg-white/5 border border-white/10 rounded font-mono text-sm text-gray-400 animate-pulse">
+                                                PROCESSING...
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div ref={chatEndRef} />
+                                </div>
+
+                                {/* Input */}
+                                <div className="border-t border-cyan-500/20 p-3 flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={chatInput}
+                                        onChange={e => setChatInput(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && askArchitect(chatInput)}
+                                        placeholder="Ask anything..."
+                                        className="flex-1 bg-black/50 border border-white/20 rounded px-3 py-2 text-white font-mono text-sm focus:border-cyan-500 focus:outline-none"
+                                    />
+                                    <button
+                                        onClick={() => askArchitect(chatInput)}
+                                        disabled={isAiLoading || !chatInput.trim()}
+                                        className="px-4 py-2 bg-cyan-500/20 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500/30 disabled:opacity-50 transition-colors"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Close Map Button */}
+                        <ArcadeButton
+                            onClick={() => setIsOpen(false)}
+                            variant="magenta"
+                            size="md"
+                            className="mt-2 w-full"
+                        >
+                            <X className="w-5 h-5 mr-2" />
+                            CLOSE MAP
+                        </ArcadeButton>
+                    </div>
                 )}
 
             </div>
