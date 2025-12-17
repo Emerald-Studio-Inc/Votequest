@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { bulkUploadVoters, addVoterToEligibilityList } from '@/lib/institutional';
 import { supabaseAdmin } from '@/lib/server-db';
 
@@ -61,8 +61,28 @@ export async function POST(
         const body = await request.json();
         const { voters, single } = body;
 
-        // Check authorization (user must be org admin)
-        // TODO: Add auth check
+        // Check authorization
+        const userId = request.headers.get('x-user-id');
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Verify ownership
+        const { data: room, error: roomError } = await supabaseAdmin
+            .from('voting_rooms')
+            .select('organization_id, organizations!inner(user_id)')
+            .eq('id', roomId)
+            .single();
+
+        if (roomError || !room) {
+            return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+        }
+
+        // Check if user owns the organization
+        // @ts-ignore
+        if (room.organizations?.user_id !== userId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
 
         if (single) {
             // Add single voter

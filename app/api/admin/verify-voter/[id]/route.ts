@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/server-db';
+import { sendEmail } from '@/lib/email';
 
 /**
  * Approve or reject voter verification
@@ -20,11 +21,32 @@ export async function POST(
             );
         }
 
-        // Get admin info (in production: get from session)
-        const adminId = 'admin-user-id'; // TODO: Get from authenticated session
+        // Get admin info from header
+        const adminId = request.headers.get('x-user-id');
+        if (!adminId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Fetch verification record to check permission
+        const { data: record, error: recordError } = await supabaseAdmin
+            .from('voter_eligibility')
+            .select('id, room_id, email, voting_rooms!inner(organizations!inner(user_id))')
+            .eq('id', verificationId)
+            .single();
+
+        if (recordError || !record) {
+            return NextResponse.json({ error: 'Record not found' }, { status: 404 });
+        }
+
+        // Verify ownership
+        // @ts-ignore
+        const ownerId = record.voting_rooms?.organizations?.user_id;
+        if (ownerId !== adminId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
 
         // Update verification status
-        const { data, error } = await supabaseAdmin
+        const { error: updateError } = await supabaseAdmin
             .from('voter_eligibility')
             .update({
                 verification_status: approved ? 'approved' : 'rejected',
@@ -32,18 +54,23 @@ export async function POST(
                 verified_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             })
-            .eq('id', verificationId)
-            .select('email, room_id')
-            .single();
+            .eq('id', verificationId);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
-        // TODO: Send email notification to voter
-        // if (approved) {
-        //   await sendEmail(data.email, 'Verification Approved', '...');
-        // } else {
-        //   await sendEmail(data.email, 'Verification Rejected', '...');
-        // }
+        // Send email notification to voter
+        await sendEmail({
+            to: record.email,
+            subject: `VoteQuest Verification ${approved ? 'Approved' : 'Rejected'}`,
+            html: `
+                <div style="font-family: sans-serif; padding: 20px;">
+                    <h2>Verification Status Update</h2>
+                    <p>Your voter verification request has been <strong>${approved ? 'APPROVED' : 'REJECTED'}</strong>.</p>
+                    ${approved ? '<p>You may now access the voting chamber.</p>' : '<p>Please contact the organization administrator for more details.</p>'}
+                </div>
+            `,
+            text: `Your verification status has been updated to: ${approved ? 'APPROVED' : 'REJECTED'}`
+        });
 
         return NextResponse.json({
             success: true,
