@@ -110,6 +110,33 @@ class AudioSynthesizer {
             // Ignore
         }
     }
+
+    playError() {
+        if (!this.enabled || !this.ctx) {
+            this.init();
+            if (!this.ctx) return;
+        }
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            // Low pitch sawtooth
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.2);
+
+            gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.2);
+        } catch (e) {
+            // Ignore
+        }
+    }
 }
 
 export const sfx = new AudioSynthesizer();

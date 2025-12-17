@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, List, BarChart2, Settings } from 'lucide-react';
+import { LayoutGrid, List, BarChart2, Settings, MessageSquare } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser, onAuthStateChange, getUserProfile } from '@/lib/supabase-auth';
 import type { ProposalWithOptions, Achievement, UserAchievement } from '@/lib/supabase';
@@ -32,6 +32,9 @@ import ReceiptsScreen from './ReceiptsScreen';
 import AchievementsScreen from './AchievementsScreen';
 import ProfileEditScreen from './ProfileEditScreen';
 import LeaderboardScreen from './LeaderboardScreen';
+import CommunityScreen from './CommunityScreen';
+import DebateArena from './DebateArena';
+import EntranceExam from './EntranceExam';
 import dynamic from 'next/dynamic';
 
 const AnalyticsScreen = dynamic(() => import('./AnalyticsScreen'), {
@@ -69,7 +72,7 @@ interface UserData {
 
 const VoteQuestApp = () => {
     const [currentScreen, setCurrentScreen] = useState('splash');
-    const [activeDashboardTab, setActiveDashboardTab] = useState<'overview' | 'proposals' | 'analytics' | 'settings'>('overview');
+    const [activeDashboardTab, setActiveDashboardTab] = useState<'overview' | 'proposals' | 'analytics' | 'settings' | 'community'>('overview');
     const [userData, setUserData] = useState<UserData>({
         address: null,
         userId: null,
@@ -595,6 +598,7 @@ const VoteQuestApp = () => {
                     {[
                         { label: 'Overview', value: 'overview' as const, icon: LayoutGrid },
                         { label: 'Proposals', value: 'proposals' as const, icon: List },
+                        { label: 'Community', value: 'community' as const, icon: MessageSquare },
                         { label: 'Analytics', value: 'analytics' as const, icon: BarChart2 },
                         { label: 'Settings', value: 'settings' as const, icon: Settings }
                     ].map((item) => {
@@ -850,6 +854,40 @@ const VoteQuestApp = () => {
                     setCurrentScreen('room-detail');
                 }}
                 onCancel={() => setCurrentScreen('org-dashboard')}
+            />
+        );
+    }
+
+    // Community & Debates
+    if (currentScreen === 'community' || (currentScreen === 'dashboard' && activeDashboardTab === 'community')) {
+        return (
+            <div className="pb-24">
+                <CommunityScreen
+                    onNavigate={(screen, data) => {
+                        if (screen === 'thread') {
+                            if (data === 2) {
+                                setCurrentScreen('entrance-exam');
+                            } else {
+                                setCurrentScreen('debate');
+                            }
+                        }
+                    }}
+                />
+                <BottomNavigation />
+            </div>
+        );
+    }
+
+    if (currentScreen === 'debate') {
+        return <DebateArena roomId="test" onBack={() => setCurrentScreen('community')} />;
+    }
+
+    if (currentScreen === 'entrance-exam') {
+        return (
+            <EntranceExam
+                onPass={() => setCurrentScreen('debate')}
+                onFail={() => setCurrentScreen('community')}
+                onCancel={() => setCurrentScreen('community')}
             />
         );
     }
