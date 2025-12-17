@@ -173,11 +173,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     {/* Quick Actions HUD */}
                     <CyberCard title="ACTIONS">
                         <div className="flex flex-col gap-3 h-full justify-center">
-                            <ArcadeButton variant="cyan" onClick={() => onNavigate('create-proposal')} className="w-full">
+                            <ArcadeButton variant="cyan" onClick={() => onNavigate('create-proposal')} className="w-full" tooltip="Draft & Submit">
                                 <Plus className="w-4 h-4 inline-block mr-2" />
                                 NEW_PROPOSAL
                             </ArcadeButton>
-                            <ArcadeButton variant="magenta" onClick={() => onNavigate('organization')} className="w-full">
+                            <ArcadeButton variant="magenta" onClick={() => onNavigate('organization')} className="w-full" tooltip="Manage DAOs">
                                 <Building2 className="w-4 h-4 inline-block mr-2" />
                                 ORG_ACCESS
                             </ArcadeButton>
@@ -200,6 +200,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             size="sm"
                             className={proposalFilter === 'active' ? 'bg-cyan-500/20' : 'opacity-60 hover:opacity-100'}
                             glow={proposalFilter === 'active'}
+                            tooltip="Show Live"
                         >
                             ACTIVE
                         </ArcadeButton>
@@ -209,6 +210,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             size="sm"
                             className={proposalFilter === 'history' ? 'bg-cyan-500/20' : 'opacity-60 hover:opacity-100'}
                             glow={proposalFilter === 'history'}
+                            tooltip="Show Archived"
                         >
                             HISTORY
                         </ArcadeButton>
