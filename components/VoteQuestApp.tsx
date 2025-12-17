@@ -131,7 +131,6 @@ const VoteQuestApp = () => {
             if (user) {
                 await loadUserProfile(user.id);
                 setCurrentScreen('dashboard');
-            } else {
                 setCurrentScreen('login');
                 setUserData({
                     address: null,
@@ -154,6 +153,12 @@ const VoteQuestApp = () => {
             authListener.then(({ data: { subscription } }) => subscription.unsubscribe());
         };
     }, []);
+
+    // Play sound on screen navigation
+    useEffect(() => {
+        // Import dynamically to avoid SSR issues
+        import('@/lib/sfx').then(({ sfx }) => sfx.playClick());
+    }, [currentScreen]);
 
     // Load data on mount
     useEffect(() => {

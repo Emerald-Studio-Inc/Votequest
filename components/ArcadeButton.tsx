@@ -1,4 +1,6 @@
 import Tooltip from './Tooltip';
+import { sfx } from '@/lib/sfx';
+import { triggerHaptic } from '@/lib/haptics';
 
 interface ArcadeButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'cyan' | 'magenta' | 'lime';
@@ -49,6 +51,12 @@ export default function ArcadeButton({
                 backgroundColor: `${color}15`,
                 textShadow: `0 0 5px ${color}`,
                 ...style,
+            }}
+            onMouseEnter={() => sfx.playHover()}
+            onClick={(e) => {
+                sfx.playClick();
+                triggerHaptic('light');
+                if (props.onClick) props.onClick(e);
             }}
             {...props}
         >
