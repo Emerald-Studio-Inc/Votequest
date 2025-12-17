@@ -7,6 +7,8 @@ import ArcadeButton from './ArcadeButton';
 interface QuestGuideProps {
     currentScreen: string;
     onNavigate: (screen: string) => void;
+    message?: string | null;  // AI Message trigger
+    onMessageComplete?: () => void;
 }
 
 interface MapNode {
@@ -55,11 +57,39 @@ const NODES: MapNode[] = [
     },
 ];
 
-export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProps) {
+export default function QuestGuide({ currentScreen, onNavigate, message, onMessageComplete }: QuestGuideProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [showTip, setShowTip] = useState(true);
     const [rotation, setRotation] = useState(0); // For Orb
     const [wheelRotation, setWheelRotation] = useState(0); // For 3D Wheel
+
+    // AI Dialogue State
+    const [displayedText, setDisplayedText] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+
+    // Auto-open if message exists
+    useEffect(() => {
+        if (message) {
+            setIsOpen(true);
+            setIsTyping(true);
+            setDisplayedText('');
+
+            let i = 0;
+            const timer = setInterval(() => {
+                setDisplayedText(message.substring(0, i + 1));
+                i++;
+                if (i >= message.length) {
+                    clearInterval(timer);
+                    setIsTyping(false);
+                    if (onMessageComplete) setTimeout(onMessageComplete, 3000); // Auto dismiss after 3s? Or wait for user?
+                }
+            }, 30); // Typing speed
+
+            return () => clearInterval(timer);
+        } else {
+            setDisplayedText('');
+        }
+    }, [message, onMessageComplete]);
 
     // Listen for external open commands
     useEffect(() => {
@@ -201,47 +231,71 @@ export default function QuestGuide({ currentScreen, onNavigate }: QuestGuideProp
             >
                 {/* Click Handler Removed - No more ambient map opening */}
 
-                {/* Header Info - Only visible when Open */}
-                <div className={`absolute top-12 left-0 w-full text-center pointer-events-none z-10 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                    <h2 className="text-4xl font-bold font-mono tracking-tighter glow-text-cyan mb-2" style={{ color: NEON_CYAN }}>
-                        NAV_SYSTEM
-                    </h2>
-                    <div className="flex justify-center gap-4 text-xs font-mono uppercase tracking-widest">
-                        <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
-                            SCROLL TO ROTATE
-                        </span>
-                        <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
-                            CLICK TO ENTER
-                        </span>
-                    </div>
-                </div>
-
-                {/* Contextual Info Panel - Dynamic based on Active Node */}
-                <div className={`absolute top-24 md:top-32 w-full max-w-md px-6 text-center z-20 transition-all duration-300 transform 
-                    ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
-                    <div className="bg-black/90 border border-cyan-500/30 p-6 rounded-xl backdrop-blur-md shadow-[0_0_30px_rgba(0,240,255,0.1)]">
-                        <h3 className="text-2xl font-bold font-mono text-white mb-2 tracking-wider animate-pulse uppercase">
-                            {activeNode.label}
-                        </h3>
-                        <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent mb-4" />
-                        <p className="text-sm md:text-base text-gray-300 font-mono leading-relaxed">
-                            {activeNode.desc}
-                        </p>
-                        <div className="mt-4 flex justify-center gap-2 items-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping" />
-                            <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
-                                TARGET LOCKED
+                {/* Header Info - Replaced by Dialogue if Message Active */}
+                {!message ? (
+                    <div className={`absolute top-12 left-0 w-full text-center pointer-events-none z-10 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                        <h2 className="text-4xl font-bold font-mono tracking-tighter glow-text-cyan mb-2" style={{ color: NEON_CYAN }}>
+                            NAV_SYSTEM
+                        </h2>
+                        <div className="flex justify-center gap-4 text-xs font-mono uppercase tracking-widest">
+                            <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
+                                SCROLL TO ROTATE
+                            </span>
+                            <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
+                                CLICK TO ENTER
                             </span>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="absolute top-12 left-0 w-full flex justify-center z-50 animate-slide-up">
+                        <div className="bg-black/90 border-2 border-cyan-500 p-6 rounded-lg max-w-lg w-full shadow-[0_0_50px_rgba(0,240,255,0.4)] relative overflow-hidden">
+                            {/* Scanline */}
+                            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.1)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
+
+                            <div className="flex items-center gap-4 mb-4 border-b border-cyan-500/30 pb-2">
+                                <div className="w-2 h-2 bg-cyan-500 animate-ping rounded-full" />
+                                <span className="text-cyan-500 font-bold tracking-widest uppercase text-sm">ARCHITECT_AI_ONLINE</span>
+                            </div>
+
+                            <p className="text-lg md:text-xl text-white font-mono leading-relaxed" style={{ textShadow: '0 0 10px rgba(0,255,255,0.5)' }}>
+                                {displayedText}
+                                <span className="animate-pulse">_</span>
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* ... Contextual Info Panel ... (Keep existing) */}
+                {/* Actually I should hide Contextual Panel if AI is speaking to avoid clutter */}
+                {!message && (
+                    <div className={`absolute top-24 md:top-32 w-full max-w-md px-6 text-center z-20 transition-all duration-300 transform 
+                    ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                        <div className="bg-black/90 border border-cyan-500/30 p-6 rounded-xl backdrop-blur-md shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+                            <h3 className="text-2xl font-bold font-mono text-white mb-2 tracking-wider animate-pulse uppercase">
+                                {activeNode.label}
+                            </h3>
+                            <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent mb-4" />
+                            <p className="text-sm md:text-base text-gray-300 font-mono leading-relaxed">
+                                {activeNode.desc}
+                            </p>
+                            <div className="mt-4 flex justify-center gap-2 items-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping" />
+                                <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
+                                    TARGET LOCKED
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* 3D Wheel Container */}
                 <div
                     className="relative w-full max-w-lg h-[500px] flex items-center justify-center mt-20"
-                    style={{ perspective: '1200px' }}
+                    style={{ perspective: '1200px', opacity: message ? 0.3 : 1, transition: 'opacity 0.5s' }}
                     onClick={(e) => e.stopPropagation()}
                 >
+                    {/* ... (Content of 3D wheel same as before) ... */}
+
                     <div
                         className={`relative w-full h-full transition-transform duration-500 ease-out`}
                         style={{

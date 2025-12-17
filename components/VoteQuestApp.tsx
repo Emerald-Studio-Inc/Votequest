@@ -100,6 +100,7 @@ const VoteQuestApp = () => {
     const [authLoading, setAuthLoading] = useState(true);
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+    const [aiMessage, setAiMessage] = useState<string | null>(null);
 
     // Blockchain removed - using database only
     const address = null;
@@ -108,224 +109,9 @@ const VoteQuestApp = () => {
     // Auto-reload disabled - users can manually refresh if needed
     // useAutoReload();
 
-    // Check auth on mount
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const user = await getCurrentUser();
-                setAuthUser(user);
-                if (user) {
-                    await loadUserProfile(user.id);
-                    setCurrentScreen('dashboard');
-                }
-            } catch (error) {
-                console.error('Error checking auth:', error);
-            } finally {
-                setAuthLoading(false);
-            }
-        };
-        checkAuth();
-    }, []);
-
-    // Listen for auth changes
-    useEffect(() => {
-        const authListener = onAuthStateChange(async (user) => {
-            setAuthUser(user);
-            if (user) {
-                await loadUserProfile(user.id);
-                setCurrentScreen('dashboard');
-            } else {
-                setCurrentScreen('login');
-                setUserData({
-                    address: null,
-                    userId: null,
-                    email: null,
-                    level: 1,
-                    xp: 0,
-                    nextLevelXP: 100,
-                    streak: 0,
-                    votingPower: 100,
-                    votesCount: 0,
-                    globalRank: 0,
-                    achievements: [],
-                    votedProposals: [],
-                    coins: 0
-                });
-            }
-        });
-        return () => {
-            authListener.then(({ data: { subscription } }) => subscription.unsubscribe());
-        };
-    }, []);
-
-    // Play sound on screen navigation
-    useEffect(() => {
-        // Import dynamically to avoid SSR issues
-        import('@/lib/sfx').then(({ sfx }) => sfx.playClick());
-    }, [currentScreen]);
-
-    // Load data on mount
-    useEffect(() => {
-        loadAchievements();
-        loadProposals();
-    }, []);
-
-    // Check for returning user
-    useEffect(() => {
-        if (currentScreen === 'splash') {
-            const hasVisited = localStorage.getItem('votequest_visited');
-            if (hasVisited) {
-                setCurrentScreen('checking');
-            }
-        }
-    }, []);
-
-    // Auto-open target proposal from share link
-    useEffect(() => {
-        if (currentScreen === 'dashboard' && proposals.length > 0) {
-            const targetProposalId = localStorage.getItem('targetProposalId');
-            if (targetProposalId) {
-                // Log removed('[SHARE LINK] Auto-opening proposal:', targetProposalId);
-
-                // Find proposal by blockchain_id
-                const proposal = proposals.find(p => p.blockchain_id?.toString() === targetProposalId);
-
-                if (proposal) {
-                    setSelectedProposal(proposal);
-                    setCurrentScreen('proposal');
-                    localStorage.removeItem('targetProposalId'); // Clear after use
-                } else {
-                    console.warn('[SHARE LINK] Proposal not found:', targetProposalId);
-                    localStorage.removeItem('targetProposalId');
-                }
-            }
-        }
-    }, [currentScreen, proposals]);
-
-    // Auto-reconnect check
-    useEffect(() => {
-        if (currentScreen === 'checking') {
-            const timer = setTimeout(() => {
-                setCurrentScreen(isConnected ? 'dashboard' : 'login');
-            }, 500);
-            return () => clearTimeout(timer);
-        }
-    }, [currentScreen, isConnected]);
-
-    // Splash timer
-    useEffect(() => {
-        if (currentScreen === 'splash') {
-            const timer = setTimeout(() => setCurrentScreen('onboarding1'), 1800);
-            return () => clearTimeout(timer);
-        }
-    }, [currentScreen]);
-
-    // Konami code for admin (gated behind env flag for safety)
-    const [showAdminModal, setShowAdminModal] = useState(false);
-    const [showSetup2FA, setShowSetup2FA] = useState(false);
-    const [setup2FAPassphrase, setSetup2FAPassphrase] = useState('');
-    const [adminPassphrase, setAdminPassphrase] = useState('');
-    const [adminSessionStart, setAdminSessionStart] = useState<number | null>(null);
-    const ADMIN_SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
-
-    useEffect(() => {
-        const enabled = typeof process !== 'undefined' && (process.env.NEXT_PUBLIC_ENABLE_ADMIN_BACKDOOR === 'true');
-        if (!enabled) {
-            // Backdoor disabled in this environment — do nothing
-            return;
-        }
-
-        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'a'];
-        let konamiIndex = 0;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Ctrl+Shift+A for 2FA setup
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                const passphrase = prompt('Enter admin passphrase to access 2FA setup:');
-                if (passphrase) {
-                    setSetup2FAPassphrase(passphrase);
-                    setShowSetup2FA(true);
-                }
-                return;
-            }
-
-            // Konami code for admin login
-            if (e.key === konamiCode[konamiIndex]) {
-                konamiIndex++;
-                if (konamiIndex === konamiCode.length) {
-                    // Instead of immediately opening admin, show passphrase modal
-                    setShowAdminModal(true);
-                    konamiIndex = 0;
-                }
-            } else {
-                konamiIndex = 0;
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
-
-    // Admin session timeout - auto-logout after 5 minutes
-    useEffect(() => {
-        if (currentScreen === 'admin' && adminSessionStart) {
-            const checkTimeout = setInterval(() => {
-                const elapsed = Date.now() - adminSessionStart;
-                if (elapsed >= ADMIN_SESSION_TIMEOUT) {
-                    // Log removed('[ADMIN] Session timeout - logging out');
-                    setCurrentScreen('dashboard');
-                    setAdminSessionStart(null);
-                    alert('Admin session expired after 5 minutes. Please re-authenticate.');
-                }
-            }, 30000); // Check every 30 seconds
-
-            return () => clearInterval(checkTimeout);
-        }
-    }, [currentScreen, adminSessionStart]);
-
-    // Admin access handler - modal already verified passphrase and 2FA
-    const handleAdminAccess = async (passphrase: string) => {
-        try {
-            // Log successful access
-            await fetch('/api/admin/log-access', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ granted: true, passphrase_attempts: 1 })
-            });
-
-            // Grant access and start session timer
-            setAdminPassphrase(passphrase);
-            setAdminSessionStart(Date.now());
-            setCurrentScreen('admin');
-            setShowAdminModal(false);
-
-            // Log removed('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes');
-        } catch (error) {
-            console.error('[ADMIN] Error during access check:', error);
-            alert('Error granting admin access. Please try again.');
-            setShowAdminModal(false);
-        }
-    };
-
-    // Realtime subscription
-    useEffect(() => {
-        const channel = supabase
-            .channel('proposals-realtime')
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'proposals'
-            }, () => {
-                loadProposals();
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, []);
-
+    // ---------------------------------------------------------
+    // HELPERS MOVED TO TOP to fix "block-scoped variable" build errors
+    // ---------------------------------------------------------
     const loadUserProfile = async (authId: string) => {
         // Log removed('[AUTH] Loading user profile for authId:', authId);
         try {
@@ -572,6 +358,249 @@ const VoteQuestApp = () => {
         }
     };
 
+    // ---------------------------------------------------------
+    // END HELPERS
+    // ---------------------------------------------------------
+
+
+    // Initial load check
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                const user = await getCurrentUser(); // Returns user object directly, not { user }
+
+                if (user) {
+                    await loadUserProfile(user.id);
+                    // trigger welcome if user just logged in (handled by welcome effect below)
+                } else {
+                    setLoading(false);
+                    setCurrentScreen('login');
+                }
+            } catch (error) {
+                console.error('Error checking user:', error);
+                setLoading(false);
+                setCurrentScreen('login');
+            }
+        };
+
+        checkUser();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                await loadUserProfile(session.user.id);
+            } else if (event === 'SIGNED_OUT') {
+                setUserData({
+                    address: null,
+                    userId: null,
+                    email: null,
+                    level: 1,
+                    xp: 0,
+                    nextLevelXP: 100,
+                    streak: 0,
+                    votingPower: 100,
+                    votesCount: 0,
+                    globalRank: 0,
+                    achievements: [],
+                    votedProposals: [],
+                    coins: 0
+                });
+                setCurrentScreen('login');
+            }
+        });
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
+
+    // AI Welcome Trigger
+    useEffect(() => {
+        if (currentScreen === 'dashboard' && !aiMessage && userData.userId) {
+            // 1s delay for welcome
+        }
+    }, [currentScreen, userData.userId]);
+
+    const hasWelcomed = React.useRef(false);
+    useEffect(() => {
+        if (currentScreen === 'dashboard' && !hasWelcomed.current && userData.userId) {
+            hasWelcomed.current = true;
+            setTimeout(() => {
+                setAiMessage("CITIZEN_RECOGNIZED. WELCOME TO VOTEQUEST. ACCESSING NAV_SYSTEM...");
+            }, 1000);
+        }
+    }, [currentScreen, userData.userId]);
+
+    // Play sound on screen navigation
+    useEffect(() => {
+        // Import dynamically to avoid SSR issues
+        import('@/lib/sfx').then(({ sfx }) => sfx.playClick());
+    }, [currentScreen]);
+
+    // Load data on mount
+    useEffect(() => {
+        loadAchievements();
+        loadProposals();
+    }, []);
+
+    // Check for returning user
+    useEffect(() => {
+        if (currentScreen === 'splash') {
+            const hasVisited = localStorage.getItem('votequest_visited');
+            if (hasVisited) {
+                setCurrentScreen('checking');
+            }
+        }
+    }, []);
+
+    // Auto-open target proposal from share link
+    useEffect(() => {
+        if (currentScreen === 'dashboard' && proposals.length > 0) {
+            const targetProposalId = localStorage.getItem('targetProposalId');
+            if (targetProposalId) {
+                // Log removed('[SHARE LINK] Auto-opening proposal:', targetProposalId);
+
+                // Find proposal by blockchain_id
+                const proposal = proposals.find(p => p.blockchain_id?.toString() === targetProposalId);
+
+                if (proposal) {
+                    setSelectedProposal(proposal);
+                    setCurrentScreen('proposal');
+                    localStorage.removeItem('targetProposalId'); // Clear after use
+                } else {
+                    console.warn('[SHARE LINK] Proposal not found:', targetProposalId);
+                    localStorage.removeItem('targetProposalId');
+                }
+            }
+        }
+    }, [currentScreen, proposals]);
+
+    // Auto-reconnect check
+    useEffect(() => {
+        if (currentScreen === 'checking') {
+            const timer = setTimeout(() => {
+                setCurrentScreen(isConnected ? 'dashboard' : 'login');
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [currentScreen, isConnected]);
+
+    // Splash timer
+    useEffect(() => {
+        if (currentScreen === 'splash') {
+            const timer = setTimeout(() => setCurrentScreen('onboarding1'), 1800);
+            return () => clearTimeout(timer);
+        }
+    }, [currentScreen]);
+
+    // Konami code for admin (gated behind env flag for safety)
+    const [showAdminModal, setShowAdminModal] = useState(false);
+    const [showSetup2FA, setShowSetup2FA] = useState(false);
+    const [setup2FAPassphrase, setSetup2FAPassphrase] = useState('');
+    const [adminPassphrase, setAdminPassphrase] = useState('');
+    const [adminSessionStart, setAdminSessionStart] = useState<number | null>(null);
+    const ADMIN_SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+    useEffect(() => {
+        const enabled = typeof process !== 'undefined' && (process.env.NEXT_PUBLIC_ENABLE_ADMIN_BACKDOOR === 'true');
+        if (!enabled) {
+            // Backdoor disabled in this environment — do nothing
+            return;
+        }
+
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'a'];
+        let konamiIndex = 0;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ctrl+Shift+A for 2FA setup
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                const passphrase = prompt('Enter admin passphrase to access 2FA setup:');
+                if (passphrase) {
+                    setSetup2FAPassphrase(passphrase);
+                    setShowSetup2FA(true);
+                }
+                return;
+            }
+
+            // Konami code for admin login
+            if (e.key === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiCode.length) {
+                    // Instead of immediately opening admin, show passphrase modal
+                    setShowAdminModal(true);
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Admin session timeout - auto-logout after 5 minutes
+    useEffect(() => {
+        if (currentScreen === 'admin' && adminSessionStart) {
+            const checkTimeout = setInterval(() => {
+                const elapsed = Date.now() - adminSessionStart;
+                if (elapsed >= ADMIN_SESSION_TIMEOUT) {
+                    // Log removed('[ADMIN] Session timeout - logging out');
+                    setCurrentScreen('dashboard');
+                    setAdminSessionStart(null);
+                    alert('Admin session expired after 5 minutes. Please re-authenticate.');
+                }
+            }, 30000); // Check every 30 seconds
+
+            return () => clearInterval(checkTimeout);
+        }
+    }, [currentScreen, adminSessionStart]);
+
+    // Admin access handler - modal already verified passphrase and 2FA
+    const handleAdminAccess = async (passphrase: string) => {
+        try {
+            // Log successful access
+            await fetch('/api/admin/log-access', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ granted: true, passphrase_attempts: 1 })
+            });
+
+            // Grant access and start session timer
+            setAdminPassphrase(passphrase);
+            setAdminSessionStart(Date.now());
+            setCurrentScreen('admin');
+            setShowAdminModal(false);
+
+            // Log removed('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes');
+        } catch (error) {
+            console.error('[ADMIN] Error during access check:', error);
+            alert('Error granting admin access. Please try again.');
+            setShowAdminModal(false);
+        }
+    };
+
+    // Realtime subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('proposals-realtime')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'proposals'
+            }, () => {
+                loadProposals();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
+    // Functions moved to top to satisfy scope needs
+
+
     // Navigation Component - Arcade Style with inline colors for visibility
     const NEON_CYAN = '#00F0FF';
 
@@ -695,6 +724,21 @@ const VoteQuestApp = () => {
                 {activeDashboardTab === 'settings' && (
                     <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                 )}
+                {activeDashboardTab === 'community' && (
+                    <div className="pb-24">
+                        <CommunityScreen
+                            onNavigate={(screen, data) => {
+                                if (screen === 'thread') {
+                                    if (data === 2) {
+                                        setCurrentScreen('entrance-exam');
+                                    } else {
+                                        setCurrentScreen('debate');
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
+                )}
                 <BottomNavigation />
                 <QuestGuide
                     currentScreen={currentScreen}
@@ -708,6 +752,8 @@ const VoteQuestApp = () => {
                             if (screen === 'dashboard') setActiveDashboardTab('overview');
                         }
                     }}
+                    message={aiMessage}
+                    onMessageComplete={() => setAiMessage(null)}
                 />
                 <AdminPassphraseModal
                     open={showAdminModal}
