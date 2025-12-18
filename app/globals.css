@@ -404,9 +404,8 @@ h6 {
 }
 
 /* Neon Button Text Glow - For Visibility */
-button,
-.btn,
-[class*="button"] {
+.btn.glow,
+.text-glow {
     text-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
 }
 

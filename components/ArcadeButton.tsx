@@ -48,8 +48,8 @@ export default function ArcadeButton({
             style={{
                 color: color,
                 borderColor: color,
-                backgroundColor: `${color}25`,
-                textShadow: `0 0 10px ${color}, 0 0 20px ${color}`,
+                backgroundColor: '#000000', // Pure black for max contrast
+                textShadow: `0 0 1px white, 0 0 5px ${color}`, // White core + colored glow = Readable Neon
                 fontWeight: 700,
                 ...style,
             }}

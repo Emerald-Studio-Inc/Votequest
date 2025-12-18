@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Map, X, LayoutDashboard, Building2, Vote, Zap, Globe, Target, Cpu, Send, MessageCircle } from 'lucide-react';
+import { Map, X, LayoutDashboard, Building2, Vote, Zap, Globe, Target, Cpu, Send, MessageCircle, Maximize2, Minimize2 } from 'lucide-react';
 import ArcadeButton from './ArcadeButton';
 
 interface ChatMessage {
@@ -75,6 +75,7 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
 
     // Chat State
     const [showChat, setShowChat] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [chatInput, setChatInput] = useState('');
     const [isAiLoading, setIsAiLoading] = useState(false);
@@ -454,17 +455,29 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
 
                         {/* Chat Panel */}
                         {showChat && (
-                            <div className="bg-black/95 border border-cyan-500/30 rounded-lg overflow-hidden shadow-[0_0_30px_rgba(0,240,255,0.2)]">
+                            <div className={`bg-black/95 border border-cyan-500/30 rounded-lg overflow-hidden shadow-[0_0_30px_rgba(0,240,255,0.2)] flex flex-col transition-all duration-300 ${isExpanded ? 'fixed top-24 left-4 right-4 bottom-24 z-[2200] max-w-4xl mx-auto h-auto' : 'h-80'}`}>
+
+                                {/* Chat Header with Expand Toggle */}
+                                <div className="flex justify-between items-center p-2 border-b border-cyan-500/20 bg-cyan-950/20">
+                                    <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest pl-2">Architect_Link_v3.0</span>
+                                    <button
+                                        onClick={() => setIsExpanded(!isExpanded)}
+                                        className="p-1 hover:bg-cyan-500/20 rounded text-cyan-400"
+                                    >
+                                        {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                                    </button>
+                                </div>
+
                                 {/* Messages */}
-                                <div className="h-48 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
                                     {chatMessages.length === 0 && (
-                                        <p className="text-gray-500 text-sm font-mono text-center">QUERY_THE_ARCHITECT...</p>
+                                        <p className="text-gray-500 text-sm font-mono text-center pt-10">QUERY_THE_ARCHITECT...</p>
                                     )}
                                     {chatMessages.map((msg, i) => (
                                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`max-w-[80%] px-3 py-2 rounded font-mono text-sm ${msg.role === 'user'
-                                                    ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-500/30'
-                                                    : 'bg-white/5 text-gray-200 border border-white/10'
+                                            <div className={`max-w-[85%] px-4 py-3 rounded font-mono text-sm leading-relaxed ${msg.role === 'user'
+                                                ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-500/30'
+                                                : 'bg-white/5 text-gray-100 border border-white/10 shadow-lg'
                                                 }`}>
                                                 {msg.content}
                                             </div>
@@ -481,19 +494,20 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                                 </div>
 
                                 {/* Input */}
-                                <div className="border-t border-cyan-500/20 p-3 flex gap-2">
+                                <div className="border-t border-cyan-500/20 p-3 flex gap-2 bg-black/50">
                                     <input
                                         type="text"
                                         value={chatInput}
                                         onChange={e => setChatInput(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && askArchitect(chatInput)}
-                                        placeholder="Ask anything..."
-                                        className="flex-1 bg-black/50 border border-white/20 rounded px-3 py-2 text-white font-mono text-sm focus:border-cyan-500 focus:outline-none"
+                                        placeholder="Ask for strategy, lore, or guidance..."
+                                        className="flex-1 bg-black/50 border border-white/20 rounded px-3 py-2 text-white font-mono text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
                                     />
                                     <button
                                         onClick={() => askArchitect(chatInput)}
                                         disabled={isAiLoading || !chatInput.trim()}
-                                        className="px-4 py-2 bg-cyan-500/20 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500/30 disabled:opacity-50 transition-colors"
+                                        className="px-4 py-2 bg-cyan-500/20 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500/30 disabled:opacity-50 transition-colors font-bold"
+                                        style={{ textShadow: '0 0 5px rgba(0,240,255,0.5)' }}
                                     >
                                         <Send className="w-4 h-4" />
                                     </button>
