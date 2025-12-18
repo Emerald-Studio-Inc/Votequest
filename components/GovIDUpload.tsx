@@ -87,9 +87,9 @@ export default function GovIDUpload({ roomId, email, onComplete }: GovIDUploadPr
     if (step === 'pending') {
         return (
             <div className="max-w-md mx-auto">
-                <div className="card-gold p-8 gold-glow text-center">
-                    <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 gold-glow">
-                        <CheckCircle className="w-10 h-10 gold-text animate-pulse" />
+                <div className="bg-black/80 border border-blue-500/50 p-8 rounded-2xl shadow-[0_0_20px_rgba(0,85,255,0.3)] text-center">
+                    <div className="w-20 h-20 rounded-full bg-white/5 border border-blue-500/50 flex items-center justify-center mx-auto mb-6 shadow-[0_0_15px_rgba(0,85,255,0.4)]">
+                        <CheckCircle className="w-10 h-10 text-blue-500 animate-pulse" />
                     </div>
 
                     <h3 className="text-2xl font-bold mb-4">Verification Pending</h3>
@@ -125,10 +125,10 @@ export default function GovIDUpload({ roomId, email, onComplete }: GovIDUploadPr
 
     return (
         <div className="max-w-md mx-auto">
-            <div className="card-gold p-8 gold-glow">
+            <div className="bg-black/80 border border-blue-500/50 rounded-2xl p-8 shadow-[0_0_20px_rgba(0,85,255,0.2)]">
                 <div className="text-center mb-6">
-                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 gold-glow">
-                        <FileCheck className="w-8 h-8 gold-text" />
+                    <div className="w-16 h-16 rounded-full bg-white/5 border border-blue-500/30 flex items-center justify-center mx-auto mb-4 shadow-[0_0_10px_rgba(0,85,255,0.3)]">
+                        <FileCheck className="w-8 h-8 text-blue-500" />
                     </div>
                     <h3 className="text-xl font-bold mb-2">Upload Government ID</h3>
                     <p className="text-sm text-mono-60">
@@ -157,7 +157,7 @@ export default function GovIDUpload({ roomId, email, onComplete }: GovIDUploadPr
                                 <div className="flex items-center justify-center gap-3">
                                     {idFile ? (
                                         <>
-                                            <FileCheck className="w-5 h-5 gold-text" />
+                                            <FileCheck className="w-5 h-5 text-blue-500" />
                                             <span className="text-sm">{idFile.name}</span>
                                             <button
                                                 onClick={(e) => {
@@ -206,7 +206,7 @@ export default function GovIDUpload({ roomId, email, onComplete }: GovIDUploadPr
                                 <div className="flex items-center justify-center gap-3">
                                     {photoFile ? (
                                         <>
-                                            <Camera className="w-5 h-5 gold-text" />
+                                            <Camera className="w-5 h-5 text-blue-500" />
                                             <span className="text-sm">{photoFile.name}</span>
                                             <button
                                                 onClick={(e) => {
@@ -250,7 +250,7 @@ export default function GovIDUpload({ roomId, email, onComplete }: GovIDUploadPr
                     <button
                         onClick={handleSubmit}
                         disabled={!idFile || uploading}
-                        className="btn-gold w-full"
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {uploading ? (
                             <>

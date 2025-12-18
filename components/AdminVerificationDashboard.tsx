@@ -61,16 +61,16 @@ export default function AdminVerificationDashboard({ roomId }: VerificationDashb
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <div className="loading-spinner w-8 h-8 gold-glow" />
+                <div className="loading-spinner w-8 h-8 text-blue-500 animate-spin" />
             </div>
         );
     }
 
     if (pendingVerifications.length === 0) {
         return (
-            <div className="card-gold p-12 text-center gold-glow">
-                <CheckCircle className="w-16 h-16 gold-text mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">All Caught Up!</h3>
+            <div className="bg-[#121215]/90 border border-blue-500/30 p-12 text-center shadow-[0_0_20px_rgba(0,85,255,0.2)] rounded-2xl">
+                <CheckCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2 text-white">All Caught Up!</h3>
                 <p className="text-mono-60">
                     No pending verifications to review
                 </p>
@@ -82,13 +82,18 @@ export default function AdminVerificationDashboard({ roomId }: VerificationDashb
         <div className="space-y-4">
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold gold-text">Pending Verifications</h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-blue-500">Pending Verifications</h2>
+                            <p className="text-sm text-mono-60">{pendingVerifications.length} awaiting review</p>
+                        </div>
+                    </div>
                     <p className="text-sm text-mono-60">{pendingVerifications.length} awaiting review</p>
                 </div>
             </div>
 
             {pendingVerifications.map((verification: any) => (
-                <div key={verification.id} className="card-gold p-6">
+                <div key={verification.id} className="bg-white/5 border border-blue-500/30 rounded-xl p-6 shadow-lg">
                     <div className="grid grid-cols-2 gap-6">
                         {/* Voter Info */}
                         <div className="space-y-4">
@@ -170,7 +175,7 @@ export default function AdminVerificationDashboard({ roomId }: VerificationDashb
                         <button
                             onClick={() => handleVerification(verification.id, true)}
                             disabled={processing === verification.id}
-                            className="btn-gold flex-1 flex items-center justify-center gap-2"
+                            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-colors flex-1 flex items-center justify-center gap-2"
                         >
                             {processing === verification.id ? (
                                 <>

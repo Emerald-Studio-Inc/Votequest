@@ -88,10 +88,10 @@ export default function EntranceExam({ onPass, onFail, onCancel }: { onPass: () 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
-                        <Shield className="w-8 h-8 text-cyan-400" />
+                        <Shield className="w-8 h-8 text-blue-400" />
                         <div>
                             <h2 className="text-xl font-bold text-white tracking-widest">VERIFICATION_PROTOCOL</h2>
-                            <p className="text-xs text-cyan-400 font-mono">QUESTION {currentQuestion + 1} / {MOCK_EXAM.length}</p>
+                            <p className="text-xs text-blue-400 font-mono">QUESTION {currentQuestion + 1} / {MOCK_EXAM.length}</p>
                         </div>
                     </div>
                     <div className="text-right">
@@ -103,13 +103,13 @@ export default function EntranceExam({ onPass, onFail, onCancel }: { onPass: () 
                 {/* Progress Bar */}
                 <div className="h-1 bg-gray-900 mb-8 rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-cyan-400 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(0,240,255,0.5)]"
+                        className="h-full bg-blue-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(0,85,255,0.5)]"
                         style={{ width: `${((currentQuestion) / MOCK_EXAM.length) * 100}%` }}
                     />
                 </div>
 
                 {/* Question Card */}
-                <CyberCard className="p-8 mb-6 border-cyan-500/30">
+                <CyberCard className="p-8 mb-6 border-blue-500/30">
                     <h3 className="text-xl md:text-2xl font-bold text-white mb-8 leading-relaxed">
                         {question.text}
                     </h3>
@@ -119,17 +119,17 @@ export default function EntranceExam({ onPass, onFail, onCancel }: { onPass: () 
                             <button
                                 key={idx}
                                 onClick={() => handleAnswer(idx)}
-                                className="group relative p-4 text-left border border-white/10 hover:border-cyan-400 bg-white/5 hover:bg-cyan-950/30 transition-all duration-300"
+                                className="group relative p-4 text-left border border-white/10 hover:border-blue-400 bg-white/5 hover:bg-blue-950/30 transition-all duration-300"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-8 h-8 flex items-center justify-center border border-white/20 group-hover:border-cyan-400 rounded-sm font-mono text-gray-500 group-hover:text-cyan-400">
+                                    <div className="w-8 h-8 flex items-center justify-center border border-white/20 group-hover:border-blue-400 rounded-sm font-mono text-gray-500 group-hover:text-blue-400">
                                         {String.fromCharCode(65 + idx)}
                                     </div>
                                     <span className="text-gray-300 group-hover:text-white font-mono">{opt}</span>
                                 </div>
                                 {/* Selection Indicator */}
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Shield className="w-4 h-4 text-cyan-400" />
+                                    <Shield className="w-4 h-4 text-blue-400" />
                                 </div>
                             </button>
                         ))}

@@ -17,7 +17,7 @@ interface SettingsScreenProps {
     onNavigate?: (screen: string) => void;
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
 

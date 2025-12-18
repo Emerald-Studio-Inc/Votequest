@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, Shield, Wallet, Zap, HelpCircle, AlertTriangle, 
 
 export default function HelpPage() {
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-[var(--bg-void)] text-white">
             {/* Minimal Background */}
             <div className="absolute inset-0 bg-noise opacity-50 pointer-events-none fixed"></div>
 

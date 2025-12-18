@@ -95,7 +95,7 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-void)] text-white">
       <div className="text-center">
         <p className="mb-2">{message}</p>
         <p className="text-sm opacity-70">If you are not redirected, <a href="/" className="underline">click here</a>.</p>

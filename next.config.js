@@ -9,6 +9,14 @@ const nextConfig = {
         unoptimized: true,
     },
     trailingSlash: true,
+    async rewrites() {
+        return [
+            {
+                source: '/share/:id',
+                destination: '/?shareRequestId=:id',
+            },
+        ]
+    },
     webpack: (config, { isServer }) => {
         // Fix for transitive dependencies that are Node.js or React Native only
         if (!isServer) {

@@ -6,22 +6,37 @@
 
 :root {
     /* ARCADE PROTOCOL PALETTE */
-    /* Deepest Void - Pure black for high contrast */
-    --bg-void: #050505;
-    --bg-abyss: #080808;
-    --bg-grid: #0f0f0f;
-    --bg-surface: #141414;
+    /* DARK ASH ESTHETIC */
+    /* Base Tones - Carbon & Slate */
+    --bg-void: #09090b;
+    /* Deepest Ash Black */
+    --bg-ash-dark: #121215;
+    /* Card Background */
+    --bg-ash-medium: #18181b;
+    /* Interactive Surface */
+    --bg-ash-light: #27272a;
+    /* Borders/Highlights */
 
-    /* NEON TRINITY */
-    --neon-cyan: #00F0FF;
+    --bg-abyss: #0c0c0e;
+    --bg-grid: #131316;
+    --bg-surface: #1c1c20;
+
+    /* NEON TRINITY REPLACEMENT - DARK BLUE THEME */
+    --neon-cyan: #0055FF;
+    /* Deep Electric Blue */
     --neon-magenta: #FF003C;
+    /* Keeping magenta for distinct errors if needed, or mute it? User said entire app. Let's keep magenta as 'Alert' but cyan/gold become Blue */
     --neon-lime: #39FF14;
-    --neon-yellow: #FCEE0A;
+    --neon-yellow: #0055FF;
+    /* Gold becomes Blue */
 
     /* Monochrome / HUD */
-    --hud-white: #E0E0E0;
-    --hud-dim: #505050;
-    --hud-dark: #202020;
+    --hud-white: #E4E4E7;
+    /* Zinc-200 */
+    --hud-dim: #A1A1AA;
+    /* Zinc-400 */
+    --hud-dark: #27272A;
+    /* Zinc-800 */
 
     /* Glow Intensities */
     --glow-low: 0 0 5px;
@@ -30,47 +45,49 @@
     --glow-max: 0 0 40px;
 
     /* Cyber Variables */
-    --border-neon: 1px solid rgba(0, 240, 255, 0.3);
+    --border-neon: 1px solid rgba(0, 85, 255, 0.3);
     --border-glass: 1px solid rgba(255, 255, 255, 0.1);
 
     /* ACCENT MAPPING - Fixes btn-primary visibility */
     --accent-primary: var(--neon-cyan);
-    --accent-hover: #00C0CC;
-    /* Slightly darker cyan for hover */
-    --accent-glow: rgba(0, 240, 255, 0.5);
+    --accent-hover: #0044CC;
+    /* Slightly darker blue for hover */
+    --accent-glow: rgba(0, 85, 255, 0.5);
 
     /* MISSING MONO VARIABLES - Fixed for Visibility */
     /* VISIBILITY BOOST: Lighter Mono Scale */
-    --mono-95: #FFFFFF;
+    --mono-95: #FAFAFA;
     /* Pure White */
-    --mono-80: #E5E5E5;
+    --mono-80: #E4E4E7;
     /* Very Light Gray */
-    --mono-70: #CCCCCC;
+    --mono-70: #D4D4D8;
     /* Light Gray */
-    --mono-60: #B3B3B3;
+    --mono-60: #A1A1AA;
     /* Mid Light Gray - previously too dark */
-    --mono-50: #999999;
+    --mono-50: #71717A;
     /* Mid Gray */
-    --mono-40: #808080;
+    --mono-40: #52525B;
     /* Visible Gray - previously #666666 */
 
-    /* MISSING GLASS VARIABLES */
-    --glass-light: rgba(255, 255, 255, 0.03);
-    --glass-medium: rgba(255, 255, 255, 0.05);
-    --glass-heavy: rgba(255, 255, 255, 0.08);
-    --glass-intense: rgba(255, 255, 255, 0.12);
+    /* ASH GLASS SYSTEM */
+    --glass-light: rgba(24, 24, 27, 0.4);
+    /* Zinc-900 with opacity */
+    --glass-medium: rgba(24, 24, 27, 0.6);
+    --glass-heavy: rgba(24, 24, 27, 0.8);
+    --glass-intense: rgba(24, 24, 27, 0.95);
 
-    /* MISSING BORDER VARIABLES */
+    /* ASH BORDER VARIABLES */
     --border-subtle: rgba(255, 255, 255, 0.05);
-    --border-visible: rgba(255, 255, 255, 0.1);
-    --border-strong: rgba(255, 255, 255, 0.15);
-    --border-accent: rgba(0, 240, 255, 0.3);
+    --border-visible: rgba(255, 255, 255, 0.08);
+    /* Reduced for slickness */
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --border-accent: rgba(0, 85, 255, 0.4);
 
     /* MISSING SHADOWS */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
 
     /* ANIMATION */
     --timing-fast: 0.2s;
@@ -424,17 +441,17 @@ h6 {
 }
 
 .btn-primary {
-    background: #00F0FF;
-    /* Neon cyan - explicit */
-    color: #000000;
-    /* Pure black text for contrast */
-    border: 1px solid #00F0FF;
+    background: #0055FF;
+    /* Deep Blue - explicit */
+    color: #FFFFFF;
+    /* White text for better contrast on dark blue */
+    border: 1px solid #0055FF;
     background-color: var(--neon-cyan);
-    color: black !important;
-    /* Keep black text on Cyan BG for contrast */
+    color: white !important;
+    /* White text on dark blue */
     text-shadow: none;
-    /* No shadow on black text */
-    font-weight: 800;
+    /* No shadow on white text */
+    font-weight: 700;
 }
 
 .btn-primary:hover {

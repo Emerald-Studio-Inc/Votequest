@@ -44,13 +44,13 @@ export default function CommunityScreen({ onNavigate }: { onNavigate: (screen: s
     return (
         <div className="min-h-screen pb-32 animate-fade-in font-mono relative bg-black">
             {/* Background */}
-            <div className="fixed inset-0 bg-[linear-gradient(rgba(0,255,100,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,100,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+            <div className="fixed inset-0 bg-[linear-gradient(rgba(0,85,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,85,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             {/* Header */}
             <div className="pt-24 px-6 md:px-8 mb-8 relative z-10 flex flex-col md:flex-row justify-between items-end gap-4">
                 <div>
                     <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter glitch-text mb-2 text-white" data-text="THE_GRID">THE_GRID</h1>
-                    <p className="text-green-400/60 font-mono text-sm tracking-widest">{'>'} GLOBAL_DISCOURSE_NETWORK</p>
+                    <p className="text-blue-400/60 font-mono text-sm tracking-widest">{'>'} GLOBAL_DISCOURSE_NETWORK</p>
                 </div>
                 <div className="flex gap-2">
                     <ArcadeButton variant="cyan" size="sm" onClick={() => { }} className="text-xs">
@@ -75,7 +75,7 @@ export default function CommunityScreen({ onNavigate }: { onNavigate: (screen: s
                         className={`
                             px-6 py-2 border font-bold tracking-wider transition-all clip-corner
                             ${activeTab === tab.id
-                                ? 'bg-green-500 text-black border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.4)]'
+                                ? 'bg-blue-600 text-white border-blue-500 shadow-[0_0_15px_rgba(0,85,255,0.4)]'
                                 : 'bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-white/30'}
                         `}
                     >
@@ -88,7 +88,7 @@ export default function CommunityScreen({ onNavigate }: { onNavigate: (screen: s
             <div className="px-6 md:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10 max-w-7xl mx-auto">
                 {isLoading ? (
                     <div className="col-span-full flex justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-green-400" />
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
                     </div>
                 ) : feed.length === 0 ? (
                     <div className="col-span-full text-center py-20">
@@ -104,7 +104,7 @@ export default function CommunityScreen({ onNavigate }: { onNavigate: (screen: s
                             <div key={thread.id} className={`${colSpan} group`}>
                                 <CyberCard
                                     className={`h-full p-0 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 
-                                        ${isDebate ? 'hover:shadow-[0_0_30px_rgba(255,0,60,0.2)]' : 'hover:shadow-[0_0_20px_rgba(0,255,100,0.1)]'}
+                                        ${isDebate ? 'hover:shadow-[0_0_30px_rgba(255,0,60,0.2)]' : 'hover:shadow-[0_0_20px_rgba(0,85,255,0.1)]'}
                                     `}
                                     onClick={() => onNavigate('thread', thread.id)}
                                 >
@@ -130,7 +130,7 @@ export default function CommunityScreen({ onNavigate }: { onNavigate: (screen: s
                                                     <Zap className="w-3 h-3 mr-1" /> {thread.views} watching
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center text-green-400 text-xs font-mono">
+                                                <div className="flex items-center text-blue-400 text-xs font-mono">
                                                     <TrendingUp className="w-3 h-3 mr-1" /> {thread.upvotes}
                                                 </div>
                                             )}
@@ -138,7 +138,7 @@ export default function CommunityScreen({ onNavigate }: { onNavigate: (screen: s
 
                                         {/* Title */}
                                         <h3 className={`text-lg md:text-xl font-bold mb-3 leading-snug group-hover:underline decoration-1 underline-offset-4
-                                        ${isDebate ? 'text-white drop-shadow-[0_0_5px_rgba(255,0,60,0.5)]' : 'text-gray-100 group-hover:text-green-400 transition-colors'}
+                                        ${isDebate ? 'text-white drop-shadow-[0_0_5px_rgba(255,0,60,0.5)]' : 'text-gray-100 group-hover:text-blue-400 transition-colors'}
                                     `}>
                                             {thread.title}
                                         </h3>

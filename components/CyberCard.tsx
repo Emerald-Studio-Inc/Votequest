@@ -1,7 +1,7 @@
 import React from 'react';
 
 // Neon cyan hex - guaranteed to work
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 
 interface CyberCardProps {
     children: React.ReactNode;
@@ -40,7 +40,7 @@ export default function CyberCard({
             {title && (
                 <div
                     className="absolute top-0 left-0 right-0 h-8 flex items-center px-4"
-                    style={{ backgroundColor: `${NEON_CYAN}15`, borderBottom: `1px solid ${NEON_CYAN}50` }}
+                    style={{ backgroundColor: `rgba(20, 20, 25, 0.9)`, borderBottom: `1px solid ${NEON_CYAN}30` }}
                 >
                     <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: NEON_CYAN }}>
                         // {title}

@@ -11,10 +11,10 @@ interface AnalyticsScreenProps {
     proposals: any[];
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
-const NEON_YELLOW = '#F0FF00';
+const NEON_YELLOW = '#0033FF';
 
 const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }) => {
     const [loading, setLoading] = useState(true);

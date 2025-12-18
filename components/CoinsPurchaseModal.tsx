@@ -20,9 +20,9 @@ const COIN_PACKAGES = [
   { id: 'ultimate', coins: 5000, price: 15000, label: 'ULTIMATE_BUNDLE', popular: false, bonus: 1000 },
 ];
 
-const NEON_CYAN = '#00F0FF';
-const NEON_MAGENTA = '#FF003C';
-const NEON_LIME = '#39FF14';
+const NEON_CYAN = '#0055FF';
+const NEON_MAGENTA = '#EF4444'; // Standard Red for errors
+const NEON_LIME = '#3B82F6'; // Blue-500 for highlights
 
 export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onSuccess }: CoinsPurchaseModalProps) {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);

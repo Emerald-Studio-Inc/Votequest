@@ -11,8 +11,8 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon, label, value }) => {
         <div className="card p-6">
             <div className="flex items-center gap-4">
                 {/* Icon Container */}
-                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gold-500/10 flex items-center justify-center">
-                    <div className="text-gold-400">
+                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <div className="text-blue-500">
                         {icon}
                     </div>
                 </div>

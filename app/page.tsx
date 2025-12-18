@@ -15,7 +15,7 @@ import { Suspense } from 'react';
 export default function Home() {
   return (
     <ErrorBoundary>
-      <main className="relative min-h-screen bg-black text-white overflow-hidden selection:bg-white/20">
+      <main className="relative min-h-screen bg-[var(--bg-void)] text-white overflow-hidden selection:bg-white/20">
         <div className="bg-noise"></div>
         <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="loading-spinner"></div></div>}>
           <VoteQuestApp />

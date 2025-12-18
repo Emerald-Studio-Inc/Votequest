@@ -20,7 +20,7 @@ const CoinBadge: React.FC<CoinBadgeProps> = ({ coins, size = 'md', showLabel = f
         setPrevCoins(safeCoins);
     }, [safeCoins]);
 
-    const NEON_CYAN = '#00F0FF';
+    const NEON_CYAN = '#0055FF';
 
     const sizeClasses = {
         sm: 'text-xs px-2 py-1',

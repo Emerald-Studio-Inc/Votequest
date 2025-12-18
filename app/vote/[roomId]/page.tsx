@@ -122,9 +122,9 @@ export default function VoteRoomPage() {
     // Loading state
     if (state === 'loading') {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black">
+            <div className="min-h-screen flex items-center justify-center bg-[var(--bg-void)]">
                 <div className="text-center">
-                    <div className="loading-spinner w-12 h-12 mx-auto mb-4 gold-glow" />
+                    <div className="loading-spinner w-12 h-12 mx-auto mb-4 blue-glow" />
                     <p className="text-mono-60">Loading voting room...</p>
                 </div>
             </div>
@@ -134,7 +134,7 @@ export default function VoteRoomPage() {
     // Error state
     if (state === 'error' || !room) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black px-6">
+            <div className="min-h-screen flex items-center justify-center bg-[var(--bg-void)] px-6">
                 <div className="text-center max-w-md">
                     <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
                     <h1 className="text-heading mb-2">Room Unavailable</h1>
@@ -151,9 +151,9 @@ export default function VoteRoomPage() {
 
     // Main voting flow
     return (
-        <div className="min-h-screen bg-black">
-            {/* Gold flowing border at top */}
-            <div className="absolute top-0 left-0 right-0 h-1 gold-border-animated"></div>
+        <div className="min-h-screen bg-[var(--bg-void)]">
+            {/* Blue flowing border at top */}
+            <div className="absolute top-0 left-0 right-0 h-1 blue-border-animated"></div>
 
             <div className="max-w-4xl mx-auto px-6 pt-16 pb-12">
                 {/* Intro State */}
@@ -161,17 +161,17 @@ export default function VoteRoomPage() {
                     <>
                         {/* Institutional Badge */}
                         <div className="flex items-center justify-center gap-3 mb-6">
-                            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center gold-glow">
+                            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center blue-glow">
                                 <Vote className="w-6 h-6 text-white" />
                             </div>
-                            <div className="badge badge-primary gold-border-animated">
+                            <div className="badge badge-primary blue-border-animated">
                                 <Shield className="w-3 h-3" />
                                 Institutional Voting
                             </div>
                         </div>
 
                         {/* Room Title */}
-                        <h1 className="text-display text-center mb-4 gold-text">
+                        <h1 className="text-display text-center mb-4 text-blue-500">
                             {room.title}
                         </h1>
 
@@ -182,9 +182,9 @@ export default function VoteRoomPage() {
                         )}
 
                         {/* Verification Tier Info */}
-                        <div className="card-gold p-6 mb-8 gold-glow max-w-2xl mx-auto">
+                        <div className="card-blue p-6 mb-8 blue-glow max-w-2xl mx-auto">
                             <div className="flex items-center gap-4">
-                                <Shield className="w-8 h-8 gold-text flex-shrink-0" />
+                                <Shield className="w-8 h-8 text-blue-500 flex-shrink-0" />
                                 <div>
                                     <p className="font-medium mb-1">
                                         {room.verification_tier === 'tier1' && 'Email Verification Required'}
@@ -204,23 +204,23 @@ export default function VoteRoomPage() {
                         <div className="text-center mb-12">
                             <button
                                 onClick={() => setState('verify-email')}
-                                className="btn-gold btn-lg min-w-[200px]"
+                                className="btn-blue btn-lg min-w-[200px]"
                             >
                                 Start Voting
                             </button>
                         </div>
 
-                        <div className="divider-gold mb-8"></div>
+                        <div className="divider-blue mb-8"></div>
                         <h2 className="text-heading mb-6 text-center">Preview: Candidates</h2>
                         <div className="space-y-4 opacity-70">
                             {room.room_options?.map((option: any, index: number) => (
                                 <div
                                     key={option.id}
-                                    className="card p-6 gold-border"
+                                    className="card p-6 blue-border"
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-                                            <span className="font-bold gold-text">{index + 1}</span>
+                                            <span className="font-bold text-blue-500">{index + 1}</span>
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="font-medium text-lg mb-1">{option.title}</h3>
@@ -257,7 +257,7 @@ export default function VoteRoomPage() {
             <div className="border-t border-white/5 py-8">
                 <div className="max-w-4xl mx-auto px-6 text-center">
                     <p className="text-sm text-mono-50">
-                        Powered by <span className="gold-text font-bold">VoteQuest</span> Institutional Voting
+                        Powered by <span className="text-blue-500 font-bold">VoteQuest</span> Institutional Voting
                     </p>
                 </div>
             </div>

@@ -60,9 +60,9 @@ const ROOM_FEATURES = [
   },
 ];
 
-const NEON_CYAN = '#00F0FF';
-const NEON_MAGENTA = '#FF003C';
-const NEON_LIME = '#39FF14';
+const NEON_CYAN = '#0055FF';
+const NEON_MAGENTA = '#EF4444'; // Standard Red
+const NEON_LIME = '#3B82F6'; // Blue Highlight
 
 export default function CoinFeaturesPurchase({
   roomId,
@@ -131,7 +131,7 @@ export default function CoinFeaturesPurchase({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono overflow-y-auto custom-scrollbar">
       {/* Cyber Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,85,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,85,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
       <CyberCard
         className="w-full max-w-md relative z-10"

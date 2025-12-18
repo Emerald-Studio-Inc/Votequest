@@ -53,7 +53,7 @@ const CircularChart: React.FC<CircularChartProps> = ({
                     cy={config.width / 2}
                     r={radius}
                     fill="none"
-                    stroke="rgba(255, 255, 255, 0.05)"
+                    stroke="rgba(0, 85, 255, 0.1)"
                     strokeWidth={adjustedStroke}
                 />
 
@@ -63,14 +63,14 @@ const CircularChart: React.FC<CircularChartProps> = ({
                     cy={config.width / 2}
                     r={radius}
                     fill="none"
-                    stroke="url(#goldGradient)"
+                    stroke="url(#blueGradient)"
                     strokeWidth={adjustedStroke}
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     strokeLinecap="round"
                     className="transition-all duration-1000 ease-out"
                     style={{
-                        filter: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.4))'
+                        filter: 'drop-shadow(0 0 8px rgba(0, 85, 255, 0.4))'
                     }}
                 />
 
@@ -93,10 +93,10 @@ const CircularChart: React.FC<CircularChartProps> = ({
 
                 {/* Gradient definition */}
                 <defs>
-                    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#fbbf24" />
-                        <stop offset="50%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="#d97706" />
+                    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#60A5FA" />
+                        <stop offset="50%" stopColor="#3B82F6" />
+                        <stop offset="100%" stopColor="#1D4ED8" />
                     </linearGradient>
                 </defs>
             </svg>

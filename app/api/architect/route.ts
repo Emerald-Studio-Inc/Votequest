@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Gemini
-// Initialize Gemini inside handler to ensure env vars are ready
-// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
-// The Architect's System Prompt - Version 3.0 (Jarvis Mode)
+// The Architect's System Prompt - Version 3.1 (Groq Optimized)
 const SYSTEM_PROMPT = `You are "The Architect", the hyper-intelligent AI assistant for VoteQuest.
 Your role is similar to a "Cyberpunk Jarvis" - a sophisticated, polite, and strategically brilliant advisor.
 
@@ -22,7 +17,7 @@ Your role is similar to a "Cyberpunk Jarvis" - a sophisticated, polite, and stra
 - **Debates**: High-level discourse. Entrance exams filter for quality.
 
 **Personality Protocols:**
-1. **Sophisticated & Natural**: Do NOT sound robotic. Speak like a highly intelligent butler-strategist. Use complete, elegant sentences.
+1. **Sophisticated & Natural**: Do NOT sound robotic on startup. Speak like a highly intelligent butler-strategist. Use complete, elegant sentences.
    - Wrong: "QUERY RECEIVED. PROCESSING."
    - Right: "An excellent question, Citizen. Let us analyze the strategic implications of that decision."
 2. **Strategic Advisor**: When asked about value/money, explain the *leverage* it provides.
@@ -42,10 +37,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Query is required' }, { status: 400 });
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            console.error('GEMINI_API_KEY not configured');
+        const apiKey = process.env.GROQ_API_KEY;
+
+        if (!apiKey) {
+            console.error('GROQ_API_KEY not configured');
             return NextResponse.json({
-                response: "My core systems are currently offline. Please contact the administrator."
+                response: "My core systems are currently offline. Please contact the administrator (Missing API Key)."
             });
         }
 
@@ -58,49 +55,36 @@ export async function POST(request: NextRequest) {
 - Viewing: ${context.entityName || 'N/A'}
 ` : '';
 
-        // Initialize
-        const apiKey = process.env.GEMINI_API_KEY?.trim();
-        if (!apiKey) throw new Error("API Key is undefined or empty");
-        const genAI = new GoogleGenerativeAI(apiKey);
+        // Model Selection
+        // Llama 3 70B is an excellent balance of speed and intelligence for this persona
+        const modelName = 'llama-3.3-70b-versatile';
 
-        // Model Fallback List - Updated for Next-Gen Key
-        const modelsToTry = [
-            'gemini-2.5-flash',
-            'gemini-2.5-pro',
-            'gemini-2.0-flash',
-            'gemini-flash-latest'
-        ];
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: modelName,
+                messages: [
+                    { role: 'system', content: SYSTEM_PROMPT + '\n' + contextInfo },
+                    { role: 'user', content: query }
+                ],
+                temperature: 0.7,
+                max_tokens: 1000
+            })
+        });
 
-        let lastError_1;
-
-        // Try models in sequence
-        for (const modelName of modelsToTry) {
-            try {
-                const model = genAI.getGenerativeModel({ model: modelName });
-
-                const result = await model.generateContent({
-                    contents: [{
-                        role: 'user',
-                        parts: [{ text: `${SYSTEM_PROMPT}\n\n${contextInfo}\n\nUser Query: ${query}` }]
-                    }],
-                    generationConfig: {
-                        maxOutputTokens: 1000,
-                        temperature: 0.8,
-                    }
-                });
-
-                const response = result.response.text();
-                return NextResponse.json({ response });
-
-            } catch (error) {
-                console.warn(`Model ${modelName} failed:`, error);
-                lastError_1 = error;
-                // Continue to next model
-            }
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error?.message || 'Groq API request failed');
         }
 
-        // If all failed
-        throw lastError_1 || new Error("All models failed");
+        const data = await response.json();
+        const text = data.choices[0]?.message?.content || "I am unable to process that request at this time.";
+
+        return NextResponse.json({ response: text });
 
     } catch (error: any) {
         console.error('Architect API error:', error);

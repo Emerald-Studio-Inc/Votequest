@@ -5,7 +5,7 @@ const SplashScreen = () => {
     const [progress, setProgress] = useState(0);
     const [glowIntensity, setGlowIntensity] = useState(0);
 
-    const NEON_CYAN = '#00F0FF';
+    const NEON_CYAN = '#0055FF';
 
     useEffect(() => {
         // Progress animation
@@ -33,7 +33,7 @@ const SplashScreen = () => {
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
             {/* Cyber Grid Background */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,85,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,85,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
             {/* Scanlines Overlay */}
             <div className="absolute inset-0 pointer-events-none z-20" style={{ background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))', backgroundSize: '100% 2px, 3px 100%' }} />
@@ -43,7 +43,7 @@ const SplashScreen = () => {
                 <div
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[150px] transition-opacity duration-1000"
                     style={{
-                        background: `radial-gradient(circle, rgba(0,240,255,${0.05 + glowIntensity * 0.02}) 0%, transparent 70%)`,
+                        background: `radial-gradient(circle, rgba(0,85,255,${0.05 + glowIntensity * 0.02}) 0%, transparent 70%)`,
                         transform: `translate(-50%, -50%) scale(${1 + glowIntensity * 0.2})`
                     }}
                 ></div>

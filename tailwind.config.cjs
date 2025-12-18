@@ -67,10 +67,10 @@ module.exports = {
         },
         // Arcade Protocol Neon
         neon: {
-          cyan: '#00F0FF',
+          cyan: '#0055FF', // Deep Blue replacement
           magenta: '#FF003C',
           lime: '#39FF14',
-          yellow: '#FCEE0A',
+          yellow: '#0055FF', // Gold mapped to Deep Blue
         }
       },
       fontFamily: {

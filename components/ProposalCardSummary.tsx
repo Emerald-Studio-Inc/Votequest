@@ -30,7 +30,7 @@ const ProposalCardSummary: React.FC<ProposalCardSummaryProps> = ({
             <div className="mb-4">
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden flex">
                     <div
-                        className="bg-gradient-to-r from-gold-600 to-gold-500 h-full transition-all duration-500"
+                        className="bg-gradient-to-r from-blue-600 to-blue-500 h-full transition-all duration-500"
                         style={{ width: `${yesPercent}%` }}
                     />
                     <div

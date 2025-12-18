@@ -15,7 +15,7 @@ export default function Error({
     }, [error]);
 
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-[var(--bg-void)] flex items-center justify-center p-6 text-center">
             {/* Minimal Background */}
             <div className="absolute inset-0 bg-noise opacity-50 pointer-events-none"></div>
 

@@ -100,7 +100,12 @@ const VoteQuestApp = () => {
     const [authLoading, setAuthLoading] = useState(true);
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+    const [selectedDebateId, setSelectedDebateId] = useState<string | null>(null);
     const [aiMessage, setAiMessage] = useState<string | null>(null);
+    const [showAdminModal, setShowAdminModal] = useState(false);
+    const [adminPassphrase, setAdminPassphrase] = useState('');
+    const [showSetup2FA, setShowSetup2FA] = useState(false);
+    const [setup2FAPassphrase, setSetup2FAPassphrase] = useState('');
 
     // Blockchain removed - using database only
     const address = null;
@@ -113,17 +118,17 @@ const VoteQuestApp = () => {
     // HELPERS MOVED TO TOP to fix "block-scoped variable" build errors
     // ---------------------------------------------------------
     const loadUserProfile = async (authId: string) => {
-        // Log removed('[AUTH] Loading user profile for authId:', authId);
+
         try {
             const profile = await getUserProfile(authId);
-            // Log removed('[AUTH] Profile loaded:', profile);
+
 
             if (profile) {
                 const nextLevelXP = profile.level * 1000;
 
                 // Load user's voted proposals from database
                 const votedProposalIds = await getUserVotedProposals(profile.id);
-                // Log removed('[AUTH] Loaded voted proposals:', votedProposalIds.length);
+
 
                 setUserData({
                     address: profile.email,
@@ -140,10 +145,10 @@ const VoteQuestApp = () => {
                     votedProposals: votedProposalIds, // Now loaded from database!
                     coins: profile.coins
                 });
-                // Log removed('[AUTH] User data set successfully. userId:', profile.id);
+
             } else {
                 console.warn('[AUTH] No profile found for authId:', authId);
-                // Log removed('[AUTH] Attempting to create profile...');
+
 
                 // Create profile
                 const user = await getCurrentUser();
@@ -183,11 +188,11 @@ const VoteQuestApp = () => {
                             votedProposals: [], // New profile, no votes yet
                             coins: newProfile.coins
                         });
-                        // Log removed('[AUTH] Profile created! userId:', newProfile.id);
+
                     } else {
                         // Check if error is due to unique constraint violation (duplicate profile)
                         if (error?.code === '23505') {
-                            // Log removed('[AUTH] Profile already exists (unique constraint), fetching existing profile...');
+
                             // Try to fetch the existing profile by email or auth_id
                             const existingProfile = await getUserProfile(authId);
                             if (existingProfile) {
@@ -211,7 +216,7 @@ const VoteQuestApp = () => {
                                     votedProposals: votedProposalIds, // Load from database
                                     coins: existingProfile.coins
                                 });
-                                // Log removed('[AUTH] Using existing profile! userId:', existingProfile.id);
+
                             } else {
                                 console.error('[AUTH] Unique constraint error but could not fetch existing profile');
                             }
@@ -308,7 +313,7 @@ const VoteQuestApp = () => {
                 ...proposalData,
                 userId: userData.userId
             };
-            // Log removed('[DEBUG] Creating proposal payload:', payload);
+
 
             const response = await fetch('/api/proposal/create-simple', {
                 method: 'POST',
@@ -488,7 +493,7 @@ const VoteQuestApp = () => {
         if (currentScreen === 'dashboard' && proposals.length > 0) {
             const targetProposalId = localStorage.getItem('targetProposalId');
             if (targetProposalId) {
-                // Log removed('[SHARE LINK] Auto-opening proposal:', targetProposalId);
+
 
                 // Find proposal by blockchain_id
                 const proposal = proposals.find(p => p.blockchain_id?.toString() === targetProposalId);
@@ -525,18 +530,32 @@ const VoteQuestApp = () => {
         }
     }, [currentScreen]);
 
+    // Check for Deep Link (Share) on Mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const shareId = params.get('shareRequestId');
+            if (shareId) {
+                console.log('[DEEP LINK] Found share request:', shareId);
+                localStorage.setItem('targetProposalId', shareId);
+                // Clean URL
+                window.history.replaceState({}, '', '/');
+            }
+        }
+    }, []);
+
     // Konami code for admin (gated behind env flag for safety)
-    const [showAdminModal, setShowAdminModal] = useState(false);
-    const [showSetup2FA, setShowSetup2FA] = useState(false);
-    const [setup2FAPassphrase, setSetup2FAPassphrase] = useState('');
-    const [adminPassphrase, setAdminPassphrase] = useState('');
+
     const [adminSessionStart, setAdminSessionStart] = useState<number | null>(null);
     const ADMIN_SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
     useEffect(() => {
-        const enabled = typeof process !== 'undefined' && (process.env.NEXT_PUBLIC_ENABLE_ADMIN_BACKDOOR === 'true');
-        if (!enabled) {
-            // Backdoor disabled in this environment — do nothing
+        // STRICT SECURITY CHECK: Only enable if explicitly allowed in ENV
+        // This ensures the listener is completely inert in production unless configured
+        const isDev = process.env.NODE_ENV === 'development';
+        const explicitEnable = process.env.NEXT_PUBLIC_ENABLE_ADMIN_BACKDOOR === 'true';
+
+        if (!explicitEnable && !isDev) {
             return;
         }
 
@@ -578,7 +597,7 @@ const VoteQuestApp = () => {
             const checkTimeout = setInterval(() => {
                 const elapsed = Date.now() - adminSessionStart;
                 if (elapsed >= ADMIN_SESSION_TIMEOUT) {
-                    // Log removed('[ADMIN] Session timeout - logging out');
+
                     setCurrentScreen('dashboard');
                     setAdminSessionStart(null);
                     alert('Admin session expired after 5 minutes. Please re-authenticate.');
@@ -605,7 +624,7 @@ const VoteQuestApp = () => {
             setCurrentScreen('admin');
             setShowAdminModal(false);
 
-            // Log removed('[ADMIN] Access granted via 2FA. Session will expire in 5 minutes');
+
         } catch (error) {
             console.error('[ADMIN] Error during access check:', error);
             alert('Error granting admin access. Please try again.');
@@ -635,19 +654,19 @@ const VoteQuestApp = () => {
 
 
     // Navigation Component - Arcade Style with inline colors for visibility
-    const NEON_CYAN = '#00F0FF';
+    const NEON_CYAN = '#0055FF';
 
     const BottomNavigation = () => (
         <div className="fixed bottom-0 sm:bottom-6 left-0 right-0 z-[2000] flex justify-center px-0 sm:px-6 animate-slide-up" style={{ animationDelay: '0.8s' }}>
             <div
-                className="relative bg-black/90 sm:bg-black/80 backdrop-blur-xl w-full sm:max-w-sm pb-safe pt-2 sm:pb-0 sm:pt-0"
+                className="relative bg-[#09090b]/90 sm:bg-[#09090b]/80 backdrop-blur-xl w-full sm:max-w-sm pb-safe pt-2 sm:pb-0 sm:pt-0"
                 style={{
                     borderTop: `1px solid ${NEON_CYAN}`,
                     borderLeft: '1px solid transparent',
                     borderRight: '1px solid transparent',
                     borderBottom: '1px solid transparent',
                     // Only show box shadow on desktop/sm+
-                    boxShadow: typeof window !== 'undefined' && window.innerWidth >= 640 ? `0 0 20px rgba(0,240,255,0.2)` : 'none'
+                    boxShadow: typeof window !== 'undefined' && window.innerWidth >= 640 ? `0 0 20px rgba(0,85,255,0.2)` : 'none'
                 }}
             >
                 {/* Decorative Tech Lines - Desktop Only */}
@@ -709,7 +728,7 @@ const VoteQuestApp = () => {
     // Render screens
     if (currentScreen === 'checking') {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black">
+            <div className="min-h-screen flex items-center justify-center bg-[var(--bg-void)]">
                 <div className="text-center">
                     <div className="loading-spinner w-12 h-12 mx-auto mb-4"></div>
                     <p className="text-mono-60 text-sm">Connecting...</p>
@@ -717,6 +736,7 @@ const VoteQuestApp = () => {
             </div>
         );
     }
+
 
     if (currentScreen === 'splash') return <SplashScreen />;
     if (currentScreen.startsWith('onboarding')) return <OnboardingScreen currentScreen={currentScreen} onNext={setCurrentScreen} />;
@@ -944,11 +964,11 @@ const VoteQuestApp = () => {
                 <CommunityScreen
                     onNavigate={(screen, data) => {
                         if (screen === 'thread') {
-                            if (data === 2) {
-                                setCurrentScreen('entrance-exam');
-                            } else {
-                                setCurrentScreen('debate');
-                            }
+                            // data is the thread/debate ID
+                            // Logic to distinguish if it requires entrance exam (mocked for now)
+                            // For now, assume all go to debate
+                            setSelectedDebateId(data);
+                            setCurrentScreen('debate');
                         }
                     }}
                 />
@@ -957,8 +977,14 @@ const VoteQuestApp = () => {
         );
     }
 
-    if (currentScreen === 'debate') {
-        return <DebateArena roomId="test" onBack={() => setCurrentScreen('community')} />;
+    if (currentScreen === 'debate' && selectedDebateId) {
+        return (
+            <DebateArena
+                roomId={selectedDebateId}
+                userId={userData.userId || ''}
+                onBack={() => setCurrentScreen('community')}
+            />
+        );
     }
 
     if (currentScreen === 'entrance-exam') {
@@ -973,7 +999,7 @@ const VoteQuestApp = () => {
 
     // Fallback for navigation errors
     return (
-        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-[var(--bg-void)] flex flex-col items-center justify-center p-6 text-center">
             <h1 className="text-2xl font-bold text-red-500 mb-2">Navigation Error</h1>
             <p className="text-gray-400 mb-6">
                 The application encountered an unexpected state.<br />

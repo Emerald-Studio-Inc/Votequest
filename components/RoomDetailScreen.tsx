@@ -14,7 +14,7 @@ interface RoomDetailScreenProps {
     onBack: () => void;
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
 
@@ -148,15 +148,15 @@ export default function RoomDetailScreen({
                             {/* Status Badge */}
                             <div className="flex items-center gap-2 px-3 py-1.5 border"
                                 style={{
-                                    borderColor: room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : NEON_MAGENTA,
-                                    backgroundColor: room.status === 'active' ? `${NEON_LIME}10` : room.status === 'draft' ? '#EAB30810' : `${NEON_MAGENTA}10`
+                                    borderColor: room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#60A5FA' : NEON_MAGENTA,
+                                    backgroundColor: room.status === 'active' ? `${NEON_LIME}10` : room.status === 'draft' ? '#60A5FA10' : `${NEON_MAGENTA}10`
                                 }}
                             >
                                 <div className="w-2 h-2 rounded-full animate-pulse"
-                                    style={{ backgroundColor: room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : NEON_MAGENTA }}
+                                    style={{ backgroundColor: room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#60A5FA' : NEON_MAGENTA }}
                                 />
                                 <span className="text-xs font-bold uppercase tracking-wider"
-                                    style={{ color: room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : NEON_MAGENTA }}
+                                    style={{ color: room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#60A5FA' : NEON_MAGENTA }}
                                 >
                                     STATUS: {room.status}
                                 </span>

@@ -1,0 +1,198 @@
+/* ==============================================
+   DEEP BLUE UI UTILITIES
+   ============================================== */
+
+/* Text Colors */
+.gold-text,
+.blue-text {
+    color: var(--blue-primary);
+}
+
+.gold-text-light,
+.blue-text-light {
+    color: var(--blue-light);
+}
+
+/* Backgrounds */
+.gold-bg,
+.blue-bg {
+    background: var(--blue-primary);
+}
+
+.gold-bg-subtle,
+.blue-bg-subtle {
+    background: rgba(0, 85, 255, 0.05);
+}
+
+.gold-bg-gradient,
+.blue-bg-gradient {
+    background: var(--blue-gradient);
+}
+
+/* Borders */
+.gold-border,
+.blue-border {
+    border-color: var(--blue-border) !important;
+}
+
+.gold-border-animated,
+.blue-border-animated {
+    position: relative;
+    border: 1px solid var(--blue-border);
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0, 85, 255, 0.3) 50%,
+            transparent 100%);
+    background-size: 200% 100%;
+    animation: blueFlow 3s ease-in-out infinite;
+}
+
+@keyframes blueFlow {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Glows */
+.gold-glow,
+.blue-glow {
+    box-shadow: 0 0 20px var(--blue-glow), 0 0 40px rgba(0, 85, 255, 0.1);
+}
+
+.gold-glow-intense,
+.blue-glow-intense {
+    box-shadow: 0 0 30px var(--blue-glow-intense), 0 0 60px rgba(0, 85, 255, 0.2);
+}
+
+.gold-glow-hover,
+.blue-glow-hover {
+    transition: box-shadow 0.3s ease;
+}
+
+.gold-glow-hover:hover,
+.blue-glow-hover:hover {
+    box-shadow: 0 0 25px var(--blue-glow), 0 0 50px rgba(0, 85, 255, 0.15);
+}
+
+/* Cards */
+.card-gold,
+.card-blue {
+    background: var(--bg-card-ash, rgba(20, 20, 25, 0.8));
+    border: 1px solid var(--blue-border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+}
+
+.card-gold:hover,
+.card-blue:hover {
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 20px var(--blue-glow);
+    transform: translateY(-2px);
+}
+
+/* Buttons */
+.btn-gold,
+.btn-primary {
+    background: var(--blue-gradient);
+    color: #FFFFFF;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 85, 255, 0.3);
+}
+
+.btn-gold:hover,
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 85, 255, 0.4);
+}
+
+.btn-gold:active {
+    transform: translateY(0);
+}
+
+/* Dividers */
+.divider-gold,
+.divider-blue {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blue-primary), transparent);
+    opacity: 0.3;
+}
+
+/* Pulse Animation */
+.animate-pulse-gold {
+    animation: pulseBlue 2s ease-in-out infinite;
+}
+
+@keyframes pulseBlue {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px var(--blue-glow);
+        opacity: 1;
+    }
+
+    50% {
+        box-shadow: 0 0 25px var(--blue-glow-intense);
+        opacity: 0.8;
+    }
+}
+
+/* Shine Effect */
+.gold-shine,
+.blue-shine {
+    position: relative;
+    overflow: hidden;
+}
+
+.gold-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(0, 85, 255, 0.3),
+            transparent);
+    animation: shine 3s ease-in-out infinite;
+}
+
+/* Progress Bar */
+.progress-gold,
+.progress-blue {
+    background: var(--blue-gradient);
+    box-shadow: 0 0 10px var(--blue-glow);
+}
+
+/* Badge */
+.badge-gold,
+.badge-blue {
+    background: var(--blue-gradient);
+    color: #FFFFFF;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+/* Input Focus */
+.input-gold:focus,
+.input-blue:focus {
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px var(--blue-glow);
+}
+
+/* Subtle Accents */
+.card-elevated:hover {
+    border-color: rgba(0, 85, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 85, 255, 0.05);
+}

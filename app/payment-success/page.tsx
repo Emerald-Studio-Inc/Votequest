@@ -64,14 +64,14 @@ export default function PaymentSuccessPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="min-h-screen bg-[var(--bg-void)] flex items-center justify-center p-6">
             <div className="max-w-md w-full">
                 {/* Status Card */}
-                <div className="card-gold p-8 text-center gold-glow">
+                <div className="card-blue p-8 text-center blue-glow">
                     {status === 'verifying' && (
                         <>
                             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                                <Loader className="w-10 h-10 text-yellow-500 animate-spin" />
+                                <Loader className="w-10 h-10 text-blue-500 animate-spin" />
                             </div>
                             <h1 className="text-2xl font-bold mb-2">Verifying Payment</h1>
                             <p className="text-mono-60">Please wait while we confirm your payment...</p>
@@ -88,7 +88,7 @@ export default function PaymentSuccessPage() {
                             {type === 'coins' && result?.coins && (
                                 <div className="my-6 p-4 bg-white/5 rounded-xl">
                                     <p className="text-mono-60 text-sm mb-1">Coins Added</p>
-                                    <p className="text-3xl font-bold text-yellow-500">{result.coins} VQC</p>
+                                    <p className="text-3xl font-bold text-blue-500">{result.coins} VQC</p>
                                 </div>
                             )}
 
@@ -97,7 +97,7 @@ export default function PaymentSuccessPage() {
                                     <p className="text-mono-60 text-sm mb-1">Plan Activated</p>
                                     <p className="text-2xl font-bold text-purple-400 capitalize">{result.plan}</p>
                                     {result.bonusCoins && (
-                                        <p className="text-sm text-yellow-500 mt-2">+{result.bonusCoins} Bonus Coins!</p>
+                                        <p className="text-sm text-blue-500 mt-2">+{result.bonusCoins} Bonus Coins!</p>
                                     )}
                                 </div>
                             )}
@@ -134,7 +134,7 @@ export default function PaymentSuccessPage() {
                         <div className="flex flex-col gap-3 mt-6">
                             <button
                                 onClick={() => router.push('/dashboard')}
-                                className="btn-gold w-full"
+                                className="btn-blue w-full"
                             >
                                 <Home className="w-4 h-4" />
                                 Go to Dashboard

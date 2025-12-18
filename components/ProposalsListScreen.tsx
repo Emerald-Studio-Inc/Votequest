@@ -14,7 +14,7 @@ interface ProposalsListScreenProps {
 type SortOption = 'recent' | 'popular' | 'ending-soon';
 type FilterOption = 'all' | 'active' | 'voted' | 'not-voted';
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
 
@@ -222,7 +222,7 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                                 >
                                     {/* Featured Badge */}
                                     {proposal.featured && (
-                                        <div className="absolute top-0 right-0 z-20 bg-yellow-500/10 border-l border-b border-yellow-500/50 text-yellow-500 text-[10px] uppercase font-bold px-3 py-1 flex items-center gap-1">
+                                        <div className="absolute top-0 right-0 z-20 bg-blue-500/10 border-l border-b border-blue-500/50 text-blue-400 text-[10px] uppercase font-bold px-3 py-1 flex items-center gap-1">
                                             <Sparkles className="w-3 h-3" />
                                             PRIORITY
                                         </div>

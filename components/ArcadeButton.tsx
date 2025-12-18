@@ -3,7 +3,7 @@ import { sfx } from '@/lib/sfx';
 import { triggerHaptic } from '@/lib/haptics';
 
 interface ArcadeButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'cyan' | 'magenta' | 'lime';
+    variant?: 'cyan' | 'magenta' | 'lime' | 'blue';
     size?: 'sm' | 'md' | 'lg';
     glow?: boolean;
     children: React.ReactNode;
@@ -12,9 +12,10 @@ interface ArcadeButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
 
 // Neon color hex values - guaranteed to work
 const NEON_COLORS = {
-    cyan: '#00F0FF',
+    cyan: '#0055FF', // Deep Blue (Legacy mapping)
     magenta: '#FF003C',
     lime: '#39FF14',
+    blue: '#0055FF', // Deep Blue
 };
 
 export default function ArcadeButton({
@@ -48,7 +49,7 @@ export default function ArcadeButton({
             style={{
                 color: color,
                 borderColor: color,
-                backgroundColor: '#000000', // Pure black for max contrast
+                backgroundColor: '#09090b', // Dark Ash Black for sleekness
                 textShadow: `0 0 1px white, 0 0 5px ${color}`, // White core + colored glow = Readable Neon
                 fontWeight: 700,
                 ...style,

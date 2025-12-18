@@ -20,7 +20,7 @@ interface ProposalDetailScreenProps {
     setCaptchaToken: (token: string) => void;
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
 
@@ -176,8 +176,8 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                 <button
                                     onClick={handleHighlight}
                                     disabled={highlightLoading}
-                                    className="flex items-center gap-2 px-3 py-1.5 border hover:bg-yellow-500/10 transition-colors"
-                                    style={{ borderColor: '#EAB308', color: '#EAB308' }}
+                                    className="flex items-center gap-2 px-3 py-1.5 border hover:bg-blue-500/10 transition-colors"
+                                    style={{ borderColor: '#60A5FA', color: '#60A5FA' }}
                                     title="Highlight this proposal (200 coins)"
                                 >
                                     <Star className="w-4 h-4" strokeWidth={2} />
@@ -236,7 +236,7 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                         </div>
 
                         {proposal.featured && (
-                            <div className="px-2 py-1 text-xs font-bold border border-yellow-500 bg-yellow-900/20 text-yellow-500 flex items-center gap-2 uppercase tracking-wider animate-pulse">
+                            <div className="px-2 py-1 text-xs font-bold border border-blue-500 bg-blue-900/20 text-blue-400 flex items-center gap-2 uppercase tracking-wider animate-pulse">
                                 <Star className="w-3.5 h-3.5 fill-current" strokeWidth={2} />
                                 <span>PRIORITY_MISSION</span>
                             </div>

@@ -31,9 +31,9 @@ export default function LeaderboardScreen({ userData, onBack }: LeaderboardScree
     };
 
     const getRankIcon = (rank: number) => {
-        if (rank === 1) return <Trophy className="w-6 h-6 text-yellow-400" />;
+        if (rank === 1) return <Trophy className="w-6 h-6 text-blue-400" />;
         if (rank === 2) return <Medal className="w-6 h-6 text-gray-400" />;
-        if (rank === 3) return <Award className="w-6 h-6 text-amber-600" />;
+        if (rank === 3) return <Award className="w-6 h-6 text-blue-600" />;
         return null;
     };
 
@@ -65,8 +65,8 @@ export default function LeaderboardScreen({ userData, onBack }: LeaderboardScree
                             <button
                                 onClick={() => setActiveTab('coins')}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'coins'
-                                        ? 'bg-white text-black'
-                                        : 'text-mono-70 hover:text-white'
+                                    ? 'bg-white text-black'
+                                    : 'text-mono-70 hover:text-white'
                                     }`}
                             >
                                 <Zap className="w-4 h-4 inline mr-1" />
@@ -75,8 +75,8 @@ export default function LeaderboardScreen({ userData, onBack }: LeaderboardScree
                             <button
                                 onClick={() => setActiveTab('votes')}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'votes'
-                                        ? 'bg-white text-black'
-                                        : 'text-mono-70 hover:text-white'
+                                    ? 'bg-white text-black'
+                                    : 'text-mono-70 hover:text-white'
                                     }`}
                             >
                                 <Target className="w-4 h-4 inline mr-1" />

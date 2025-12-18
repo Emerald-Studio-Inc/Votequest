@@ -38,7 +38,7 @@ const BarChart: React.FC<BarChartProps> = ({
                         {[0, 1, 2, 3, 4].map(i => (
                             <div
                                 key={i}
-                                className="w-full border-t border-white/5"
+                                className="w-full border-t border-blue-500/10"
                             />
                         ))}
                     </div>
@@ -59,8 +59,8 @@ const BarChart: React.FC<BarChartProps> = ({
                             >
                                 {/* Value tooltip */}
                                 {showValues && isHovered && (
-                                    <div className="mb-2 px-3 py-1.5 bg-gray-900 border border-gold-500/30 rounded-lg animate-fadeIn">
-                                        <p className="text-xs font-bold text-gold-400">
+                                    <div className="mb-2 px-3 py-1.5 bg-gray-900 border border-blue-500/30 rounded-lg animate-fadeIn">
+                                        <p className="text-xs font-bold text-blue-400">
                                             {item.value.toLocaleString()}
                                         </p>
                                     </div>
@@ -71,10 +71,10 @@ const BarChart: React.FC<BarChartProps> = ({
                                     className="w-full rounded-t-lg transition-all duration-500 ease-out relative overflow-hidden"
                                     style={{
                                         height: `${barHeight}%`,
-                                        background: item.color || 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
+                                        background: item.color || 'linear-gradient(180deg, #60A5FA 0%, #3B82F6 50%, #1D4ED8 100%)',
                                         boxShadow: isHovered
-                                            ? '0 0 20px rgba(245, 158, 11, 0.4)'
-                                            : '0 0 10px rgba(245, 158, 11, 0.2)',
+                                            ? '0 0 20px rgba(0, 85, 255, 0.4)'
+                                            : '0 0 10px rgba(0, 85, 255, 0.2)',
                                         transform: isHovered ? 'scaleY(1.02)' : 'scaleY(1)',
                                         transformOrigin: 'bottom'
                                     }}

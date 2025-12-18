@@ -17,8 +17,8 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
 
     return (
         <>
-            {/* Gold flowing border at top of nav */}
-            <div className="fixed bottom-20 left-0 right-0 h-0.5 gold-border-animated z-50" />
+            {/* Blue flowing border at top of nav */}
+            <div className="fixed bottom-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50 z-50" />
 
             <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 z-40">
                 <div className="max-w-md mx-auto px-6 py-4">
@@ -42,31 +42,31 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                                     <div className={`
                     relative p-2 rounded-xl transition-all duration-300
                     ${isActive
-                                            ? 'bg-white/10 gold-border'
+                                            ? 'bg-blue-500/10 border border-blue-500/50'
                                             : 'hover:bg-white/5'
                                         }
                   `}>
                                         <Icon
-                                            className={`w-5 h-5 ${isActive ? 'gold-text' : ''}`}
+                                            className={`w-5 h-5 ${isActive ? 'text-blue-500' : ''}`}
                                             strokeWidth={isActive ? 2.5 : 2}
                                         />
 
-                                        {/* Gold glow indicator for active tab */}
+                                        {/* Blue glow indicator for active tab */}
                                         {isActive && (
-                                            <div className="absolute inset-0 rounded-xl gold-glow animate-pulse-subtle" />
+                                            <div className="absolute inset-0 rounded-xl shadow-[0_0_15px_rgba(0,85,255,0.5)] animate-pulse-subtle" />
                                         )}
                                     </div>
 
                                     <span className={`
                     text-xs font-medium transition-all duration-300
-                    ${isActive ? 'gold-text' : ''}
+                    ${isActive ? 'text-blue-500' : ''}
                   `}>
                                         {tab.label}
                                     </span>
 
-                                    {/* Gold bottom indicator */}
+                                    {/* Blue bottom indicator */}
                                     {isActive && (
-                                        <div className="absolute bottom-0 w-12 h-1 bg-gold-gradient rounded-t-full animate-pulse-subtle" />
+                                        <div className="absolute bottom-0 w-12 h-1 bg-blue-500 rounded-t-full shadow-[0_0_10px_#0055FF] animate-pulse-subtle" />
                                     )}
                                 </button>
                             );

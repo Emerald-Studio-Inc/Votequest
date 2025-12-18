@@ -85,7 +85,7 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
     return (
         <div className="max-w-4xl mx-auto">
             <div className="mb-8">
-                <h2 className="text-heading mb-2 gold-text">Cast Your Vote</h2>
+                <h2 className="text-heading mb-2 text-blue-400">Cast Your Vote</h2>
                 <div className="flex justify-between items-end">
                     <p className="text-body text-mono-60">
                         {isQuadratic
@@ -95,7 +95,7 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
                     {isQuadratic && (
                         <div className="text-right">
                             <span className="text-sm text-mono-50 uppercase tracking-widest">Total Cost</span>
-                            <div className="text-2xl font-bold text-white font-mono">{totalCost} <span className="text-yellow-500 text-sm">VQC</span></div>
+                            <div className="text-2xl font-bold text-white font-mono">{totalCost} <span className="text-blue-500 text-sm">VQC</span></div>
                         </div>
                     )}
                 </div>
@@ -127,13 +127,13 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
                                     <div className="flex items-center gap-4 w-full sm:w-auto">
                                         <div className="flex-shrink-0 pt-1">
                                             {isSelected ? (
-                                                <CheckCircle className="w-6 h-6 gold-text" strokeWidth={2.5} />
+                                                <CheckCircle className="w-6 h-6 text-blue-400" strokeWidth={2.5} />
                                             ) : (
                                                 <Circle className="w-6 h-6 text-mono-40" strokeWidth={2} />
                                             )}
                                         </div>
 
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${!option.image_url ? 'bg-white/5 border border-white/10' : ''}`}>
+                                        <div className={`bg-[var(--bg-void)] min-h-[400px] flex items-center justify-center rounded-xl border border-blue-500/20 ${!option.image_url ? 'bg-white/5 border border-white/10' : ''}`}>
                                             {option.image_url ? (
                                                 <img
                                                     src={option.image_url}
@@ -142,7 +142,7 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
                                                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                                 />
                                             ) : (
-                                                <span className={`font-bold ${isSelected ? 'gold-text' : 'text-mono-60'}`}>
+                                                <span className={`font-bold ${isSelected ? 'text-blue-400' : 'text-mono-60'}`}>
                                                     {index + 1}
                                                 </span>
                                             )}
@@ -179,7 +179,7 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
                                         max="10"
                                         value={weight}
                                         onChange={(e) => handleWeightChange(option.id, parseInt(e.target.value))}
-                                        className="w-full accent-yellow-500 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+                                        className="w-full accent-blue-500 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
                                     />
                                     <div className="flex justify-between text-xs text-mono-40 mt-1">
                                         <span>1 (1c)</span>

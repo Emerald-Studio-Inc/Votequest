@@ -7,7 +7,7 @@ interface HelpModalProps {
     onClose: () => void;
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
 
@@ -192,7 +192,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest">
                         {'>'} END_OF_FILE
                     </p>
-                    <ArcadeButton onClick={onClose} variant="cyan" className="text-xs px-6 py-2">
+                    <ArcadeButton onClick={onClose} variant="blue" className="text-xs px-6 py-2">
                         ACKNOWLEDGE
                     </ArcadeButton>
                 </div>

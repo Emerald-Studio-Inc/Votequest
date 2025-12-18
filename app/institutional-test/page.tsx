@@ -5,18 +5,18 @@ import { Building2, Vote, Users, CheckCircle } from 'lucide-react';
 
 export default function InstitutionalTestPage() {
     return (
-        <div className="min-h-screen bg-black text-white p-8">
+        <div className="min-h-screen bg-[var(--bg-void)] text-white p-8">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold mb-4 gold-text">Institutional Voting System - Test Page</h1>
+                    <h1 className="text-4xl font-bold mb-4 text-blue-500">Institutional Voting System - Test Page</h1>
                     <p className="text-mono-60">All features are installed and ready to use!</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Components */}
-                    <div className="card-gold p-6">
+                    <div className="card-blue p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <CheckCircle className="w-8 h-8 gold-text" />
+                            <CheckCircle className="w-8 h-8 text-blue-500" />
                             <h2 className="text-2xl font-bold">Components</h2>
                         </div>
                         <ul className="space-y-2 text-sm">
@@ -44,9 +44,9 @@ export default function InstitutionalTestPage() {
                     </div>
 
                     {/* APIs */}
-                    <div className="card-gold p-6">
+                    <div className="card-blue p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <Vote className="w-8 h-8 gold-text" />
+                            <Vote className="w-8 h-8 text-blue-500" />
                             <h2 className="text-2xl font-bold">API Endpoints</h2>
                         </div>
                         <ul className="space-y-2 text-sm">
@@ -78,9 +78,9 @@ export default function InstitutionalTestPage() {
                     </div>
 
                     {/* Features */}
-                    <div className="card-gold p-6">
+                    <div className="card-blue p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <Users className="w-8 h-8 gold-text" />
+                            <Users className="w-8 h-8 text-blue-500" />
                             <h2 className="text-2xl font-bold">Features Ready</h2>
                         </div>
                         <ul className="space-y-2 text-sm">
@@ -112,9 +112,9 @@ export default function InstitutionalTestPage() {
                     </div>
 
                     {/* Database */}
-                    <div className="card-gold p-6">
+                    <div className="card-blue p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <Building2 className="w-8 h-8 gold-text" />
+                            <Building2 className="w-8 h-8 text-blue-500" />
                             <h2 className="text-2xl font-bold">Database</h2>
                         </div>
                         <ul className="space-y-2 text-sm">
@@ -131,14 +131,14 @@ export default function InstitutionalTestPage() {
                                 Verification status tracking
                             </li>
                             <li className="flex items-center gap-2">
-                                <span className="text-yellow-400">⚠</span>
+                                <span className="text-blue-400">⚠</span>
                                 Run: migrations/add_verification_status.sql
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="mt-8 card-gold p-6 gold-glow">
+                <div className="mt-8 card-blue p-6 blue-glow">
                     <h3 className="text-xl font-bold mb-4">Next Steps:</h3>
                     <ol className="list-decimal list-inside space-y-2 text-sm">
                         <li>Run the database migration: <code className="bg-white/10 px-2 py-1 rounded">migrations/add_verification_status.sql</code></li>
@@ -149,7 +149,7 @@ export default function InstitutionalTestPage() {
                 </div>
 
                 <div className="mt-6 text-center">
-                    <p className="text-mono-60">Go to <code className="bg-white/10 px-2 py-1 rounded gold-text">/institutional-test</code> to see this page</p>
+                    <p className="text-mono-60">Go to <code className="bg-white/10 px-2 py-1 rounded text-blue-400">/institutional-test</code> to see this page</p>
                 </div>
             </div>
         </div>

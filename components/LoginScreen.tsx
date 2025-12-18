@@ -38,7 +38,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
 
     if (sent) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black px-4 relative overflow-hidden">
+            <div className="min-h-screen flex items-center justify-center bg-[var(--bg-void)] px-4 relative overflow-hidden">
                 {/* Cyber Grid Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
@@ -50,7 +50,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                         <Mail className="w-10 h-10" style={{ color: NEON_CYAN }} />
                     </div>
 
-                    <div className="p-8 border border-gray-800 bg-black/80 backdrop-blur-xl relative overflow-hidden">
+                    <div className="p-8 border border-gray-800 bg-[#121215]/90 backdrop-blur-xl relative overflow-hidden">
                         {/* Corner Accents */}
                         <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: NEON_CYAN }} />
                         <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2" style={{ borderColor: NEON_CYAN }} />
@@ -93,7 +93,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
     }
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center px-4 relative overflow-hidden font-mono">
+        <div className="min-h-screen bg-[var(--bg-void)] flex items-center justify-center px-4 relative overflow-hidden font-mono">
             {/* Cyber Grid Background */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
@@ -129,7 +129,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                 </div>
 
                 {/* Login Form Container */}
-                <div className="p-8 bg-black/80 backdrop-blur-xl border border-gray-800 relative group animate-slide-up">
+                <div className="p-8 bg-[#121215]/90 backdrop-blur-xl border border-gray-800 relative group animate-slide-up">
                     {/* Glowing border effect on hover */}
                     <div className="absolute inset-0 border border-transparent group-hover:border-white/10 transition-colors duration-500 pointer-events-none" />
 
@@ -152,7 +152,7 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="OPERATOR@DOMAIN.COM"
-                                    className="w-full pl-12 pr-4 py-4 bg-black border transition-all duration-300 font-mono text-sm placeholder-gray-700 focus:outline-none"
+                                    className="w-full pl-12 pr-4 py-4 bg-[#18181b] border transition-all duration-300 font-mono text-sm placeholder-gray-700 focus:outline-none"
                                     style={{
                                         color: NEON_CYAN,
                                         borderColor: email ? NEON_CYAN : '#374151',

@@ -18,7 +18,7 @@ interface OrganizationDashboardProps {
     onNavigate?: (screen: string, data?: any) => void;
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
 
@@ -217,20 +217,20 @@ export default function OrganizationDashboard({
                                     onClick={() => onNavigate?.('room', room)}
                                 >
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-700 group-hover:bg-[color:var(--status-color)] transition-colors"
-                                        style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : '#E5E7EB' } as React.CSSProperties}
+                                        style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#60A5FA' : '#E5E7EB' } as React.CSSProperties}
                                     />
 
                                     <div className="flex items-start justify-between pl-4">
                                         <div>
                                             <h4 className="font-bold text-white mb-1 uppercase tracking-wide group-hover:text-[color:var(--status-color)] transition-colors"
-                                                style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#EAB308' : 'white' } as React.CSSProperties}
+                                                style={{ '--status-color': room.status === 'active' ? NEON_LIME : room.status === 'draft' ? '#60A5FA' : 'white' } as React.CSSProperties}
                                             >
                                                 {room.title}
                                             </h4>
                                             <p className="text-xs text-gray-300 font-mono line-clamp-1">{'>'} {room.description}</p>
                                         </div>
                                         <div className={`px-2 py-1 text-[10px] font-bold uppercase border ${room.status === 'active' ? 'border-green-500/50 text-green-400 bg-green-500/10' :
-                                            room.status === 'draft' ? 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10' :
+                                            room.status === 'draft' ? 'border-blue-500/50 text-blue-400 bg-blue-500/10' :
                                                 'border-gray-600 text-gray-400 bg-gray-800/50'
                                             }`}>
                                             {room.status === 'active' ? 'LIVE_STATUS' : room.status}

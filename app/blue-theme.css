@@ -1,0 +1,203 @@
+/* ==============================================
+   DEEP BLUE UI - MAXIMUM THEME
+   ============================================== */
+
+:root {
+    --blue-primary: #0055FF;
+    --blue-border: rgba(60, 100, 255, 0.3);
+    /* Softer blue-ash border */
+    --blue-glow: rgba(0, 85, 255, 0.4);
+    --blue-glow-intense: rgba(0, 85, 255, 0.8);
+    --blue-gradient: linear-gradient(135deg, #0055FF 0%, #0044CC 100%);
+    --blue-light: #3377FF;
+
+    /* Ash Overrides */
+    --bg-card-ash: linear-gradient(180deg, rgba(30, 30, 35, 0.6) 0%, rgba(20, 20, 25, 0.8) 100%);
+}
+
+/* Screen Edge Glow - Visible on all screens */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 9999;
+    border: 3px solid transparent;
+    border-image: var(--blue-gradient) 1;
+    box-shadow: inset 0 0 60px rgba(0, 85, 255, 0.15);
+    animation: blueScreenPulse 4s ease-in-out infinite;
+}
+
+@keyframes blueScreenPulse {
+
+    0%,
+    100% {
+        box-shadow: inset 0 0 60px rgba(0, 85, 255, 0.15);
+        opacity: 0.8;
+    }
+
+    50% {
+        box-shadow: inset 0 0 100px rgba(0, 85, 255, 0.25);
+        opacity: 1;
+    }
+}
+
+/* Gold Text mapped to Blue */
+.gold-text,
+.blue-text {
+    color: var(--blue-primary) !important;
+    text-shadow: 0 0 10px rgba(0, 85, 255, 0.3);
+}
+
+/* ALL Buttons Blue */
+.btn,
+button:not(.unstyled),
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
+    background: var(--blue-gradient) !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    border: 1px solid var(--blue-border) !important;
+    box-shadow: 0 4px 12px rgba(0, 85, 255, 0.4) !important;
+    transition: all 0.3s ease !important;
+    text-shadow: none !important;
+}
+
+.btn:hover,
+button:hover:not(.unstyled),
+.btn-primary:hover,
+.btn-secondary:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgba(0, 85, 255, 0.6) !important;
+    background: var(--blue-light) !important;
+}
+
+/* Borders Everywhere */
+.gold-border,
+.blue-border,
+.border {
+    border-color: var(--blue-border) !important;
+}
+
+.gold-border-animated,
+.card,
+.card-elevated,
+.card-interactive {
+    background: var(--bg-card-ash) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* Slight top sheen */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Interactive Card Hover */
+.card-interactive:hover {
+    border-color: var(--blue-primary) !important;
+    box-shadow: 0 8px 30px rgba(0, 85, 255, 0.2) !important;
+    transform: translateY(-2px);
+}
+
+@keyframes blueBorderPulse {
+
+    0%,
+    100% {
+        border-color: var(--blue-border);
+        box-shadow: 0 0 15px rgba(0, 85, 255, 0.1);
+    }
+
+    50% {
+        border-color: var(--blue-primary);
+        box-shadow: 0 0 30px rgba(0, 85, 255, 0.3);
+    }
+}
+
+/* Glows */
+.gold-glow,
+.blue-glow {
+    box-shadow: 0 0 30px var(--blue-glow), 0 0 60px rgba(0, 85, 255, 0.2) !important;
+}
+
+.gold-glow-intense,
+.blue-glow-intense {
+    box-shadow: 0 0 50px var(--blue-glow-intense), 0 0 100px rgba(0, 85, 255, 0.4) !important;
+}
+
+/* Universal Card Glow */
+.card:hover,
+.card-elevated:hover,
+.card-interactive:hover {
+    border-color: var(--blue-primary) !important;
+    box-shadow: 0 0 40px rgba(0, 85, 255, 0.4) !important;
+    transform: translateY(-2px);
+}
+
+/* Selection */
+::selection {
+    background: var(--blue-primary);
+    color: #FFFFFF;
+    text-shadow: none;
+}
+
+/* Links */
+a {
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--blue-primary) !important;
+    text-shadow: 0 0 10px rgba(0, 85, 255, 0.5);
+}
+
+/* Input Focus */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--blue-primary) !important;
+    box-shadow: 0 0 0 3px var(--blue-glow) !important;
+    outline: none !important;
+}
+
+/* Dividers */
+hr,
+.divider {
+    background: var(--blue-gradient) !important;
+    height: 2px;
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 85, 255, 0.5);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar-thumb {
+    background: var(--blue-gradient) !important;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 85, 255, 0.1);
+}
+
+/* Progress Bars */
+progress::-webkit-progress-value {
+    background: var(--blue-gradient) !important;
+}
+
+/* Badges */
+.badge {
+    background: var(--blue-gradient) !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(0, 85, 255, 0.5);
+}
+
+/* Tooltips */
+.tooltip {
+    background: var(--blue-gradient) !important;
+    color: #FFFFFF !important;
+    border: 1px solid var(--blue-primary);
+    box-shadow: 0 0 20px rgba(0, 85, 255, 0.5);
+}

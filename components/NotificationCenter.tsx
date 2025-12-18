@@ -20,7 +20,7 @@ interface NotificationCenterProps {
     onClose: () => void;
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 
 export default function NotificationCenter({ userId, onClose }: NotificationCenterProps) {
@@ -185,163 +185,102 @@ export default function NotificationCenter({ userId, onClose }: NotificationCent
 
     return (
         <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 font-mono animate-fade-in"
+            className="fixed inset-0 bg-[#09090b]/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 font-mono animate-fade-in"
             onClick={onClose} // Click outside to close
         >
-            {/* Cyber Grid */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-
-            <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl h-[85vh] flex flex-col relative z-10">
+            <div onClick={e => e.stopPropagation()} className="w-full max-w-md h-[450px] flex flex-col relative z-10">
                 <CyberCard
-                    className="w-full h-full flex flex-col p-0 shadow-2xl shadow-cyan-900/20"
-                    title="INTELLIGENCE_FEED"
-                    cornerStyle="tech"
+                    className="w-full h-full flex flex-col p-0 shadow-2xl shadow-cyan-900/10 border-white/10 bg-[#121215]"
+                    title="NOTIFICATIONS"
+                    cornerStyle="round"
                 >
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-cyan-900/30 bg-black/50">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 border border-cyan-500/30 flex items-center justify-center bg-cyan-950/20 relative">
-                                <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
+                    {/* Header - Minimalist */}
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 bg-white/2">
+                        <div className="flex items-center gap-2">
+                            <div className="relative">
+                                <Bell className="w-3.5 h-3.5 text-gray-400" />
                                 {unreadCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500 text-[8px] items-center justify-center text-black font-bold">
-                                            {unreadCount}
-                                        </span>
-                                    </span>
+                                    <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full box-content border border-black" />
                                 )}
                             </div>
-                            <div>
-                                <h2 className="text-lg font-bold text-white tracking-widest text-shadow-neon">SYSTEM_LOGS</h2>
-                                <p className="text-[10px] text-cyan-500/70 uppercase tracking-[0.2em]">
-                                    AWAITING_INPUT
-                                </p>
-                            </div>
+                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                                {unreadCount} New
+                            </span>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             {unreadCount > 0 && (
-                                <ArcadeButton onClick={markAllAsRead} variant="cyan" className="text-[10px] h-7 px-3">
-                                    ACKNOWLEDGE_ALL
-                                </ArcadeButton>
+                                <button onClick={markAllAsRead} className="text-[9px] hover:text-blue-400 text-gray-600 transition-colors uppercase tracking-wider">
+                                    Mark all read
+                                </button>
                             )}
-                            <button onClick={onClose} className="p-2 hover:bg-red-950/30 border border-transparent hover:border-red-500/50 rounded transition-all group">
-                                <X className="w-5 h-5 text-gray-400 group-hover:text-red-500" />
+                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-all">
+                                <X className="w-3.5 h-3.5 text-gray-500 hover:text-white" />
                             </button>
                         </div>
                     </div>
 
-                    {/* Filters */}
-                    <div className="flex gap-1 p-1 bg-black/40 border-b border-white/5">
-                        {['all', 'unread'].map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f as any)}
-                                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-all border-b-2 ${filter === f
-                                    ? 'border-cyan-500 text-cyan-400 bg-cyan-950/10'
-                                    : 'border-transparent text-gray-600 hover:text-gray-400 hover:bg-white/5'
-                                    }`}
-                            >
-                                {f === 'all' ? `ALL_DIVERGENCE (${notifications.length})` : `CRITICAL (${unreadCount})`}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2 bg-black/60 scrollbar-thin scrollbar-thumb-cyan-900/50">
+                    {/* Content - Clean List */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#09090b]/40">
                         {loading ? (
-                            <div className="h-full flex flex-col items-center justify-center gap-4 text-cyan-500/50">
-                                <Loader2 className="w-8 h-8 animate-spin" />
-                                <span className="text-xs tracking-widest animate-pulse">SYNCING...</span>
+                            <div className="h-full flex flex-col items-center justify-center gap-2 text-gray-600">
+                                <Loader2 className="w-4 h-4 animate-spin" />
                             </div>
                         ) : !hasNotifications ? (
-                            <div className="h-full flex flex-col items-center justify-center text-gray-600 gap-4">
-                                <Bell className="w-10 h-10 opacity-20" />
-                                <p className="text-xs uppercase tracking-widest">NO_NEW_INTELLIGENCE</p>
+                            <div className="h-full flex flex-col items-center justify-center text-gray-700 gap-2">
+                                <Bell className="w-6 h-6 opacity-20" />
+                                <p className="text-[10px] uppercase tracking-wider font-semibold">All Caught Up</p>
                             </div>
                         ) : (
-                            <>
-                                {/* Grouped Notifications */}
-                                {/* Grouped Notifications */}
-                                {Object.entries(groups).map(([key, groupInfos]) => {
-                                    const representative = groupInfos[0];
-                                    const GroupIcon = getIcon(representative.type);
-                                    const isVote = representative.type === 'vote';
-
-                                    return (
-                                        <div key={key} className="p-3 border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-950/30 transition-all group relative overflow-hidden rounded-sm shadow-sm">
-                                            {/* Group Count Badge */}
-                                            <div className="absolute top-0 right-0 bg-cyan-500 text-black text-[9px] font-bold px-1.5 py-0.5 pointer-events-none">
-                                                x{groupInfos.length}
-                                            </div>
-
-                                            <div className="flex gap-3 items-center">
-                                                <div className="w-8 h-8 border border-cyan-500/50 flex items-center justify-center text-cyan-300 bg-black/60">
-                                                    <GroupIcon className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex-1 min-w-0 pr-6">
-                                                    <h3 className="text-xs font-bold text-white uppercase tracking-wide truncate">
-                                                        {isVote
-                                                            ? `${groupInfos.length} VOTES RECEIVED`
-                                                            : `${representative.title} (x${groupInfos.length})`
-                                                        }
-                                                    </h3>
-                                                    <p className="text-[10px] text-gray-400 mt-0.5 truncate">
-                                                        {isVote
-                                                            ? <span>On proposal: <span className="text-cyan-300">"{representative.message}"</span></span>
-                                                            : <span className="text-gray-500 italic">Expand to see details...</span>
-                                                        }
-                                                    </p>
-
-                                                    {/* Preview of items if not votes */}
-                                                    {!isVote && (
-                                                        <div className="mt-1 flex gap-1 overflow-hidden h-1">
-                                                            {groupInfos.slice(0, 10).map((gi, idx) => (
-                                                                <div key={idx} className={`w-1 h-1 rounded-full ${gi.read ? 'bg-gray-600' : 'bg-cyan-500'}`} />
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-col gap-2 z-10">
-                                                    <button onClick={(e) => { e.stopPropagation(); handleGroupRead(groupInfos); }}
-                                                        className="p-1.5 hover:bg-cyan-500/20 border border-transparent hover:border-cyan-500/50 transition-all rounded"
-                                                        title="Mark Group Read"
-                                                    >
-                                                        <Check className="w-3.5 h-3.5 text-cyan-400" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-
-                                {/* Single Notifications - Limited to 50 */}
-                                {displayedSingles.map((n) => {
+                            <div className="py-1">
+                                {singles.map((n) => {
                                     const Icon = getIcon(n.type);
                                     return (
-                                        <div key={n.id} className={`p-3 border transition-all flex gap-3 group relative overflow-hidden rounded-sm ${n.read ? 'border-white/5 bg-transparent opacity-60' : 'border-cyan-500/30 bg-cyan-950/10'}`}>
-                                            <div className={`w-8 h-8 border flex items-center justify-center flex-shrink-0 bg-black ${n.read ? 'border-white/10 text-gray-500' : 'border-cyan-500/50 text-cyan-400'}`}>
-                                                <Icon className="w-4 h-4" />
+                                        <div
+                                            key={n.id}
+                                            className={`
+                                                group relative flex gap-2.5 px-3 py-2.5 transition-all cursor-default
+                                                ${n.read ? 'opacity-50 hover:opacity-80' : 'bg-white/[0.02] hover:bg-white/[0.04]'}
+                                                border-b border-white/5 last:border-0
+                                            `}
+                                        >
+                                            <div className={`mt-0.5 ${n.read ? 'text-gray-600' : 'text-blue-500'}`}>
+                                                <Icon className="w-3.5 h-3.5" />
                                             </div>
+
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start">
-                                                    <h3 className={`text-[11px] font-bold uppercase tracking-wide truncate ${n.read ? 'text-gray-500' : 'text-white'}`}>{n.title}</h3>
-                                                    <span className="text-[9px] text-gray-600 font-mono whitespace-nowrap ml-2">{new Date(n.created_at).toLocaleDateString()}</span>
+                                                    <h3 className={`text-[11px] font-medium leading-tight ${n.read ? 'text-gray-500' : 'text-gray-200'}`}>
+                                                        {n.title}
+                                                    </h3>
+                                                    <span className="text-[9px] text-gray-700 ml-2 whitespace-nowrap">
+                                                        {new Date(n.created_at).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}
+                                                    </span>
                                                 </div>
-                                                <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed truncate">{n.message}</p>
+                                                <p className="text-[10px] text-gray-500 mt-0.5 leading-relaxed truncate">
+                                                    {n.message}
+                                                </p>
                                             </div>
-                                            {!n.read && (
-                                                <button onClick={() => markAsRead(n.id)} className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/5 transition-all">
-                                                    <Check className="w-3.5 h-3.5 text-gray-400 hover:text-white" />
+
+                                            {/* Actions */}
+                                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {!n.read && (
+                                                    <button onClick={() => markAsRead(n.id)} title="Mark Read" className="p-0.5 hover:text-blue-400 text-gray-600">
+                                                        <Check className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                                <button onClick={() => deleteNotification(n.id)} title="Delete" className="p-0.5 hover:text-red-400 text-gray-600">
+                                                    <Trash2 className="w-3 h-3" />
                                                 </button>
+                                            </div>
+
+                                            {!n.read && (
+                                                <div className="absolute left-0 top-3 bottom-3 w-[2px] bg-blue-500/50 rounded-r-full" />
                                             )}
-                                            <button onClick={() => deleteNotification(n.id)} className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-950/30 transition-all">
-                                                <Trash2 className="w-3.5 h-3.5 text-gray-600 hover:text-red-500" />
-                                            </button>
                                         </div>
                                     )
                                 })}
-                            </>
+                            </div>
                         )}
                     </div>
                 </CyberCard>

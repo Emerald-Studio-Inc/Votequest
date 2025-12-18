@@ -17,7 +17,7 @@ const TIER_COLORS = {
   free: 'from-gray-500 to-gray-600',
   basic: 'from-blue-500 to-blue-600',
   pro: 'from-purple-500 to-pink-600',
-  enterprise: 'from-yellow-500 to-orange-600'
+  enterprise: 'from-blue-700 to-indigo-900'
 };
 
 const TIER_ICONS = {

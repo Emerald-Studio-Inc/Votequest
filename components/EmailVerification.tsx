@@ -166,13 +166,13 @@ export default function EmailVerification({
 
     return (
         <div className="max-w-md mx-auto">
-            <div className="card-gold p-8 gold-glow">
+            <div className="bg-black/80 border border-blue-500/50 rounded-2xl p-8 shadow-[0_0_20px_rgba(0,85,255,0.2)]">
                 {/* Email Step */}
                 {step === 'email' && (
                     <>
                         <div className="text-center mb-6">
-                            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 gold-glow">
-                                <Mail className="w-8 h-8 gold-text" />
+                            <div className="w-16 h-16 rounded-full bg-white/5 border border-blue-500/30 flex items-center justify-center mx-auto mb-4 shadow-[0_0_10px_rgba(0,85,255,0.3)]">
+                                <Mail className="w-8 h-8 text-blue-500" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">Enter Your Email</h3>
                             <p className="text-sm text-mono-60">
@@ -200,7 +200,7 @@ export default function EmailVerification({
                             <button
                                 onClick={handleSendCode}
                                 disabled={!email || loading}
-                                className="btn-gold w-full"
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {loading ? (
                                     <>
@@ -219,8 +219,8 @@ export default function EmailVerification({
                 {step === 'code' && (
                     <>
                         <div className="text-center mb-6">
-                            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 gold-glow">
-                                <Check className="w-8 h-8 gold-text" />
+                            <div className="w-16 h-16 rounded-full bg-white/5 border border-blue-500/30 flex items-center justify-center mx-auto mb-4 shadow-[0_0_10px_rgba(0,85,255,0.3)]">
+                                <Check className="w-8 h-8 text-blue-500" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">Enter Verification Code</h3>
                             <p className="text-sm text-mono-60">
@@ -255,7 +255,7 @@ export default function EmailVerification({
                             <button
                                 onClick={handleVerifyCode}
                                 disabled={code.length !== 6 || loading}
-                                className="btn-gold w-full"
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {loading ? (
                                     <>
@@ -303,7 +303,7 @@ export default function EmailVerification({
                             <button
                                 onClick={handleVerifyID}
                                 disabled={!identifier || loading}
-                                className="btn-gold w-full"
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {loading ? (
                                     <>
@@ -367,7 +367,7 @@ export default function EmailVerification({
                             <button
                                 onClick={handleUpload}
                                 disabled={!file || loading}
-                                className="btn-gold w-full"
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {loading ? (
                                     <>

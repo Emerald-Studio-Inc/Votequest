@@ -26,7 +26,7 @@ export default function VoteDistributionChart({ options }: VoteDistributionChart
             return (
                 <div className="bg-black/90 border border-white/10 p-3 rounded-lg shadow-xl backdrop-blur-xl">
                     <p className="text-white font-medium mb-1">{payload[0].payload.fullName}</p>
-                    <p className="text-yellow-500 font-mono text-sm">
+                    <p className="text-blue-500 font-mono text-sm">
                         {payload[0].value.toLocaleString()} Votes
                     </p>
                 </div>
@@ -64,7 +64,7 @@ export default function VoteDistributionChart({ options }: VoteDistributionChart
                         {data.map((entry, index) => (
                             <Cell
                                 key={`cell-${index}`}
-                                fill={index === 0 ? '#EAB308' : '#ffffff40'}
+                                fill={index === 0 ? '#0055FF' : '#ffffff40'}
                             />
                         ))}
                     </Bar>

@@ -72,14 +72,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     });
 
     // Neon color constants for inline styles
-    const NEON_CYAN = '#00F0FF';
+    const NEON_CYAN = '#0055FF'; // Updated to Deep Blue
     const NEON_MAGENTA = '#FF003C';
     const NEON_LIME = '#39FF14';
 
     return (
-        <div className="min-h-screen pb-32 relative overflow-hidden" style={{ backgroundColor: 'rgba(5, 5, 5, 0.4)' }}>
+        <div className="min-h-screen pb-32 relative overflow-hidden" style={{ backgroundColor: 'var(--bg-void)' }}>
             {/* Header - Arcade Style - FIXED POS DEBUG */}
-            <div className="fixed top-0 left-0 right-0 z-[9999] bg-black/90 backdrop-blur-md" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
+            <div className="fixed top-0 left-0 right-0 z-[9999] bg-[#09090b]/90 backdrop-blur-md" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         {/* Branding */}
@@ -136,7 +136,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <div className="w-full md:w-auto">
                                 <p className="text-xs font-mono mb-1" style={{ color: NEON_CYAN }}>ID: {userData.address?.slice(0, 8)}...</p>
                                 <h2
-                                    className="text-3xl font-bold mb-4 relative z-50 inline-block px-4 py-2 rounded-xl bg-black border-2 border-white/20 shadow-lg"
+                                    className="text-3xl font-bold mb-4 relative z-50 inline-block px-4 py-2 rounded-xl bg-[#09090b] border-2 border-white/20 shadow-lg"
                                     style={{
                                         color: '#FFFFFF',
                                         WebkitTextFillColor: '#FFFFFF',
@@ -241,7 +241,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             return (
                                 <CyberCard
                                     key={proposal.id}
-                                    className="h-full flex flex-col cursor-pointer group p-4 bg-black/80 hover:bg-black/90 border-white/10"
+                                    className="h-full flex flex-col cursor-pointer group p-4 bg-[#121215]/80 hover:bg-[#121215]/90 border-white/10"
                                     title={`WQ-${proposal.id.slice(0, 4)}`}
                                 >
                                     <div onClick={() => onSelectProposal(proposal)} className="flex-1">

@@ -31,7 +31,7 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
     return (
         <div className="fixed inset-0 bg-gray-950 flex items-center justify-center">
             <div className="text-center">
-                <div className="w-16 h-16 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-white text-lg">Loading proposal...</p>
             </div>
         </div>

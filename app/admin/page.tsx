@@ -56,7 +56,7 @@ export default function AdminDashboard() {
 
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black font-mono">
+            <div className="min-h-screen flex items-center justify-center bg-[var(--bg-void)] font-mono">
                 <div className="p-8 border border-red-500/50 bg-red-900/10 max-w-md w-full text-center">
                     <Shield className="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse" />
                     <h1 className="text-2xl font-bold text-red-500 mb-6 tracking-widest uppercase">RESTRICTED_ACCESS</h1>
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-black font-mono pb-24 relative">
+        <div className="min-h-screen bg-[var(--bg-void)] font-mono pb-24 relative">
             <div className="fixed inset-0 bg-[linear-gradient(rgba(255,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,0,0,0.05)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             <div className="p-6 border-b border-red-500/20 bg-red-950/10 sticky top-0 backdrop-blur-md z-50">

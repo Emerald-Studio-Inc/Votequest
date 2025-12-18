@@ -230,24 +230,24 @@ export async function spendCoins(
     try {
         if (amount <= 0) return true; // No cost
 
-        // 1. Check Balance
-        const { data: user, error: userError } = await supabaseAdmin
-            .from('users')
-            .select('coins')
-            .eq('id', userId)
-            .single();
+        // 1. Atomic Deduction via RPC
+        // This prevents race conditions by locking the row during the transaction
+        const { data: balanceData, error: rpcError } = await supabaseAdmin
+            .rpc('deduct_coins', {
+                p_user_id: userId,
+                p_amount: amount
+            });
 
-        if (userError || !user) {
-            console.error('Error fetching user for coins:', userError);
+        if (rpcError) {
+            console.error('Error deducting coins via RPC:', rpcError);
+            // Check for specific application errors raised by the PG function
+            if (rpcError.message?.includes('Insufficient coins')) {
+                console.warn(`Insufficient funds for user ${userId}. Required: ${amount}`);
+            }
             return false;
         }
 
-        if ((user.coins || 0) < amount) {
-            console.error(`Insufficient funds: User has ${user.coins}, needs ${amount}`);
-            return false;
-        }
-
-        // 2. Generate Receipt
+        // 2. Generate Receipt (Proof of Work/Spend)
         const receipt = await generateReceipt(
             userId,
             'vote', // generic 'vote' action for receipt verification
@@ -255,19 +255,8 @@ export async function spendCoins(
             receiptMetadata || {}
         );
 
-        // 3. Deduct Coins
-        const newBalance = user.coins - amount;
-        const { error: updateError } = await supabaseAdmin
-            .from('users')
-            .update({ coins: newBalance })
-            .eq('id', userId);
-
-        if (updateError) {
-            console.error('Error updating user coins:', updateError);
-            return false;
-        }
-
-        // 4. Record Transaction (Negative amount for spend)
+        // 3. Record Transaction (Negative amount for spend)
+        // We record this AFTER the atomic deduction to ensure the ledger matches existing state
         const { error: txError } = await supabaseAdmin
             .from('coin_transactions')
             .insert({
@@ -282,9 +271,12 @@ export async function spendCoins(
 
         if (txError) {
             console.error('Error creating coin spent transaction:', txError);
+            // Note: We don't rollback the coin deduction here as it's already committed.
+            // In a strict banking system we might needed a compensating transaction, 
+            // but for this app level, the balance is the source of truth.
         }
 
-        console.log(`✅ User ${userId} spent ${amount} coins for ${reason}`);
+        console.log(`✅ User ${userId} spent ${amount} coins for ${reason} (Atomic RPC)`);
         return true;
     } catch (error) {
         console.error('Error spending coins:', error);

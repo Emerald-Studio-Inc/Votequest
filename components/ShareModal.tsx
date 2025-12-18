@@ -13,7 +13,7 @@ interface ShareModalProps {
     userId: string;
 }
 
-const NEON_CYAN = '#00F0FF';
+const NEON_CYAN = '#0055FF';
 const NEON_MAGENTA = '#FF003C';
 const NEON_LIME = '#39FF14';
 
@@ -186,7 +186,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                                                 </div>
                                                 <ArcadeButton
                                                     onClick={copyToClipboard}
-                                                    variant="cyan"
+                                                    variant="blue"
                                                     className="w-auto px-6 h-[46px]" // Match input height roughly
                                                 >
                                                     {copied ? (
@@ -237,7 +237,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
                                         <ArcadeButton
                                             onClick={downloadQR}
-                                            variant="cyan"
+                                            variant="blue"
                                             className="w-full max-w-xs"
                                         >
                                             <Download className="w-4 h-4 mr-2" />
@@ -287,7 +287,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
                                         <ArcadeButton
                                             onClick={copyToClipboard}
-                                            variant="cyan"
+                                            variant="blue"
                                             className="w-full"
                                         >
                                             <Copy className="w-4 h-4 mr-2" />

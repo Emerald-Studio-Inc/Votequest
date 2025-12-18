@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import './gold.css'
+import './blue-theme.css'
+import './blue-utilities.css'
 import './mobile.css'
 import './mobile-enhancements.css'
 

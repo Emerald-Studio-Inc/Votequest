@@ -161,10 +161,10 @@ export default function VoterManagementPanel({
         <div className="space-y-6">
             {/* Pending Reviews (Tier 3) */}
             {verificationTier === 'tier3' && pendingVoters.length > 0 && (
-                <div className="card-gold p-6 gold-glow mb-8 animate-pulse-slow">
+                <div className="bg-blue-900/5 border border-blue-500/30 rounded-xl p-6 shadow-[0_0_20px_rgba(0,85,255,0.2)] mb-8 animate-pulse-slow">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 border border-yellow-500/30">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 border border-blue-500/30">
                                 <span className="font-bold">{pendingVoters.length}</span>
                             </div>
                             <div>
@@ -197,7 +197,7 @@ export default function VoterManagementPanel({
             <div className="flex gap-3">
                 <ArcadeButton
                     onClick={() => setShowAddVoter(true)}
-                    variant="cyan"
+                    variant="blue"
                     className="flex items-center gap-2"
                 >
                     <UserPlus className="w-4 h-4" />
@@ -342,7 +342,7 @@ export default function VoterManagementPanel({
                                 </button>
                                 <button
                                     onClick={() => handleReview(reviewVoter.id, 'verified')}
-                                    className="btn-gold flex-1"
+                                    className="btn btn-primary flex-1 bg-blue-600 hover:bg-blue-500 text-white border-blue-500"
                                 >
                                     Approve Verification
                                 </button>
@@ -382,7 +382,7 @@ export default function VoterManagementPanel({
                                     {voter.verification_status && (
                                         <span className={`text-xs ml-2 px-2 py-0.5 rounded-full ${voter.verification_status === 'verified' ? 'bg-green-500/20 text-green-400' :
                                             voter.verification_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                                                'bg-yellow-500/20 text-yellow-400'
+                                                'bg-blue-500/20 text-blue-400'
                                             }`}>
                                             {voter.verification_status}
                                         </span>
