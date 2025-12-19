@@ -137,6 +137,35 @@ class AudioSynthesizer {
             // Ignore
         }
     }
+
+    playArchitectTone() {
+        if (!this.enabled || !this.ctx) {
+            this.init();
+            if (!this.ctx) return;
+        }
+        try {
+            const now = this.ctx.currentTime;
+
+            // Clean sine blip with rapid pitch drop
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+
+            gain.gain.setValueAtTime(0.03, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start();
+            osc.stop(now + 0.1);
+        } catch (e) {
+            // Ignore
+        }
+    }
 }
 
 export const sfx = new AudioSynthesizer();

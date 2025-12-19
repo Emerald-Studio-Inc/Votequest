@@ -18,6 +18,7 @@ import {
 } from '@/lib/database';
 // Auto-reload disabled - was causing annoying mid-task refreshes
 // import { useAutoReload } from '@/hooks/useAutoReload';
+import { getArchitectResponse } from '@/lib/architect-lore';
 
 // Screen Components
 import SplashScreen from './SplashScreen';
@@ -145,6 +146,15 @@ const VoteQuestApp = () => {
                     votedProposals: votedProposalIds, // Now loaded from database!
                     coins: profile.coins
                 });
+
+                // Check for level up notification
+                if (userData.userId && profile.level > userData.level) {
+                    const response = await getArchitectResponse({
+                        type: 'level_up',
+                        userState: { level: profile.level, coins: profile.coins }
+                    });
+                    setAiMessage(response);
+                }
 
             } else {
                 console.warn('[AUTH] No profile found for authId:', authId);
@@ -279,6 +289,12 @@ const VoteQuestApp = () => {
                 votedProposals: [...prev.votedProposals, proposalId]
             }));
 
+            // Trigger Architect Commentary on Vote
+            getArchitectResponse({
+                type: 'vote_cast',
+                userState: { level: userData.level, coins: userData.coins + (data.coinsEarned || 10) }
+            }).then(setAiMessage);
+
             // Import toast dynamically
             const { toast } = await import('@/lib/toast');
 
@@ -391,9 +407,8 @@ const VoteQuestApp = () => {
                     setCurrentScreen('dashboard');
                 } else {
                     setAuthLoading(false);
-                    if (currentScreen === 'checking') {
-                        setCurrentScreen('login');
-                    }
+                    // Use functional update to avoid stale closure on currentScreen
+                    setCurrentScreen(prev => prev === 'checking' ? 'login' : prev);
                 }
             } catch (error) {
                 console.error('Error checking user:', error);
@@ -449,22 +464,19 @@ const VoteQuestApp = () => {
         };
     }, []);
 
-    // AI Welcome Trigger
-    useEffect(() => {
-        if (currentScreen === 'dashboard' && !aiMessage && userData.userId) {
-            // 1s delay for welcome
-        }
-    }, [currentScreen, userData.userId]);
-
     const hasWelcomed = React.useRef(false);
     useEffect(() => {
         if (currentScreen === 'dashboard' && !hasWelcomed.current && userData.userId) {
             hasWelcomed.current = true;
-            setTimeout(() => {
-                setAiMessage("CITIZEN_RECOGNIZED. WELCOME TO VOTEQUEST. ACCESSING NAV_SYSTEM...");
+            setTimeout(async () => {
+                const response = await getArchitectResponse({
+                    type: 'welcome',
+                    userState: { level: userData.level, coins: userData.coins }
+                });
+                setAiMessage(response);
             }, 1000);
         }
-    }, [currentScreen, userData.userId]);
+    }, [currentScreen, userData.userId, userData.level, userData.coins]);
 
     // Play sound on screen navigation
     useEffect(() => {
@@ -665,11 +677,10 @@ const VoteQuestApp = () => {
                     borderLeft: '1px solid transparent',
                     borderRight: '1px solid transparent',
                     borderBottom: '1px solid transparent',
-                    // Only show box shadow on desktop/sm+
                     boxShadow: typeof window !== 'undefined' && window.innerWidth >= 640 ? `0 0 20px rgba(0,85,255,0.2)` : 'none'
                 }}
             >
-                {/* Decorative Tech Lines - Desktop Only */}
+                {/* Decorative Tech Lines */}
                 <div className="hidden sm:block absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: NEON_CYAN }}></div>
                 <div className="hidden sm:block absolute top-0 right-0 w-2 h-2 border-t border-r" style={{ borderColor: NEON_CYAN }}></div>
                 <div className="hidden sm:block absolute bottom-0 left-0 w-2 h-2 border-b border-l" style={{ borderColor: NEON_CYAN }}></div>
@@ -688,7 +699,19 @@ const VoteQuestApp = () => {
                         return (
                             <Tooltip key={item.value} content={item.label} position="top">
                                 <button
-                                    onClick={() => setActiveDashboardTab(item.value)}
+                                    onClick={() => {
+                                        setActiveDashboardTab(item.value);
+                                        // Reset to dashboard view if navigating to a dashboard tab
+                                        if (currentScreen !== 'dashboard' && item.value !== 'community') {
+                                            setCurrentScreen('dashboard');
+                                        } else if (item.value === 'community') {
+                                            // Handle community tab specifically if needed, 
+                                            // but for now we unify it under dashboard
+                                            setCurrentScreen('dashboard');
+                                        } else {
+                                            setCurrentScreen('dashboard');
+                                        }
+                                    }}
                                     className="relative group flex flex-col items-center justify-center w-14 h-14 transition-all duration-300"
                                     style={{ color: isActive ? NEON_CYAN : 'rgba(255,255,255,0.6)' }}
                                 >
@@ -725,6 +748,234 @@ const VoteQuestApp = () => {
         </div>
     );
 
+    // Render screens logic
+    const renderContent = () => {
+        if (currentScreen === 'dashboard') {
+            return (
+                <>
+                    {activeDashboardTab === 'overview' && (
+                        <DashboardScreen
+                            userData={userData}
+                            proposals={proposals}
+                            achievements={achievements}
+                            userAchievements={userAchievements}
+                            onSelectProposal={(proposal) => {
+                                setSelectedProposal(proposal);
+                                setCurrentScreen('proposal');
+                            }}
+                            onNavigate={setCurrentScreen}
+                            activeTab={activeDashboardTab}
+                            onTabChange={setActiveDashboardTab}
+                            animations={animations}
+                        />
+                    )}
+                    {activeDashboardTab === 'proposals' && (
+                        <ProposalsListScreen
+                            proposals={proposals}
+                            onSelectProposal={(proposal) => {
+                                setSelectedProposal(proposal);
+                                setCurrentScreen('proposal');
+                            }}
+                            hasVoted={hasVoted}
+                        />
+                    )}
+                    {activeDashboardTab === 'analytics' && (
+                        <AnalyticsScreen userData={userData} proposals={proposals} />
+                    )}
+                    {activeDashboardTab === 'settings' && (
+                        <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
+                    )}
+                    {activeDashboardTab === 'community' && (
+                        <div className="pb-24">
+                            <CommunityScreen
+                                onNavigate={(screen, data) => {
+                                    if (screen === 'thread') {
+                                        if (data === 2) {
+                                            setCurrentScreen('entrance-exam');
+                                        } else {
+                                            getArchitectResponse({
+                                                type: 'debate_entry',
+                                                userState: { level: userData.level, coins: userData.coins }
+                                            }).then(setAiMessage);
+                                            setCurrentScreen('debate');
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        if (currentScreen === 'create-proposal') {
+            return <CreateProposalScreen onBack={() => setCurrentScreen('dashboard')} onSubmit={handleCreateProposal} loading={loading} />;
+        }
+
+        if (currentScreen === 'receipts') {
+            return <ReceiptsScreen userId={userData.userId || ''} onBack={() => setCurrentScreen('dashboard')} />;
+        }
+
+        if (currentScreen === 'achievements') {
+            return <AchievementsScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
+        }
+
+        if (currentScreen === 'profile-edit') {
+            return (
+                <ProfileEditScreen
+                    userData={userData}
+                    onBack={() => setCurrentScreen('dashboard')}
+                    onSave={(updated) => setUserData(prev => ({ ...prev, ...updated }))}
+                />
+            );
+        }
+
+        if (currentScreen === 'leaderboard') {
+            return <LeaderboardScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
+        }
+
+        if (currentScreen === 'admin') {
+            return <AdminDashboard onBack={() => setCurrentScreen('dashboard')} passphrase={adminPassphrase} />;
+        }
+
+        if (currentScreen === 'proposal' && selectedProposal) {
+            return (
+                <ProposalDetailScreen
+                    proposal={selectedProposal}
+                    onBack={() => {
+                        setCurrentScreen('dashboard');
+                        setSelectedOption(null);
+                    }}
+                    onVote={castVote}
+                    loading={loading}
+                    hasVoted={hasVoted(selectedProposal.id)}
+                    selectedOption={selectedOption}
+                    setSelectedOption={setSelectedOption}
+                    userId={userData.userId || ''}
+                    captchaToken={captchaToken}
+                    setCaptchaToken={setCaptchaToken}
+                />
+            );
+        }
+
+        if (currentScreen === 'organization') {
+            return (
+                <OrganizationListScreen
+                    userId={userData.userId || ''}
+                    onSelectOrganization={(orgId) => {
+                        setSelectedOrganizationId(orgId);
+                        localStorage.setItem('votequest_current_org', orgId);
+                        setCurrentScreen('org-dashboard');
+                    }}
+                    onCreateNew={() => setCurrentScreen('org-setup')}
+                    onBack={() => setCurrentScreen('dashboard')}
+                />
+            );
+        }
+
+        if (currentScreen === 'org-dashboard' && selectedOrganizationId) {
+            return (
+                <OrganizationDashboard
+                    organizationId={selectedOrganizationId}
+                    userId={userData.userId || ''}
+                    email={userData.email || ''}
+                    currentCoins={userData.coins}
+                    onNavigate={(screen, data) => {
+                        if (screen === 'organization-list') {
+                            setCurrentScreen('organization');
+                        } else if (screen === 'create-room') {
+                            setCurrentScreen('create-room');
+                        } else if (screen === 'room' && data) {
+                            setSelectedRoomId(data.id);
+                            setCurrentScreen('room-detail');
+                        }
+                    }}
+                />
+            );
+        }
+
+        if (currentScreen === 'org-setup') {
+            return (
+                <OrganizationSetup
+                    userId={userData.userId || ''}
+                    onComplete={(organizationId: string) => {
+                        setSelectedOrganizationId(organizationId);
+                        setCurrentScreen('org-dashboard');
+                    }}
+                    onCancel={() => setCurrentScreen('organization')}
+                />
+            );
+        }
+
+        if (currentScreen === 'room-detail' && selectedRoomId && selectedOrganizationId) {
+            return (
+                <RoomDetailScreen
+                    roomId={selectedRoomId}
+                    organizationId={selectedOrganizationId}
+                    userId={userData.userId || ''}
+                    onBack={() => setCurrentScreen('org-dashboard')}
+                />
+            );
+        }
+
+        if (currentScreen === 'create-room' && selectedOrganizationId) {
+            return (
+                <CreateRoomWizard
+                    organizationId={selectedOrganizationId}
+                    organizationName="Organization"
+                    userId={userData.userId || ''}
+                    onComplete={(roomId) => {
+                        setSelectedRoomId(roomId);
+                        setCurrentScreen('room-detail');
+                    }}
+                    onCancel={() => setCurrentScreen('org-dashboard')}
+                />
+            );
+        }
+
+        if (currentScreen === 'debate' && selectedDebateId) {
+            return (
+                <DebateArena
+                    roomId={selectedDebateId}
+                    userId={userData.userId || ''}
+                    onBack={() => {
+                        setCurrentScreen('dashboard');
+                        setActiveDashboardTab('community');
+                    }}
+                />
+            );
+        }
+
+        if (currentScreen === 'entrance-exam') {
+            return (
+                <EntranceExam
+                    onPass={() => setCurrentScreen('debate')}
+                    onFail={() => {
+                        setCurrentScreen('dashboard');
+                        setActiveDashboardTab('community');
+                    }}
+                    onCancel={() => {
+                        setCurrentScreen('dashboard');
+                        setActiveDashboardTab('community');
+                    }}
+                />
+            );
+        }
+
+        return (
+            <div className="min-h-screen bg-[var(--bg-void)] flex flex-col items-center justify-center p-6 text-center">
+                <h1 className="text-2xl font-bold text-red-500 mb-2">Navigation Error</h1>
+                <p className="text-gray-400 mb-6">
+                    The application encountered an unexpected state.<br />
+                    Current Screen: {currentScreen}
+                </p>
+                <button onClick={() => setCurrentScreen('dashboard')} className="btn btn-primary">
+                    Return to Dashboard
+                </button>
+            </div>
+        );
+    };
+
     // Render screens
     if (currentScreen === 'checking') {
         return (
@@ -737,280 +988,53 @@ const VoteQuestApp = () => {
         );
     }
 
-
     if (currentScreen === 'splash') return <SplashScreen />;
     if (currentScreen.startsWith('onboarding')) return <OnboardingScreen currentScreen={currentScreen} onNext={setCurrentScreen} />;
     if (currentScreen === 'login') return <LoginScreen loading={loading} />;
 
-    if (currentScreen === 'dashboard') {
-        return (
-            <>
-                {activeDashboardTab === 'overview' && (
-                    <DashboardScreen
-                        userData={userData}
-                        proposals={proposals}
-                        achievements={achievements}
-                        userAchievements={userAchievements}
-                        onSelectProposal={(proposal) => {
-                            setSelectedProposal(proposal);
-                            setCurrentScreen('proposal');
-                        }}
-                        onNavigate={setCurrentScreen}
-                        activeTab={activeDashboardTab}
-                        onTabChange={setActiveDashboardTab}
-                        animations={animations}
-                    />
-                )}
-                {activeDashboardTab === 'proposals' && (
-                    <ProposalsListScreen
-                        proposals={proposals}
-                        onSelectProposal={(proposal) => {
-                            setSelectedProposal(proposal);
-                            setCurrentScreen('proposal');
-                        }}
-                        hasVoted={hasVoted}
-                    />
-                )}
-                {activeDashboardTab === 'analytics' && (
-                    <AnalyticsScreen userData={userData} proposals={proposals} />
-                )}
-                {activeDashboardTab === 'settings' && (
-                    <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
-                )}
-                {activeDashboardTab === 'community' && (
-                    <div className="pb-24">
-                        <CommunityScreen
-                            onNavigate={(screen, data) => {
-                                if (screen === 'thread') {
-                                    if (data === 2) {
-                                        setCurrentScreen('entrance-exam');
-                                    } else {
-                                        setCurrentScreen('debate');
-                                    }
-                                }
-                            }}
-                        />
-                    </div>
-                )}
-                <BottomNavigation />
-                <QuestGuide
-                    currentScreen={currentScreen}
-                    onNavigate={(screen) => {
-                        if (screen === 'proposals') {
-                            setCurrentScreen('dashboard');
-                            setActiveDashboardTab('proposals');
-                        } else {
-                            setCurrentScreen(screen);
-                            // If navigating to dashboard via map, reset to overview
-                            if (screen === 'dashboard') setActiveDashboardTab('overview');
-                        }
-                    }}
-                    message={aiMessage}
-                    onMessageComplete={() => setAiMessage(null)}
-                />
-                <AdminPassphraseModal
-                    open={showAdminModal}
-                    onClose={() => setShowAdminModal(false)}
-                    onSuccess={handleAdminAccess}
-                />
-                {showSetup2FA && (
-                    <AdminSetup2FA
-                        onClose={() => {
-                            setShowSetup2FA(false);
-                            setSetup2FAPassphrase('');
-                        }}
-                        passphrase={setup2FAPassphrase}
-                    />
-                )}
-            </>
-        );
-    }
-
-    if (currentScreen === 'create-proposal') {
-        return <CreateProposalScreen onBack={() => setCurrentScreen('dashboard')} onSubmit={handleCreateProposal} loading={loading} />;
-    }
-
-    if (currentScreen === 'receipts') {
-        return <ReceiptsScreen userId={userData.userId || ''} onBack={() => setCurrentScreen('dashboard')} />;
-    }
-
-    if (currentScreen === 'achievements') {
-        return <AchievementsScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
-    }
-
-    if (currentScreen === 'profile-edit') {
-        return (
-            <ProfileEditScreen
-                userData={userData}
-                onBack={() => setCurrentScreen('dashboard')}
-                onSave={(updated) => setUserData(prev => ({ ...prev, ...updated }))}
-            />
-        );
-    }
-
-    if (currentScreen === 'leaderboard') {
-        return <LeaderboardScreen userData={userData} onBack={() => setCurrentScreen('dashboard')} />;
-    }
-
-    if (currentScreen === 'admin') {
-        return <AdminDashboard onBack={() => setCurrentScreen('dashboard')} passphrase={adminPassphrase} />;
-    }
-
-    if (currentScreen === 'proposal' && selectedProposal) {
-        return (
-            <ProposalDetailScreen
-                proposal={selectedProposal}
-                onBack={() => {
-                    setCurrentScreen('dashboard');
-                    setSelectedOption(null);
-                }}
-                onVote={castVote}
-                loading={loading}
-                hasVoted={hasVoted(selectedProposal.id)}
-                selectedOption={selectedOption}
-                setSelectedOption={setSelectedOption}
-                userId={userData.userId || ''}
-                captchaToken={captchaToken}
-                setCaptchaToken={setCaptchaToken}
-            />
-        );
-    }
-
-    // Organization navigation
-    if (currentScreen === 'organization') {
-        return (
-            <OrganizationListScreen
-                userId={userData.userId || ''}
-                onSelectOrganization={(orgId) => {
-                    setSelectedOrganizationId(orgId);
-                    localStorage.setItem('votequest_current_org', orgId);
-                    setCurrentScreen('org-dashboard');
-                }}
-                onCreateNew={() => setCurrentScreen('org-setup')}
-                onBack={() => setCurrentScreen('dashboard')}
-            />
-        );
-    }
-
-    // Organization Dashboard
-    if (currentScreen === 'org-dashboard' && selectedOrganizationId) {
-        return (
-            <OrganizationDashboard
-                organizationId={selectedOrganizationId}
-                userId={userData.userId || ''}
-                email={userData.email || ''}
-                currentCoins={userData.coins}
-                onNavigate={(screen, data) => {
-                    if (screen === 'organization-list') {
-                        setCurrentScreen('organization');
-                    } else if (screen === 'create-room') {
-                        setCurrentScreen('create-room');
-                    } else if (screen === 'room' && data) {
-                        // Navigate to room detail
-                        setSelectedRoomId(data.id);
-                        setCurrentScreen('room-detail');
-                    }
-                }}
-            />
-        );
-    }
-
-    // Organization Setup
-    if (currentScreen === 'org-setup') {
-        return (
-            <OrganizationSetup
-                userId={userData.userId || ''}
-                onComplete={(organizationId: string) => {
-                    setSelectedOrganizationId(organizationId);
-                    setCurrentScreen('org-dashboard');
-                }}
-                onCancel={() => setCurrentScreen('organization')}
-            />
-        );
-    }
-
-    // Room Detail Screen
-    if (currentScreen === 'room-detail' && selectedRoomId && selectedOrganizationId) {
-        return (
-            <RoomDetailScreen
-                roomId={selectedRoomId}
-                organizationId={selectedOrganizationId}
-                userId={userData.userId || ''}
-                onBack={() => setCurrentScreen('org-dashboard')}
-            />
-        );
-    }
-
-    // Create Room Screen
-    if (currentScreen === 'create-room' && selectedOrganizationId) {
-        return (
-            <CreateRoomWizard
-                organizationId={selectedOrganizationId}
-                organizationName="Organization"
-                userId={userData.userId || ''}
-                onComplete={(roomId) => {
-                    setSelectedRoomId(roomId);
-                    setCurrentScreen('room-detail');
-                }}
-                onCancel={() => setCurrentScreen('org-dashboard')}
-            />
-        );
-    }
-
-    // Community & Debates
-    if (currentScreen === 'community' || (currentScreen === 'dashboard' && activeDashboardTab === 'community')) {
-        return (
-            <div className="pb-24">
-                <CommunityScreen
-                    onNavigate={(screen, data) => {
-                        if (screen === 'thread') {
-                            // data is the thread/debate ID
-                            // Logic to distinguish if it requires entrance exam (mocked for now)
-                            // For now, assume all go to debate
-                            setSelectedDebateId(data);
-                            setCurrentScreen('debate');
-                        }
-                    }}
-                />
-                <BottomNavigation />
-            </div>
-        );
-    }
-
-    if (currentScreen === 'debate' && selectedDebateId) {
-        return (
-            <DebateArena
-                roomId={selectedDebateId}
-                userId={userData.userId || ''}
-                onBack={() => setCurrentScreen('community')}
-            />
-        );
-    }
-
-    if (currentScreen === 'entrance-exam') {
-        return (
-            <EntranceExam
-                onPass={() => setCurrentScreen('debate')}
-                onFail={() => setCurrentScreen('community')}
-                onCancel={() => setCurrentScreen('community')}
-            />
-        );
-    }
-
-    // Fallback for navigation errors
     return (
-        <div className="min-h-screen bg-[var(--bg-void)] flex flex-col items-center justify-center p-6 text-center">
-            <h1 className="text-2xl font-bold text-red-500 mb-2">Navigation Error</h1>
-            <p className="text-gray-400 mb-6">
-                The application encountered an unexpected state.<br />
-                Current Screen: {currentScreen}
-            </p>
-            <button
-                onClick={() => setCurrentScreen('dashboard')}
-                className="btn btn-primary"
-            >
-                Return to Dashboard
-            </button>
+        <div className="min-h-screen bg-void transition-colors duration-500 overflow-hidden">
+            {/* Main Screen Content */}
+            {renderContent()}
+
+            {/* Global Overlays */}
+            {currentScreen !== 'checking' && currentScreen !== 'splash' && !currentScreen.startsWith('onboarding') && currentScreen !== 'login' && (
+                <>
+                    <BottomNavigation />
+                    <QuestGuide
+                        currentScreen={currentScreen}
+                        onNavigate={(screen) => {
+                            if (screen === 'proposals') {
+                                setCurrentScreen('dashboard');
+                                setActiveDashboardTab('proposals');
+                            } else if (screen === 'community') {
+                                setCurrentScreen('dashboard');
+                                setActiveDashboardTab('community');
+                            } else {
+                                setCurrentScreen(screen);
+                                if (screen === 'dashboard') setActiveDashboardTab('overview');
+                            }
+                        }}
+                        message={aiMessage}
+                        onMessageComplete={() => setAiMessage(null)}
+                    />
+                </>
+            )}
+
+            <AdminPassphraseModal
+                open={showAdminModal}
+                onClose={() => setShowAdminModal(false)}
+                onSuccess={handleAdminAccess}
+            />
+            {showSetup2FA && (
+                <AdminSetup2FA
+                    onClose={() => {
+                        setShowSetup2FA(false);
+                        setSetup2FAPassphrase('');
+                    }}
+                    passphrase={setup2FAPassphrase}
+                />
+            )}
         </div>
     );
 };

@@ -11,13 +11,23 @@ export const metadata: Metadata = {
     default: 'VoteQuest | Gamified Decentralized Governance',
   },
   description: 'Participate in the future of governance. Cast immutable votes, earn VQC tokens, and influence organizations in a high-fidelity cyberpunk environment.',
-  themeColor: '#000000',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'VoteQuest',
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#09090b',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 import { Providers } from './providers'

@@ -97,13 +97,14 @@
 
 /* Base Styles */
 body {
+    margin: 0;
+    padding: 0;
     background-color: var(--bg-void);
-    color: var(--hud-white);
-    font-family: 'Share Tech Mono', monospace;
-    /* Default to Tech Mono */
-    cursor: crosshair;
-    /* Gamified cursor */
+    color: #ffffff;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
+    overscroll-behavior: none;
+    /* Prevent PWA jitter */
 }
 
 /* Typography Overrides */

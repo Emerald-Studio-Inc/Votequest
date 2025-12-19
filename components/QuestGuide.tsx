@@ -28,38 +28,45 @@ interface MapNode {
 const NODES: MapNode[] = [
     {
         id: 'dashboard',
-        label: 'CMD_CENTER',
+        label: 'OPERATIONS_HUB',
         icon: LayoutDashboard,
         screenId: 'dashboard',
-        desc: 'Your central hub for operations. Monitor your Voting Power, track Global Rank, and manage your active mission status. This is where your governance journey begins.'
-    },
-    {
-        id: 'create-org',
-        label: 'INIT_ORG',
-        icon: Zap,
-        screenId: 'org-setup',
-        desc: 'Launch a new Decentralized Organization. Establish governance protocols, set voting thresholds, and deploy smart contracts to bring your community on-chain.'
-    },
-    {
-        id: 'org-list',
-        label: 'ORG_NEXUS',
-        icon: Building2,
-        screenId: 'organization',
-        desc: 'The directory of all active organizations. Discover communities, join causes, and analyze governance metrics across the entire VoteQuest ecosystem.'
+        desc: 'Central monitoring for level, XP, and global influence metrics. Your strategic core.'
     },
     {
         id: 'vote',
-        label: 'VOTE_NODE',
+        label: 'GOVERNANCE_NODE',
         icon: Vote,
         screenId: 'proposals',
-        desc: 'Execute your civic duty. Cast immutable votes on active proposals, earn VQC tokens for participation, and influence the future of your organizations.'
+        desc: 'Direct democratic participation. Influence active legislation and receive VQC rewards.'
     },
     {
-        id: 'about',
+        id: 'debate',
+        label: 'DEBATE_ARENA',
+        icon: MessageCircle,
+        screenId: 'community',
+        desc: 'High-density rhetorical exchange. Prove your logic in overseen discourse.'
+    },
+    {
+        id: 'leaderboard',
+        label: 'RANK_SYSTEM',
+        icon: Target,
+        screenId: 'dashboard', // Could link to a specific leaderboard screen later
+        desc: 'Analyzing global operative efficiency. See where you stand in the architecture.'
+    },
+    {
+        id: 'organizations',
+        label: 'ORG_NEXUS',
+        icon: Building2,
+        screenId: 'organization',
+        desc: 'Connect with existing governance structures or initialize a new community cell.'
+    },
+    {
+        id: 'system_intel',
         label: 'SYSTEM_INTEL',
         icon: Cpu,
-        screenId: 'dashboard', // Stays on dashboard but shows info
-        desc: 'VoteQuest solves the transparency crisis in modern governance. By gamifying civic engagement and securing votes on-chain, we ensure every voice matters and every action is verifiable.'
+        screenId: 'dashboard',
+        desc: 'Access core VoteQuest protocols and architectural documentation.'
     },
 ];
 
@@ -125,6 +132,9 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
             setIsTyping(true);
             setDisplayedText('');
 
+            // Play sound once when message starts
+            import('@/lib/sfx').then(({ sfx }) => sfx.playArchitectTone());
+
             let i = 0;
             const timer = setInterval(() => {
                 setDisplayedText(message.substring(0, i + 1));
@@ -132,15 +142,16 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                 if (i >= message.length) {
                     clearInterval(timer);
                     setIsTyping(false);
-                    if (onMessageComplete) setTimeout(onMessageComplete, 3000); // Auto dismiss after 3s? Or wait for user?
+                    // Don't auto-dismiss by default, let user read and click CLOSE MAP or navigate
+                    // if (onMessageComplete) setTimeout(onMessageComplete, 4000); 
                 }
-            }, 30); // Typing speed
+            }, 25); // Faster typing speed for responsiveness
 
             return () => clearInterval(timer);
         } else {
             setDisplayedText('');
         }
-    }, [message, onMessageComplete]);
+    }, [message]);
 
     // Listen for external open commands
     useEffect(() => {
@@ -166,10 +177,10 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Neon colors
-    const NEON_CYAN = '#00F0FF';
-    const NEON_MAGENTA = '#FF003C';
-    const NEON_LIME = '#39FF14';
+    // CSS Variable based colors
+    const NEON_CYAN = 'var(--neon-cyan)';
+    const NEON_MAGENTA = 'var(--neon-magenta)';
+    const NEON_ASH = 'var(--hud-dim)';
 
     // Momentum Physics State
     const [velocity, setVelocity] = useState(0);
@@ -270,11 +281,11 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
             <div className={`fixed bottom-24 right-6 z-[2100] flex items-center gap-4 transition-all duration-500 ${isOpen ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100'}`}>
                 {showTip && !isOpen && (
                     <div
-                        className="bg-black/90 px-4 py-2 text-sm border animate-fade-in shadow-[0_0_15px_rgba(0,240,255,0.3)] font-mono glitch-text"
-                        data-text="OPEN_MAP"
+                        className="bg-black/90 px-4 py-2 text-sm border animate-fade-in shadow-[0_0_15px_rgba(0,85,255,0.3)] font-mono glitch-text"
+                        data-text="SYS_NAV"
                         style={{ color: NEON_CYAN, borderColor: NEON_CYAN }}
                     >
-                        OPEN_MAP
+                        SYS_NAV
                     </div>
                 )}
 
@@ -299,7 +310,7 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                     ></div>
 
                     {/* Core */}
-                    <div className="absolute inset-4 rounded-full bg-black border border-white/20 flex items-center justify-center backdrop-blur-md shadow-[0_0_20px_rgba(0,240,255,0.4)] group-hover:shadow-[0_0_40px_rgba(0,240,255,0.6)]">
+                    <div className="absolute inset-4 rounded-full bg-void border border-white/20 flex items-center justify-center backdrop-blur-md shadow-[0_0_20px_var(--accent-glow)] group-hover:shadow-[0_0_40px_var(--accent-glow)]">
                         <Map className="w-5 h-5 group-hover:animate-pulse" style={{ color: NEON_CYAN }} />
                     </div>
                 </button>
@@ -325,8 +336,8 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                 {/* Header Info - Replaced by Dialogue if Message Active */}
                 {!message ? (
                     <div className={`absolute top-12 left-0 w-full text-center pointer-events-none z-10 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                        <h2 className="text-4xl font-bold font-mono tracking-tighter glow-text-cyan mb-2" style={{ color: NEON_CYAN }}>
-                            NAV_SYSTEM
+                        <h2 className="text-4xl font-bold font-mono tracking-tighter mb-2" style={{ color: NEON_CYAN, textShadow: '0 0 20px var(--accent-glow)' }}>
+                            PROX_GRID_V3
                         </h2>
                         <div className="flex justify-center gap-4 text-xs font-mono uppercase tracking-widest">
                             <span className="px-2 py-1 border border-white/20 rounded text-white bg-white/5">
@@ -343,9 +354,9 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                             {/* Scanline */}
                             <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.1)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
 
-                            <div className="flex items-center gap-4 mb-4 border-b border-cyan-500/30 pb-2">
-                                <div className="w-2 h-2 bg-cyan-500 animate-ping rounded-full" />
-                                <span className="text-cyan-500 font-bold tracking-widest uppercase text-sm">ARCHITECT_AI_ONLINE</span>
+                            <div className="flex items-center gap-4 mb-4 border-b pb-2" style={{ borderColor: NEON_CYAN }}>
+                                <div className="w-2 h-2 animate-ping rounded-full" style={{ backgroundColor: NEON_CYAN }} />
+                                <span className="font-bold tracking-widest uppercase text-sm" style={{ color: NEON_CYAN }}>ARCHITECT_LINK_ONLINE</span>
                             </div>
 
                             <p className="text-lg md:text-xl text-white font-mono leading-relaxed" style={{ textShadow: '0 0 10px rgba(0,255,255,0.5)' }}>
@@ -365,14 +376,14 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                             <h3 className="text-2xl font-bold font-mono text-white mb-2 tracking-wider animate-pulse uppercase">
                                 {activeNode.label}
                             </h3>
-                            <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent mb-4" />
+                            <div className="h-px w-24 mx-auto mb-4" style={{ background: `linear-gradient(90deg, transparent, ${NEON_CYAN}, transparent)` }} />
                             <p className="text-sm md:text-base text-gray-300 font-mono leading-relaxed">
                                 {activeNode.desc}
                             </p>
                             <div className="mt-4 flex justify-center gap-2 items-center">
-                                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping" />
-                                <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
-                                    TARGET LOCKED
+                                <div className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: NEON_CYAN }} />
+                                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: NEON_CYAN }}>
+                                    COORD_LOCKED
                                 </span>
                             </div>
                         </div>
@@ -419,16 +430,17 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                                     }}
                                 >
                                     <div
-                                        className={`w-56 h-64 bg-black border-2 flex flex-col items-center justify-center gap-6 transition-all duration-300 shadow-[0_0_50px_rgba(0,0,0,0.8)]
+                                        className={`w-56 h-64 bg-ash-dark border-2 flex flex-col items-center justify-center gap-6 transition-all duration-300 shadow-[0_0_50px_rgba(0,0,0,0.8)]
                                             ${isOpen ? 'hover:scale-105' : 'opacity-80 scale-90'}
-                                            ${activeNode.id === node.id ? 'border-cyan-400 shadow-[0_0_30px_rgba(0,240,255,0.4)] scale-105' : 'border-cyan-900/50 opacity-60'}
+                                            ${activeNode.id === node.id ? 'scale-105' : 'opacity-60'}
                                         `}
                                         style={{
-                                            borderColor: activeNode.id === node.id ? NEON_CYAN : `${NEON_CYAN}40`,
+                                            borderColor: activeNode.id === node.id ? NEON_CYAN : 'rgba(255,255,255,0.05)',
+                                            boxShadow: activeNode.id === node.id ? `0 0 30px var(--accent-glow)` : 'none'
                                         }}
                                     >
-                                        <div className={`p-4 rounded-full border-2 transition-colors duration-300 ${activeNode.id === node.id ? 'bg-cyan-900/20 border-cyan-400' : 'bg-black/50 border-gray-800'}`}>
-                                            <node.icon className="w-10 h-10 transition-colors" style={{ color: activeNode.id === node.id ? NEON_CYAN : 'gray' }} />
+                                        <div className={`p-4 rounded-full border-2 transition-colors duration-300 ${activeNode.id === node.id ? 'bg-ash-light' : 'bg-void border-white/5'}`} style={{ borderColor: activeNode.id === node.id ? NEON_CYAN : 'transparent' }}>
+                                            <node.icon className="w-10 h-10 transition-colors" style={{ color: activeNode.id === node.id ? NEON_CYAN : 'var(--hud-dim)' }} />
                                         </div>
 
                                         <div className="text-center px-4">
