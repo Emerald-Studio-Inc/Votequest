@@ -33,7 +33,7 @@ import ReceiptsScreen from './ReceiptsScreen';
 import AchievementsScreen from './AchievementsScreen';
 import ProfileEditScreen from './ProfileEditScreen';
 import LeaderboardScreen from './LeaderboardScreen';
-import CommunityScreen from './CommunityScreen';
+import TheGrid from './TheGrid';
 import DebateArena from './DebateArena';
 import EntranceExam from './EntranceExam';
 import dynamic from 'next/dynamic';
@@ -408,7 +408,7 @@ const VoteQuestApp = () => {
                 } else {
                     setAuthLoading(false);
                     // Use functional update to avoid stale closure on currentScreen
-                    setCurrentScreen(prev => prev === 'checking' ? 'login' : prev);
+                    setCurrentScreen(prev => (prev === 'checking' || prev === 'splash') ? 'login' : prev);
                 }
             } catch (error) {
                 console.error('Error checking user:', error);
@@ -786,21 +786,9 @@ const VoteQuestApp = () => {
                         <SettingsScreen userData={userData} onNavigate={setCurrentScreen} />
                     )}
                     {activeDashboardTab === 'community' && (
-                        <div className="pb-24">
-                            <CommunityScreen
-                                onNavigate={(screen, data) => {
-                                    if (screen === 'thread') {
-                                        if (data === 2) {
-                                            setCurrentScreen('entrance-exam');
-                                        } else {
-                                            getArchitectResponse({
-                                                type: 'debate_entry',
-                                                userState: { level: userData.level, coins: userData.coins }
-                                            }).then(setAiMessage);
-                                            setCurrentScreen('debate');
-                                        }
-                                    }
-                                }}
+                        <div className="pb-24 h-full">
+                            <TheGrid
+                                onNavigate={setCurrentScreen}
                             />
                         </div>
                     )}

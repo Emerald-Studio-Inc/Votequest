@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { X, Link as LinkIcon, QrCode, Twitter, MessageCircle, Copy, Download, Check, Share2 } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface ShareModalProps {
     isOpen: boolean;
@@ -123,14 +123,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
                                 <p className="text-[10px] text-gray-500 uppercase">ENCRYPTED_CHANNEL</p>
                             </div>
                         </div>
-                        <ArcadeButton
+                        <CyberButton
                             onClick={onClose}
-                            variant="magenta"
-                            size="sm"
-                            className="w-8 h-8 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
+                            className="!w-8 !h-8 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
                         >
                             <X className="w-5 h-5" strokeWidth={2.5} />
-                        </ArcadeButton>
+                        </CyberButton>
                     </div>
 
                     {/* Tabs */}
@@ -184,23 +182,22 @@ const ShareModal: React.FC<ShareModalProps> = ({
                                                     style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                                                     {shareUrl}
                                                 </div>
-                                                <ArcadeButton
+                                                <CyberButton
                                                     onClick={copyToClipboard}
-                                                    variant="blue"
                                                     className="w-auto px-6 h-[46px]" // Match input height roughly
                                                 >
                                                     {copied ? (
-                                                        <>
+                                                        <div className="flex items-center gap-2">
                                                             <Check className="w-4 h-4" />
                                                             COPIED
-                                                        </>
+                                                        </div>
                                                     ) : (
-                                                        <>
+                                                        <div className="flex items-center gap-2">
                                                             <Copy className="w-4 h-4" />
                                                             COPY
-                                                        </>
+                                                        </div>
                                                     )}
-                                                </ArcadeButton>
+                                                </CyberButton>
                                             </div>
                                         </div>
 
@@ -235,14 +232,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
                                             <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.1)_50%)] bg-[size:100%_4px] pointer-events-none" />
                                         </div>
 
-                                        <ArcadeButton
+                                        <CyberButton
                                             onClick={downloadQR}
-                                            variant="blue"
                                             className="w-full max-w-xs"
                                         >
-                                            <Download className="w-4 h-4 mr-2" />
+                                            <Download className="w-4 h-4 mr-2 inline-block" />
                                             DOWNLOAD_MATRIX
-                                        </ArcadeButton>
+                                        </CyberButton>
                                     </div>
                                 )}
 
@@ -285,14 +281,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
                                         <div className="h-px bg-white/10 my-4" />
 
-                                        <ArcadeButton
+                                        <CyberButton
                                             onClick={copyToClipboard}
-                                            variant="blue"
                                             className="w-full"
                                         >
-                                            <Copy className="w-4 h-4 mr-2" />
+                                            <Copy className="w-4 h-4 mr-2 inline-block" />
                                             COPY_MANUAL_LINK
-                                        </ArcadeButton>
+                                        </CyberButton>
                                     </div>
                                 )}
                             </>

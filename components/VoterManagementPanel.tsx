@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import { Upload, UserPlus, Download, Trash2, Mail, X } from 'lucide-react';
 
 interface VoterManagementPanelProps {
@@ -195,28 +195,22 @@ export default function VoterManagementPanel({
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-                <ArcadeButton
+                <CyberButton
                     onClick={() => setShowAddVoter(true)}
-                    variant="blue"
                     className="flex items-center gap-2"
                 >
                     <UserPlus className="w-4 h-4" />
                     ADD_VOTER
-                </ArcadeButton>
+                </CyberButton>
 
                 <label className="cursor-pointer group relative">
-                    <div className="px-6 py-2 border-2 flex items-center gap-2 font-mono font-bold transition-all duration-200 active:scale-95"
-                        style={{
-                            borderColor: '#FF003C',
-                            backgroundColor: '#FF003C15',
-                            color: '#FF003C'
-                        }}>
+                    <CyberButton
+                        as="div"
+                        className="flex items-center gap-2 pointer-events-none"
+                    >
                         <Upload className="w-4 h-4" />
                         {uploading ? 'UPLOADING...' : 'UPLOAD_CSV'}
-
-                        <span className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2" style={{ borderColor: '#FF003C' }}></span>
-                        <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2" style={{ borderColor: '#FF003C' }}></span>
-                    </div>
+                    </CyberButton>
                     <input
                         type="file"
                         accept=".csv"
@@ -226,14 +220,13 @@ export default function VoterManagementPanel({
                     />
                 </label>
 
-                <ArcadeButton
+                <CyberButton
                     onClick={downloadTemplate}
-                    variant="lime"
                     className="flex items-center gap-2"
                 >
                     <Download className="w-4 h-4" />
                     TEMPLATE
-                </ArcadeButton>
+                </CyberButton>
             </div>
 
             {/* ... (Add Voter Modal - Unchanged) ... */}

@@ -1,5 +1,5 @@
 import { CheckCircle, Share2, Download } from 'lucide-react';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 import VoteDistributionChart from './VoteDistributionChart';
 
@@ -66,30 +66,27 @@ export default function VoteSuccessScreen({ room, votedOptions }: VoteSuccessScr
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                    <ArcadeButton
+                    <CyberButton
                         onClick={() => window.location.reload()}
-                        variant="blue"
                         className="w-full sm:w-auto"
                     >
                         VIEW_RESULTS
-                    </ArcadeButton>
-                    <ArcadeButton
+                    </CyberButton>
+                    <CyberButton
                         onClick={() => {
                             const url = window.location.href;
                             if (navigator.share) {
                                 navigator.share({ title: room.title, url });
                             } else {
                                 navigator.clipboard.writeText(url);
-                                // Toast would be better but alert is minimal fallback as per original code
                                 alert('Link copied to clipboard!');
                             }
                         }}
-                        variant="magenta"
                         className="w-full sm:w-auto flex items-center justify-center gap-2"
                     >
                         <Share2 className="w-4 h-4" />
                         SHARE_ELECTION
-                    </ArcadeButton>
+                    </CyberButton>
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-white/5">

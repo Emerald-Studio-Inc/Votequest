@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Bell, Shield, Palette, Globe, LogOut, ChevronRight, Check, X, AlertCircle, ExternalLink, Cpu } from 'lucide-react';
 import Tooltip from './Tooltip';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface SettingItem {
     label: string;
@@ -210,14 +210,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                                             </div>
                                             {item.action && (
                                                 <Tooltip content={item.actionLabel || 'Action'} position="left">
-                                                    <ArcadeButton
-                                                        onClick={item.action}
-                                                        variant="magenta"
-                                                        size="sm"
-                                                        className="text-[10px] py-1 h-auto"
-                                                    >
-                                                        [{item.actionLabel}]
-                                                    </ArcadeButton>
+                                                    <div className="flex-shrink-0">
+                                                        <CyberButton
+                                                            onClick={item.action}
+                                                            className="!py-1 !px-3"
+                                                        >
+                                                            {item.actionLabel}
+                                                        </CyberButton>
+                                                    </div>
                                                 </Tooltip>
                                             )}
                                         </div>
@@ -269,14 +269,13 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                         </div>
                     </div>
 
-                    <ArcadeButton
-                        variant="magenta"
+                    <CyberButton
                         onClick={() => setShowDisconnectConfirm(true)}
                         className="w-full relative z-10"
                     >
                         <LogOut className="w-4 h-4 mr-2" />
                         INITIATE_DISCONNECT
-                    </ArcadeButton>
+                    </CyberButton>
                 </div>
             </div>
 
@@ -302,20 +301,18 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ userData, onNavigate })
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={() => setShowDisconnectConfirm(false)}
-                                    variant="magenta"
                                     className="flex-1"
                                 >
-                                    [ CANCEL ]
-                                </ArcadeButton>
-                                <ArcadeButton
-                                    variant="magenta"
+                                    ABORT
+                                </CyberButton>
+                                <CyberButton
                                     onClick={handleDisconnect}
                                     className="flex-1"
                                 >
-                                    CONFIRM
-                                </ArcadeButton>
+                                    DISCONNECT
+                                </CyberButton>
                             </div>
                         </div>
                     </div>

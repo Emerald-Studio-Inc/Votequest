@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Building2, Plus, Users, ChevronRight, Vote } from 'lucide-react';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import CyberCard from './CyberCard';
 
 interface OrganizationListScreenProps {
@@ -51,10 +51,10 @@ export default function OrganizationListScreen({
                             </div>
                             <span className="font-bold tracking-wider">VOTEQUEST</span>
                         </button>
-                        <ArcadeButton onClick={onCreateNew} variant="cyan" size="sm" tooltip="Establish DAO">
-                            <Plus className="w-4 h-4 mr-2" />
+                        <CyberButton onClick={onCreateNew} className="!py-1.5 !px-3">
+                            <Plus className="w-4 h-4 mr-2 inline-block" />
                             CREATE_ORG
-                        </ArcadeButton>
+                        </CyberButton>
                     </div>
                 </div>
             </div>
@@ -79,10 +79,10 @@ export default function OrganizationListScreen({
                         <p className="text-mono-60 mb-6">
                             Create your first organization to start managing voting rooms
                         </p>
-                        <ArcadeButton onClick={onCreateNew} variant="cyan" className="mx-auto" tooltip="Launch Organization">
-                            <Plus className="w-4 h-4 mr-2" />
+                        <CyberButton onClick={onCreateNew} className="mx-auto">
+                            <Plus className="w-4 h-4 mr-2 inline-block" />
                             CREATE_FIRST_ORG
-                        </ArcadeButton>
+                        </CyberButton>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

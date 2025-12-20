@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import { Lock, Shield, X } from 'lucide-react';
 
 // Neon colors
@@ -149,23 +149,19 @@ export default function AdminPassphraseModal({ open, onClose, onSuccess }: Props
             )}
 
             <div className="flex gap-3 pt-4">
-              <ArcadeButton
-                type="button"
+              <CyberButton
                 onClick={onClose}
-                variant="magenta"
                 className="flex-1 opacity-50 hover:opacity-100"
               >
                 ABORT
-              </ArcadeButton>
-              <ArcadeButton
-                type="submit"
+              </CyberButton>
+              <CyberButton
+                onClick={handleSubmit}
                 disabled={loading || (step === 'passphrase' ? !passphrase : code.length !== 6)}
-                variant="magenta"
                 className="flex-[2]"
-                glow
               >
                 {loading ? 'VERIFYING...' : (step === 'passphrase' ? 'AUTHENTICATE' : 'UNLOCK_SYSTEM')}
-              </ArcadeButton>
+              </CyberButton>
             </div>
           </form>
         </CyberCard>

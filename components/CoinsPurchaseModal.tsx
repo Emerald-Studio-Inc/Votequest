@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { X, Coins, Zap, Gift, Sparkles, ExternalLink, CreditCard } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface CoinsPurchaseModalProps {
   userId: string;
@@ -93,14 +93,12 @@ export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onS
                 <p className="text-[10px] text-gray-500 uppercase">SECURE_PAYMENT_GATEWAY</p>
               </div>
             </div>
-            <ArcadeButton
+            <CyberButton
               onClick={onClose}
-              variant="magenta"
-              size="sm"
-              className="w-8 h-8 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
+              className="!w-8 !h-8 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
             >
-              <X className="w-5 h-5" strokeWidth={2.5} />
-            </ArcadeButton>
+              <X className="w-5 h-5 transition-colors" />
+            </CyberButton>
           </div>
 
           {/* Content */}
@@ -174,25 +172,25 @@ export default function CoinsPurchaseModal({ userId, email, isOpen, onClose, onS
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t font-mono" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-            <ArcadeButton
-              onClick={handlePurchase}
-              disabled={!selectedPackage || loading}
-              variant="cyan"
-              className="w-full flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'black', borderTopColor: 'transparent' }} />
-                  PROCESSING_TRANSACTION...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-4 h-4" />
-                  INITIATE_PAYMENT
-                </>
-              )}
-            </ArcadeButton>
-
+            <div className="flex gap-4">
+              <CyberButton
+                onClick={handlePurchase}
+                disabled={!selectedPackage || loading}
+                className="flex-1"
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" />
+                    INITIATING...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm justify-center">
+                    <CreditCard className="w-4 h-4" />
+                    PURCHASE_NOW
+                  </div>
+                )}
+              </CyberButton>
+            </div>
             <p className="text-center text-[10px] text-gray-600 mt-3 uppercase tracking-wider">
               SECURE_LINK_VIA_FLUTTERWAVE
             </p>

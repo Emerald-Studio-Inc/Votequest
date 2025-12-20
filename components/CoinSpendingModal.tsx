@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Zap, Pin, X, Loader2, DollarSign } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface Props {
     userCoins: number;
@@ -222,13 +222,12 @@ export default function CoinSpendingModal({
 
                     {/* Footer */}
                     <div className="mt-8 pt-4 border-t flex justify-end" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                        <ArcadeButton
+                        <CyberButton
                             onClick={onClose}
-                            variant="magenta"
                             disabled={loading}
                         >
                             CANCEL
-                        </ArcadeButton>
+                        </CyberButton>
                     </div>
                 </div>
             </CyberCard>

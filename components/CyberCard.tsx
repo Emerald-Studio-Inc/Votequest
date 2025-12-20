@@ -24,7 +24,7 @@ export default function CyberCard({
 }: CyberCardProps) {
     return (
         <div className={`
-            cyber-card relative p-6 rounded-none
+            cyber-card relative p-6 rounded-none overflow-hidden
             ${hoverEffect ? 'hover:translate-y-[-2px] transition-transform duration-300' : ''}
             ${className}
         `}
@@ -53,7 +53,7 @@ export default function CyberCard({
             )}
 
             {/* Content (Padded if title exists) */}
-            <div className={`relative z-10 ${title ? 'mt-4' : ''}`}>
+            <div className={`relative z-10 ${title ? 'mt-4' : ''} ${className.includes('flex-col') ? 'flex-1 min-h-0' : ''}`}>
                 {children}
             </div>
 

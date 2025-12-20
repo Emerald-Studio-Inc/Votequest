@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Loader2, CheckCircle, Sparkles, Cpu, Vote } from 'lucide-react';
 import { signInWithMagicLink } from '@/lib/supabase-auth';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface LoginScreenProps {
     loading?: boolean;
@@ -77,14 +77,12 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                                 OPEN EMAIL CLIENT
                             </a>
 
-                            <ArcadeButton
+                            <CyberButton
                                 onClick={() => { setSent(false); setEmail(''); }}
-                                variant="magenta"
-                                size="sm"
                                 className="w-full mt-4"
                             >
                                 [ USE_DIFFERENT_EMAIL ]
-                            </ArcadeButton>
+                            </CyberButton>
                         </div>
                     </div>
                 </div>
@@ -171,34 +169,34 @@ const LoginScreen = ({ loading: externalLoading }: LoginScreenProps = {}) => {
                             </div>
                         )}
 
-                        <ArcadeButton
+                        <CyberButton
                             type="submit"
-                            variant="cyan"
-                            disabled={loading || !email}
+                            disabled={loading || externalLoading}
                             className="w-full"
-                            style={{ opacity: loading || !email ? 0.5 : 1 }}
                         >
-                            {loading ? (
-                                <span className="flex items-center">
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    INITIATING...
+                            {loading || externalLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    AUTHENTICATING...
                                 </span>
                             ) : (
-                                'ESTABLISH_LINK'
+                                <span className="flex items-center gap-2">
+                                    INITIATE_SESSION <Sparkles className="w-4 h-4" />
+                                </span>
                             )}
-                        </ArcadeButton>
-                    </form>
+                        </CyberButton>
 
-                    {/* Footer Info */}
-                    <div className="mt-8 pt-6 border-t border-gray-900 text-center space-y-2">
-                        <div className="flex items-center justify-center gap-2 text-xs text-gray-500 font-mono">
-                            <CheckCircle className="w-3 h-3 text-green-500" />
-                            <span>NO_PASSWORD_REQUIRED</span>
+                        {/* Footer Info */}
+                        <div className="mt-8 pt-6 border-t border-gray-900 text-center space-y-2">
+                            <div className="flex items-center justify-center gap-2 text-xs text-gray-500 font-mono">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span>NO_PASSWORD_REQUIRED</span>
+                            </div>
+                            <p className="text-[10px] text-gray-600 font-mono uppercase">
+                                SECURE_CHANNEL_ENCRYPTED [SHA-256]
+                            </p>
                         </div>
-                        <p className="text-[10px] text-gray-600 font-mono uppercase">
-                            SECURE_CHANNEL_ENCRYPTED [SHA-256]
-                        </p>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

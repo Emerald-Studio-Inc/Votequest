@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Shield, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import CyberCard from './CyberCard';
 import { sfx } from '@/lib/sfx';
 
@@ -73,7 +73,7 @@ export default function EntranceExam({ onPass, onFail, onCancel }: { onPass: () 
                     <p className="text-red-400 font-mono mb-8">COMPETENCY_CHECK_FAILED. STUDY_THE_MATERIAL.</p>
 
                     <div className="flex justify-center gap-4">
-                        <ArcadeButton variant="magenta" onClick={onFail}>RETURN_TO_LOBBY</ArcadeButton>
+                        <CyberButton onClick={onFail}>RETURN_TO_LOBBY</CyberButton>
                     </div>
                 </div>
             </div>
@@ -115,23 +115,19 @@ export default function EntranceExam({ onPass, onFail, onCancel }: { onPass: () 
                     </h3>
 
                     <div className="grid gap-4">
-                        {question.options.map((opt, idx) => (
-                            <button
+                        {question.options.map((option, idx) => (
+                            <CyberButton
                                 key={idx}
                                 onClick={() => handleAnswer(idx)}
-                                className="group relative p-4 text-left border border-white/10 hover:border-blue-400 bg-white/5 hover:bg-blue-950/30 transition-all duration-300"
+                                className="w-full !justify-start !px-6"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="w-8 h-8 flex items-center justify-center border border-white/20 group-hover:border-blue-400 rounded-sm font-mono text-gray-500 group-hover:text-blue-400">
                                         {String.fromCharCode(65 + idx)}
                                     </div>
-                                    <span className="text-gray-300 group-hover:text-white font-mono">{opt}</span>
+                                    <span className="text-gray-300 group-hover:text-white font-mono">{option}</span>
                                 </div>
-                                {/* Selection Indicator */}
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Shield className="w-4 h-4 text-blue-400" />
-                                </div>
-                            </button>
+                            </CyberButton>
                         ))}
                     </div>
                 </CyberCard>

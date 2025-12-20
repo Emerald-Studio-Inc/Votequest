@@ -3,7 +3,7 @@ import { User, Camera, Save, X, MapPin, Tag, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { uploadAvatar } from '@/lib/supabase-auth';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface ProfileEditScreenProps {
     userData: any;
@@ -114,18 +114,22 @@ export default function ProfileEditScreen({ userData, onBack, onSave }: ProfileE
                             <div>
                                 <h1 className="text-xl font-bold text-white uppercase tracking-wider glitch-text" data-text="EDIT_PROFILE">EDIT_PROFILE</h1>
                                 <p className="text-[10px] text-gray-500 uppercase tracking-widest">{'>'} UPDATE_USER_PARAMETERS</p>
+                                <div className="flex items-center gap-4">
+                                    <CyberButton
+                                        onClick={onBack}
+                                        disabled={saving}
+                                    >
+                                        CANCEL
+                                    </CyberButton>
+                                    <CyberButton
+                                        onClick={handleSave}
+                                        disabled={saving || uploading}
+                                    >
+                                        {saving ? 'TRANSMITTING...' : 'COMMIT_CHANGES'}
+                                    </CyberButton>
+                                </div>
                             </div>
                         </div>
-
-                        <ArcadeButton
-                            onClick={handleSave}
-                            disabled={saving}
-                            variant="cyan"
-                            className="flex items-center gap-2"
-                        >
-                            <Save className="w-4 h-4" />
-                            {saving ? 'WRITING...' : 'SAVE_CHANGES'}
-                        </ArcadeButton>
                     </div>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import Tooltip from './Tooltip';
 import ShareModal from './ShareModal';
 import VoteCaptcha from './VoteCaptcha';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface ProposalDetailScreenProps {
     proposal: ProposalWithOptions;
@@ -185,15 +185,13 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                 </button>
                             )}
 
-                            <ArcadeButton
+                            <CyberButton
                                 onClick={() => setShowShareModal(true)}
-                                variant="cyan"
-                                size="sm"
-                                className="flex items-center gap-2"
+                                className="!py-1.5 !px-3"
                             >
-                                <Share2 className="w-4 h-4" />
-                                <span className="hidden sm:inline">SHARE_DATA</span>
-                            </ArcadeButton>
+                                <Share2 className="w-4 h-4 mr-1" />
+                                <span className="hidden sm:inline text-xs">SHARE_DATA</span>
+                            </CyberButton>
 
                             {hasVoted && (
                                 <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 border bg-green-900/20" style={{ borderColor: NEON_LIME }}>
@@ -291,29 +289,28 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 
                             {!hasVoted && selectedOption && (
                                 <div className="w-full md:w-auto">
-                                    <ArcadeButton
+                                    <CyberButton
                                         onClick={async () => {
                                             if (selectedOption && captchaToken) {
                                                 await onVote(proposal.id, selectedOption, captchaToken);
                                             }
                                         }}
                                         disabled={loading || hasVoted || !selectedOption || !captchaToken}
-                                        variant={!captchaToken ? 'magenta' : 'cyan'}
-                                        className="w-full md:w-auto flex items-center justify-center gap-2"
+                                        className="w-full md:w-auto"
                                     >
                                         {loading ? (
-                                            <>
+                                            <div className="flex items-center gap-2">
                                                 <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"></div>
                                                 <span>TRANSMITTING...</span>
-                                            </>
+                                            </div>
                                         ) : (
-                                            <>
+                                            <div className="flex items-center gap-2">
                                                 {!captchaToken && <Shield className="w-5 h-5" />}
                                                 {captchaToken && <Check className="w-5 h-5" strokeWidth={3} />}
                                                 <span>{!captchaToken ? 'VERIFY_SECURITY' : 'CONFIRM_VOTE'}</span>
-                                            </>
+                                            </div>
                                         )}
-                                    </ArcadeButton>
+                                    </CyberButton>
                                 </div>
                             )}
                         </div>
@@ -437,15 +434,14 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                                         </p>
                                     </div>
                                 </div>
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={handleBoost}
                                     disabled={boostLoading}
-                                    variant="magenta"
                                     className="flex items-center gap-2"
                                 >
                                     <Zap className="w-4 h-4" />
                                     <span>BOOST_VOTE (500)</span>
-                                </ArcadeButton>
+                                </CyberButton>
                             </div>
                         )}
                     </CyberCard>

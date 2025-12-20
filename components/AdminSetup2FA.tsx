@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Copy, Smartphone, Shield, X, AlertTriangle } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import LoadingSpinner from './LoadingSpinner';
 
 // Neon constants
@@ -233,14 +233,12 @@ export default function AdminSetup2FA({ onClose, passphrase }: Props) {
 
                                 {/* Actions */}
                                 <div className="flex justify-end pt-4 border-t border-white/5">
-                                    <ArcadeButton
+                                    <CyberButton
                                         onClick={onClose}
-                                        variant="magenta"
-                                        size="sm"
                                         className="min-w-[120px]"
                                     >
                                         ABORT_SETUP
-                                    </ArcadeButton>
+                                    </CyberButton>
                                 </div>
                             </div>
                         )}

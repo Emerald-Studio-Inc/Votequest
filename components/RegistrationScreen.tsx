@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { User, Mail, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { createUserProfile, checkUsernameAvailable } from '@/lib/supabase-auth';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface RegistrationScreenProps {
     authUser: any; // Supabase auth user
@@ -110,14 +110,13 @@ export default function RegistrationScreen({ authUser, onComplete }: Registratio
                             </div>
                         )}
 
-                        <ArcadeButton
+                        <CyberButton
                             onClick={handleUsernameCheck}
                             disabled={!username || !ageVerified || loading}
-                            variant="cyan"
                             className="w-full justify-center"
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <>CONTINUE</>}
-                        </ArcadeButton>
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2 inline-block" /> : <>CONTINUE</>}
+                        </CyberButton>
                     </div>
                 </div>
             </div>
@@ -167,22 +166,20 @@ export default function RegistrationScreen({ authUser, onComplete }: Registratio
                     )}
 
                     <div className="flex gap-3">
-                        <ArcadeButton
+                        <CyberButton
                             onClick={() => handleComplete()}
-                            variant="magenta"
-                            className="flex-1 justify-center"
+                            className="flex-1 justify-center opacity-60"
                             disabled={loading}
                         >
                             SKIP
-                        </ArcadeButton>
-                        <ArcadeButton
+                        </CyberButton>
+                        <CyberButton
                             onClick={handleComplete}
                             disabled={loading}
-                            variant="cyan"
                             className="flex-1 justify-center"
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <>COMPLETE</>}
-                        </ArcadeButton>
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2 inline-block" /> : <>COMPLETE</>}
+                        </CyberButton>
                     </div>
                 </div>
             </div>

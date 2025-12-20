@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Download, Users, Coins, FileText, TrendingUp, Calendar, Upload, Building2, ArrowLeft } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import LoadingSpinner from './LoadingSpinner';
 
 const NEON_CYAN = '#00F0FF';
@@ -232,14 +232,12 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                 <div className="max-w-7xl mx-auto px-4 py-4 md:px-8 md:py-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <ArcadeButton
+                            <CyberButton
                                 onClick={onBack}
-                                variant="cyan"
-                                size="sm"
-                                className="w-10 h-10 !p-0 flex items-center justify-center"
+                                className="!w-10 !h-10 !p-0 flex items-center justify-center"
                             >
-                                <ArrowLeft className="w-5 h-5" />
-                            </ArcadeButton>
+                                <ArrowLeft className="w-5 h-5 transition-colors" />
+                            </CyberButton>
                             <div>
                                 <h1 className="text-xl md:text-2xl font-bold uppercase tracking-widest glitch-text" data-text="ADMIN_CONSOLE" style={{ color: 'white' }}>
                                     ADMIN_CONSOLE
@@ -251,14 +249,14 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                         </div>
 
                         <div className="flex gap-2">
-                            <ArcadeButton onClick={exportCSV} variant="magenta" size="sm" className="flex items-center gap-2">
-                                <Download className="w-4 h-4" />
+                            <CyberButton onClick={exportCSV} className="!py-1.5 !px-3">
+                                <Download className="w-4 h-4 mr-2 inline-block" />
                                 <span className="hidden md:inline">EXPORT_CSV</span>
-                            </ArcadeButton>
-                            <ArcadeButton onClick={exportJSON} variant="cyan" size="sm" className="flex items-center gap-2">
-                                <Download className="w-4 h-4" />
+                            </CyberButton>
+                            <CyberButton onClick={exportJSON} className="!py-1.5 !px-3">
+                                <Download className="w-4 h-4 mr-2 inline-block" />
                                 <span className="hidden md:inline">EXPORT_JSON</span>
-                            </ArcadeButton>
+                            </CyberButton>
                         </div>
                     </div>
                 </div>
@@ -496,15 +494,13 @@ export default function AdminDashboard({ onBack, passphrase }: AdminDashboardPro
                                 </div>
 
                                 <div className="pt-6">
-                                    <ArcadeButton
+                                    <CyberButton
                                         onClick={handleCoinAdjustment}
                                         disabled={loading || !coinForm.userId || coinForm.amount <= 0}
-                                        variant={coinForm.type === 'credit' ? 'cyan' : 'magenta'}
-                                        glow
-                                        className="w-full py-4 text-center"
+                                        className="w-full py-4"
                                     >
                                         {loading ? 'PROCESSING...' : `CONFIRM ${coinForm.type.toUpperCase()} ${coinForm.amount} VQC`}
-                                    </ArcadeButton>
+                                    </CyberButton>
                                 </div>
                             </div>
                         </CyberCard>

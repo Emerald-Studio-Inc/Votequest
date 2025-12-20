@@ -6,7 +6,9 @@ import CoinBadge from './CoinBadge';
 import NotificationBell from './NotificationBell';
 import CoinsPurchaseModal from './CoinsPurchaseModal';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+
+
+import CyberButton from './CyberButton';
 
 interface DashboardScreenProps {
     userData: any;
@@ -104,16 +106,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 <Cpu className="w-4 h-4" style={{ color: NEON_CYAN }} />
                                 <span className="text-xs font-mono" style={{ color: NEON_CYAN }}>SYS.ONLINE</span>
                             </div>
-                            <ArcadeButton
-                                variant="cyan"
-                                size="sm"
-                                className="hidden sm:flex"
+                            <CyberButton
                                 onClick={() => window.dispatchEvent(new CustomEvent('votequest:open-map'))}
-                                tooltip="Open Nav System"
+                                className="hidden sm:flex"
                             >
-                                <Map className="w-4 h-4 mr-2" />
+                                <Map className="w-4 h-4 mr-1" />
                                 NAV
-                            </ArcadeButton>
+                            </CyberButton>
                             <CoinBadge
                                 coins={userData.coins || 0}
                                 showLabel={true}
@@ -126,7 +125,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-8 relative z-[900]">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-28 relative z-[900]">
 
                 {/* HUD / Mission Status */}
                 <div className="mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -182,14 +181,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     {/* Quick Actions HUD */}
                     <CyberCard title="ACTIONS">
                         <div className="flex flex-col gap-3 h-full justify-center">
-                            <ArcadeButton variant="cyan" onClick={() => onNavigate('create-proposal')} className="w-full" tooltip="Draft & Submit">
-                                <Plus className="w-4 h-4 inline-block mr-2" />
-                                NEW_PROPOSAL
-                            </ArcadeButton>
-                            <ArcadeButton variant="magenta" onClick={() => onNavigate('organization')} className="w-full" tooltip="Manage DAOs">
-                                <Building2 className="w-4 h-4 inline-block mr-2" />
-                                ORG_ACCESS
-                            </ArcadeButton>
+                            <CyberButton onClick={() => onNavigate('create-proposal')} className="w-full">
+                                <Plus className="w-4 h-4 mr-2 inline-block" />
+                                NEW_QUEST
+                            </CyberButton>
+                            <CyberButton onClick={() => onNavigate('organization')} className="w-full">
+                                <Building2 className="w-4 h-4 mr-2 inline-block" />
+                                ORG_PORTAL
+                            </CyberButton>
                         </div>
                     </CyberCard>
                 </div>
@@ -203,26 +202,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
                     {/* Retro Filter Toggle */}
                     <div className="flex gap-2">
-                        <ArcadeButton
+                        <CyberButton
                             onClick={() => setProposalFilter('active')}
-                            variant="cyan"
-                            size="sm"
                             className={proposalFilter === 'active' ? 'bg-cyan-500/20' : 'opacity-60 hover:opacity-100'}
-                            glow={proposalFilter === 'active'}
-                            tooltip="Show Live"
                         >
                             ACTIVE
-                        </ArcadeButton>
-                        <ArcadeButton
+                        </CyberButton>
+                        <CyberButton
                             onClick={() => setProposalFilter('history')}
-                            variant="cyan"
-                            size="sm"
                             className={proposalFilter === 'history' ? 'bg-cyan-500/20' : 'opacity-60 hover:opacity-100'}
-                            glow={proposalFilter === 'history'}
-                            tooltip="Show Archived"
                         >
                             HISTORY
-                        </ArcadeButton>
+                        </CyberButton>
                     </div>
                 </div>
 

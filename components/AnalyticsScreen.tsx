@@ -75,7 +75,7 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ userData, proposals }
             <div className="fixed inset-0 bg-[linear-gradient(rgba(0,240,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             {/* Header */}
-            <div className="relative z-10 pt-16 pb-6 px-6">
+            <div className="relative z-10 pt-24 pb-6 px-6">
                 <h1 className="text-3xl font-bold tracking-widest uppercase glitch-text mb-2" data-text="ANALYTICS" style={{ color: NEON_CYAN }}>
                     ANALYTICS_CORE
                 </h1>

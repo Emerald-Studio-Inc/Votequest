@@ -3,7 +3,7 @@ import { Search, Filter, Clock, Users, TrendingUp, Check, ArrowUpRight, X, Chevr
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface ProposalsListScreenProps {
     proposals: ProposalWithOptions[];
@@ -159,16 +159,13 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
 
                         {/* Filter Toggle */}
                         {/* Filter Toggle */}
-                        <ArcadeButton
+                        <CyberButton
                             onClick={() => setShowFilters(!showFilters)}
-                            variant="cyan"
-                            size="sm"
-                            className={!showFilters ? 'opacity-60 hover:opacity-100' : ''}
-                            glow={showFilters}
+                            className={`!py-1 !px-3 ${!showFilters ? 'opacity-60 hover:opacity-100' : ''}`}
                         >
-                            <Filter className="w-3 h-3 mr-2" />
-                            FILTERS
-                        </ArcadeButton>
+                            <Filter className="w-3 h-3 mr-1" />
+                            <span className="text-[10px]">FILTERS</span>
+                        </CyberButton>
                     </div>
 
                     {/* Filter Pills */}
@@ -182,16 +179,15 @@ const ProposalsListScreen: React.FC<ProposalsListScreenProps> = ({
                                     { value: 'voted' as FilterOption, label: 'COMPLETED', count: votedCount },
                                     { value: 'not-voted' as FilterOption, label: 'PENDING', count: activeCount - votedCount }
                                 ].map((filter) => (
-                                    <ArcadeButton
+                                    <CyberButton
                                         key={filter.value}
                                         onClick={() => setFilterBy(filter.value)}
-                                        variant="cyan"
-                                        size="sm"
-                                        className={`text-[10px] ${filterBy !== filter.value ? 'opacity-60 hover:opacity-100' : ''}`}
-                                        glow={filterBy === filter.value}
+                                        className={`!py-1 !px-3 ${filterBy !== filter.value ? 'opacity-60 hover:opacity-100' : ''}`}
                                     >
-                                        {filter.label} <span className="opacity-50 ml-1">[{filter.count}]</span>
-                                    </ArcadeButton>
+                                        <span className="text-[10px]">
+                                            {filter.label} <span className="opacity-50 ml-1">[{filter.count}]</span>
+                                        </span>
+                                    </CyberButton>
                                 ))}
                             </div>
                         </div>

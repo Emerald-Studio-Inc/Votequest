@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { X, Zap, Users, Clock, Shield, Check, Sparkles, Vote, QrCode } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface CoinFeaturesPurchaseProps {
   roomId: string;
@@ -126,12 +126,18 @@ export default function CoinFeaturesPurchase({
     }
   };
 
-  const selectedFeatureData = ROOM_FEATURES.find(f => f.id === selectedFeature);
+  // No selectedFeatureData needed if unused
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono overflow-y-auto custom-scrollbar">
       {/* Cyber Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,85,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,85,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-20"
+        style={{
+          backgroundImage: `linear-gradient(${NEON_CYAN}10 1px, transparent 1px), linear-gradient(90deg, ${NEON_CYAN}10 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }}
+      />
 
       <CyberCard
         className="w-full max-w-md relative z-10"
@@ -236,27 +242,14 @@ export default function CoinFeaturesPurchase({
 
           {/* Footer - Only show if not success */}
           {!success && (
-            <div className="p-6 border-t font-mono" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-              <ArcadeButton
+            <div className="p-6 border-b mt-auto" style={{ borderColor: `${NEON_CYAN}30` }}>
+              <CyberButton
                 onClick={handlePurchase}
-                disabled={!selectedFeature || loading}
-                variant="cyan"
-                className="w-full flex items-center justify-center gap-2"
+                disabled={loading || !selectedFeature}
+                className="w-full"
               >
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'black', borderTopColor: 'transparent' }} />
-                    INSTALLING...
-                  </>
-                ) : selectedFeatureData ? (
-                  <>
-                    <div className="w-2 h-2 bg-black animate-pulse rounded-full mr-2"></div>
-                    INSTALL_FOR_{selectedFeatureData.cost}_VQC
-                  </>
-                ) : (
-                  'SELECT_UPGRADE_MODULE'
-                )}
-              </ArcadeButton>
+                {loading ? 'INITIALIZING...' : 'INSTALL_UPGRADE'}
+              </CyberButton>
             </div>
           )}
         </div>

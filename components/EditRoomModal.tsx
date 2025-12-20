@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { X, Save, Edit, Terminal } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface EditRoomModalProps {
     roomId: string;
@@ -143,31 +143,29 @@ export default function EditRoomModal({
 
                     {/* Footer */}
                     <div className="mt-8 pt-6 border-t flex justify-end gap-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                        <ArcadeButton
+                        <CyberButton
                             onClick={onClose}
-                            variant="cyan"
                             disabled={loading}
+                            className="opacity-60"
                         >
                             CANCEL
-                        </ArcadeButton>
-                        <ArcadeButton
+                        </CyberButton>
+                        <CyberButton
                             onClick={handleSave}
                             disabled={loading}
-                            variant="cyan"
-                            className="flex items-center gap-2"
                         >
                             {loading ? (
                                 <>
-                                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'black', borderTopColor: 'transparent' }} />
+                                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2 inline-block" style={{ borderColor: 'white', borderTopColor: 'transparent' }} />
                                     SAVING...
                                 </>
                             ) : (
                                 <>
-                                    <Save className="w-4 h-4" />
+                                    <Save className="w-4 h-4 mr-2 inline-block" />
                                     SAVE_CONFIG
                                 </>
                             )}
-                        </ArcadeButton>
+                        </CyberButton>
                     </div>
                 </div>
             </CyberCard>

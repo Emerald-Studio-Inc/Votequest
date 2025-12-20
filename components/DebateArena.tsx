@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Shield, Users, Mic2, AlertTriangle, Send, Loader2 } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import { sfx } from '@/lib/sfx';
 
 interface Argument {
@@ -149,15 +149,13 @@ export default function DebateArena({ roomId, userId, onBack }: { roomId: string
                                     onChange={e => setInput(e.target.value)}
                                     disabled={submitting}
                                 />
-                                <ArcadeButton
-                                    size="sm"
-                                    variant="blue"
+                                <CyberButton
                                     className="mt-2 w-full justify-center"
                                     onClick={handleSubmit}
                                     disabled={submitting}
                                 >
                                     {submitting ? 'TRANSMITTING...' : 'SUBMIT_ARGUMENT'}
-                                </ArcadeButton>
+                                </CyberButton>
                             </div>
                         )}
                     </div>
@@ -200,15 +198,13 @@ export default function DebateArena({ roomId, userId, onBack }: { roomId: string
                                     onChange={e => setInput(e.target.value)}
                                     disabled={submitting}
                                 />
-                                <ArcadeButton
-                                    size="sm"
-                                    variant="magenta"
+                                <CyberButton
                                     className="mt-2 w-full justify-center"
                                     onClick={handleSubmit}
                                     disabled={submitting}
                                 >
                                     {submitting ? 'TRANSMITTING...' : 'SUBMIT_COUNTER'}
-                                </ArcadeButton>
+                                </CyberButton>
                             </div>
                         )}
                     </div>

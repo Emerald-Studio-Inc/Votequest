@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle, Circle } from 'lucide-react';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface VotingInterfaceProps {
     room: any;
@@ -196,17 +196,14 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
             {/* Submit Button */}
             <div className="sticky bottom-0 left-0 right-0 p-6 bg-black/80 backdrop-blur-xl border-t border-white/10">
                 <div className="max-w-4xl mx-auto">
-                    <ArcadeButton
+                    <CyberButton
                         onClick={handleSubmit}
                         disabled={selectedOptions.length === 0 || submitting}
-                        variant="lime"
-                        size="lg"
-                        className="w-full flex items-center justify-center gap-3"
-                        tooltip={isQuadratic ? `Cost: ${totalCost} VQC` : "Submit your final decision"}
+                        className="w-full justify-center"
                     >
                         {submitting ? (
                             <>
-                                <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" />
+                                <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin mr-3 inline-block" />
                                 PROCESSING...
                             </>
                         ) : (
@@ -214,7 +211,7 @@ export default function VotingInterface({ room, onVoteSubmit }: VotingInterfaceP
                                 ? `EXECUTE_VOTE (${totalCost} VQC)`
                                 : `CONFIRM_SELECTION${selectedOptions.length > 1 ? 'S' : ''} (${selectedOptions.length})`
                         )}
-                    </ArcadeButton>
+                    </CyberButton>
                     <p className="text-sm text-center text-mono-50 mt-3 font-mono">
                         // CAUTION: ACTION_IRREVERSIBLE
                     </p>

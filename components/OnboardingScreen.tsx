@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, Shield, TrendingUp, Eye, Check } from 'lucide-react';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import CyberCard from './CyberCard';
 
 interface OnboardingScreenProps {
@@ -103,24 +103,21 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ currentScreen, onNe
 
                         {/* Navigation */}
                         <div className="flex flex-col items-center gap-6">
-                            <ArcadeButton
+                            <CyberButton
                                 onClick={() => onNext(currentOnboarding.next)}
-                                variant={currentIndex === 0 ? 'cyan' : currentIndex === 1 ? 'magenta' : 'lime'}
                                 className="w-full max-w-xs"
                             >
                                 <span>
                                     {currentIndex === onboardingScreens.length - 1 ? 'INITIALIZE_SYSTEM' : 'PROCEED_NEXT'}
                                 </span>
-                            </ArcadeButton>
+                            </CyberButton>
 
-                            <ArcadeButton
+                            <CyberButton
                                 onClick={() => onNext('login')}
-                                variant="magenta"
-                                size="sm"
-                                className="w-full max-w-[120px] text-[10px]"
+                                className="w-full max-w-[120px] !text-[10px] opacity-60 hover:opacity-100"
                             >
                                 [ SKIP_TUTORIAL ]
-                            </ArcadeButton>
+                            </CyberButton>
                         </div>
 
                         {/* Dots Indicator */}

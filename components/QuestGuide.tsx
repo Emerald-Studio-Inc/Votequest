@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Map, X, LayoutDashboard, Building2, Vote, Zap, Globe, Target, Cpu, Send, MessageCircle, Maximize2, Minimize2 } from 'lucide-react';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface ChatMessage {
     role: 'user' | 'architect';
@@ -143,7 +143,7 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                     clearInterval(timer);
                     setIsTyping(false);
                     // Don't auto-dismiss by default, let user read and click CLOSE MAP or navigate
-                    // if (onMessageComplete) setTimeout(onMessageComplete, 4000); 
+                    if (onMessageComplete) setTimeout(onMessageComplete, 7000);
                 }
             }, 25); // Faster typing speed for responsiveness
 
@@ -392,8 +392,8 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
 
                 {/* 3D Wheel Container */}
                 <div
-                    className="relative w-full max-w-lg h-[500px] flex items-center justify-center mt-20"
-                    style={{ perspective: '1200px', opacity: message ? 0.3 : 1, transition: 'opacity 0.5s' }}
+                    className="relative w-full max-w-lg h-[500px] flex items-center justify-center mt-32"
+                    style={{ perspective: '1200px', opacity: isTyping ? 0.4 : 1, transition: 'opacity 0.8s' }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* ... (Content of 3D wheel same as before) ... */}
@@ -528,15 +528,13 @@ export default function QuestGuide({ currentScreen, onNavigate, message, onMessa
                         )}
 
                         {/* Close Map Button */}
-                        <ArcadeButton
+                        <CyberButton
                             onClick={() => setIsOpen(false)}
-                            variant="magenta"
-                            size="md"
-                            className="mt-2 w-full"
+                            className="mt-2 w-full justify-center"
                         >
                             <X className="w-5 h-5 mr-2" />
-                            CLOSE MAP
-                        </ArcadeButton>
+                            CLOSE_MAP
+                        </CyberButton>
                     </div>
                 )}
 

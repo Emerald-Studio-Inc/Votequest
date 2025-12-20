@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Plus, X, Calendar, FileText, AlertCircle, CheckCircle2, Sparkles, ChevronRight } from 'lucide-react';
 import Tooltip from './Tooltip';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton'; // Added CyberButton import
 
 interface CreateProposalScreenProps {
     onBack: () => void;
@@ -156,16 +156,14 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
             <div className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl" style={{ borderBottom: `1px solid ${NEON_CYAN}30` }}>
                 <div className="max-w-[900px] mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-5">
                     <div className="flex items-center justify-between">
-                        <button
+                        <CyberButton
                             onClick={onBack}
+                            className="opacity-60"
                             disabled={loading}
-                            className="flex items-center gap-2 group text-gray-400 hover:text-white transition-colors"
                         >
-                            <div className="w-8 h-8 flex items-center justify-center border group-hover:bg-white/10 transition-colors" style={{ borderColor: NEON_CYAN }}>
-                                <ArrowLeft className="w-4 h-4" style={{ color: NEON_CYAN }} strokeWidth={2.5} />
-                            </div>
-                            <span className="hidden sm:inline font-mono text-sm uppercase">ABORT_MISSION</span>
-                        </button>
+                            <ArrowLeft className="w-4 h-4 mr-2 inline-block" />
+                            <span className="hidden sm:inline">BACK_TO_HUB</span>
+                        </CyberButton>
 
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 px-3 py-1.5 border bg-black/50" style={{ borderColor: isFormValid ? NEON_LIME : '#F97316' }}>
@@ -175,10 +173,9 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                 </span>
                             </div>
 
-                            <ArcadeButton
+                            <CyberButton
                                 onClick={handleSubmit}
                                 disabled={loading || !isFormValid}
-                                variant="cyan"
                                 className="flex items-center gap-2"
                             >
                                 {loading ? (
@@ -192,7 +189,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                         <span>LAUNCH_PROPOSAL</span>
                                     </>
                                 )}
-                            </ArcadeButton>
+                            </CyberButton>
                         </div>
                     </div>
                 </div>
@@ -354,14 +351,12 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                             </div>
                             {options.length < 10 && (
                                 <Tooltip content="Add Vector" position="left">
-                                    <ArcadeButton
+                                    <CyberButton
                                         onClick={addOption}
-                                        variant="cyan"
-                                        size="sm"
                                         className="w-8 h-8 !p-0 flex items-center justify-center"
                                     >
                                         <Plus className="w-4 h-4" strokeWidth={2.5} />
-                                    </ArcadeButton>
+                                    </CyberButton>
                                 </Tooltip>
                             )}
                         </div>
@@ -412,14 +407,12 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
 
                                         {options.length > 2 && (
                                             <Tooltip content="Remove Vector" position="left">
-                                                <ArcadeButton
+                                                <CyberButton
                                                     onClick={() => removeOption(option.id)}
-                                                    variant="magenta"
-                                                    size="sm"
                                                     className="w-8 h-8 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
                                                 >
                                                     <X className="w-4 h-4" strokeWidth={2} />
-                                                </ArcadeButton>
+                                                </CyberButton>
                                             </Tooltip>
                                         )}
                                     </div>
@@ -467,22 +460,17 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                 {/* Action Footer */}
                 <div className="sticky bottom-0 left-0 right-0 p-6 bg-black/90 backdrop-blur-xl border-t border-white/10 mt-12">
                     <div className="max-w-[900px] mx-auto flex gap-4">
-                        <ArcadeButton
+                        <CyberButton
                             onClick={onBack}
-                            variant="magenta"
-                            size="lg"
                             className="flex-1"
                             disabled={loading}
                         >
                             CANCEL_MISSION
-                        </ArcadeButton>
-                        <ArcadeButton
-                            onClick={() => onSubmit({ title, description, endDate, options })}
-                            variant="lime"
-                            size="lg"
+                        </CyberButton>
+                        <CyberButton
+                            onClick={handleSubmit} // Changed to handleSubmit as per original logic
                             className="flex-[2]"
                             disabled={!isFormValid || loading}
-                            glow={Boolean(isFormValid)}
                         >
                             {loading ? (
                                 <span className="flex items-center gap-2">
@@ -494,7 +482,7 @@ const CreateProposalScreen: React.FC<CreateProposalScreenProps> = ({
                                     DEPLOY_PROPOSAL <ChevronRight className="w-5 h-5" />
                                 </span>
                             )}
-                        </ArcadeButton>
+                        </CyberButton>
                     </div>
                 </div>
             </div>

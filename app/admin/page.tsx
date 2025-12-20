@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Shield, Users, AlertTriangle, Activity, Lock, Search, RefreshCw, Trash2, Coins } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CyberCard from '@/components/CyberCard';
-import ArcadeButton from '@/components/ArcadeButton';
+import CyberButton from '@/components/CyberButton';
 import { sfx } from '@/lib/sfx';
 
 export default function AdminDashboard() {
@@ -67,13 +67,34 @@ export default function AdminDashboard() {
                         className="w-full bg-black border border-red-500/30 p-2 text-center text-red-400 mb-4 focus:outline-none focus:border-red-500"
                         placeholder="ENTER_GOD_KEY"
                     />
-                    <ArcadeButton onClick={handleLogin} variant="magenta" className="w-full justify-center">
-                        AUTHENTICATE
-                    </ArcadeButton>
+                    <CyberButton onClick={handleLogin} className="w-full justify-center">
+                        <Shield className="w-4 h-4 mr-2 inline-block" />
+                        ACCESS_SYSTEM
+                    </CyberButton>
                 </div>
             </div>
         );
     }
+
+    const adjustCoins = async (userId: string, amount: number) => {
+        try {
+            const res = await fetch('/api/admin/coins', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, amount })
+            });
+
+            if (res.ok) {
+                // Refresh data
+                const updatedUsers = users.map(u =>
+                    u.id === userId ? { ...u, coins: (u.coins || 0) + amount } : u
+                );
+                setUsers(updatedUsers);
+            }
+        } catch (error) {
+            console.error('Failed to adjust coins:', error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[var(--bg-void)] font-mono pb-24 relative">
@@ -85,10 +106,10 @@ export default function AdminDashboard() {
                         <Lock className="w-6 h-6 text-red-500" />
                         <h1 className="text-2xl font-bold text-red-500 tracking-widest">GOD_MODE_DASHBOARD</h1>
                     </div>
-                    <ArcadeButton onClick={loadUsers} variant="cyan" size="sm">
-                        <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    <CyberButton onClick={loadUsers} className="!py-1 !px-3">
+                        <Activity className="w-3 h-3 mr-2 inline-block" />
                         REFRESH_DATA
-                    </ArcadeButton>
+                    </CyberButton>
                 </div>
             </div>
 
@@ -125,22 +146,18 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="flex gap-2">
-                                        <ArcadeButton
-                                            size="sm"
-                                            variant="lime"
-                                            onClick={() => grantCoins(user.id)}
-                                            tooltip="Grant 1000 Coins"
+                                        <CyberButton
+                                            onClick={() => adjustCoins(user.id, 100)}
+                                            className="!py-1 !px-2 flex-1 justify-center"
                                         >
-                                            <Coins className="w-4 h-4" />
-                                        </ArcadeButton>
-                                        <ArcadeButton
-                                            size="sm"
-                                            variant="magenta"
-                                            onClick={() => alert('Ban logic here')}
-                                            tooltip="Ban User"
+                                            +100
+                                        </CyberButton>
+                                        <CyberButton
+                                            onClick={() => adjustCoins(user.id, -100)}
+                                            className="!py-1 !px-2 flex-1 justify-center opacity-60"
                                         >
-                                            <Trash2 className="w-4 h-4" />
-                                        </ArcadeButton>
+                                            -100
+                                        </CyberButton>
                                     </div>
                                 </div>
                             </div>

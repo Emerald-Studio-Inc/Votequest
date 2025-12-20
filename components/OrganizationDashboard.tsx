@@ -6,7 +6,7 @@ import OrganizationAdminLayout from './admin/OrganizationAdminLayout';
 import TurnoutHeatmap from './analytics/TurnoutHeatmap';
 import VoterDemographics from './analytics/VoterDemographics';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 import CoinBadge from './CoinBadge';
 import CoinsPurchaseModal from './CoinsPurchaseModal';
 
@@ -131,30 +131,33 @@ export default function OrganizationDashboard({
                         </div>
 
                         <div className="flex items-center gap-4">
+                            <CyberButton onClick={() => setShowSubscriptionPicker(true)} className="!py-1.5 !px-3">
+                                <Zap className="w-4 h-4 mr-2 inline-block" />
+                                UPGRADE
+                            </CyberButton>
+                            <CyberButton onClick={() => setShowCoinsModal(true)} className="!py-1.5 !px-3">
+                                <Plus className="w-4 h-4 mr-2 inline-block" />
+                                BUY_COINS
+                            </CyberButton>
                             <CoinBadge
                                 coins={currentCoins}
                                 onClick={() => setShowCoinsModal(true)}
                                 showLabel={true}
                             />
-                            <ArcadeButton
-                                onClick={() => onNavigate?.('create-room')}
-                                variant="cyan"
-                                className="hidden md:flex items-center gap-2"
-                                tooltip="Initialize Chamber"
+                            <CyberButton
+                                onClick={() => onNavigate?.('create-room', { organizationId })}
+                                className="hidden md:flex items-center gap-2 !py-2 !px-4"
                             >
-                                <Plus className="w-4 h-4" />
-                                CREATE_ROOM
-                            </ArcadeButton>
+                                <Plus className="w-4 h-4 mr-1" />
+                                NEW_ARENA
+                            </CyberButton>
                             {/* Mobile Create Button */}
-                            <ArcadeButton
-                                onClick={() => onNavigate?.('create-room')}
-                                variant="cyan"
-                                size="sm"
+                            <CyberButton
+                                onClick={() => onNavigate?.('create-room', { organizationId })}
                                 className="flex md:hidden items-center justify-center w-10 h-10 p-0"
-                                tooltip="New Room"
                             >
                                 <Plus className="w-5 h-5" />
-                            </ArcadeButton>
+                            </CyberButton>
                         </div>
                     </div>
                 </div>
@@ -201,12 +204,11 @@ export default function OrganizationDashboard({
                                 <Vote className="w-8 h-8 animate-pulse" style={{ color: NEON_CYAN }} />
                             </div>
                             <p className="text-gray-200 mb-6 font-mono text-sm uppercase">NO_ACTIVE_CHAMBERS_DETECTED</p>
-                            <ArcadeButton
-                                onClick={() => onNavigate?.('create-room')}
-                                variant="cyan"
+                            <CyberButton
+                                onClick={() => onNavigate?.('room-wizard')}
                             >
                                 INITIALIZE_FIRST_ROOM
-                            </ArcadeButton>
+                            </CyberButton>
                         </div>
                     ) : (
                         <div className="space-y-3">

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Calendar, Users, Shield, Plus, X, ArrowRight, ArrowLeft, Check, Terminal, Database, Lock } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface CreateRoomWizardProps {
     organizationId: string;
@@ -201,17 +201,16 @@ export default function CreateRoomWizard({
                             </div>
 
                             <div className="flex gap-3 mt-8">
-                                <ArcadeButton onClick={onCancel} variant="cyan" className="flex-1">
+                                <CyberButton onClick={onCancel} className="flex-1 opacity-60">
                                     ABORT
-                                </ArcadeButton>
-                                <ArcadeButton
+                                </CyberButton>
+                                <CyberButton
                                     onClick={() => setStep(2)}
                                     disabled={!title.trim()}
-                                    variant="cyan"
-                                    className="flex-1 flex items-center justify-center gap-2"
+                                    className="flex-1"
                                 >
-                                    PROCEED <ArrowRight className="w-4 h-4" />
-                                </ArcadeButton>
+                                    PROCEED <ArrowRight className="w-4 h-4 mr-2 inline-block ml-2" />
+                                </CyberButton>
                             </div>
                         </div>
                     )}
@@ -264,20 +263,18 @@ export default function CreateRoomWizard({
                             })}
 
                             <div className="flex gap-3 mt-8">
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={() => setStep(1)}
-                                    variant="cyan"
                                     className="flex-1"
                                 >
-                                    <ArrowLeft className="w-4 h-4 mr-2" /> BACK
-                                </ArcadeButton>
-                                <ArcadeButton
+                                    <ArrowLeft className="w-4 h-4 mr-2 inline-block" /> BACK
+                                </CyberButton>
+                                <CyberButton
                                     onClick={() => setStep(3)}
-                                    variant="cyan"
-                                    className="flex-1 flex items-center justify-center gap-2"
+                                    className="flex-1"
                                 >
-                                    PROCEED <ArrowRight className="w-4 h-4" />
-                                </ArcadeButton>
+                                    PROCEED <ArrowRight className="w-4 h-4 mr-2 inline-block ml-2" />
+                                </CyberButton>
                             </div>
                         </div>
                     )}
@@ -289,15 +286,13 @@ export default function CreateRoomWizard({
                                 <label className="text-xs font-bold font-mono text-gray-400 uppercase" style={{ color: NEON_CYAN }}>
                                     {'>'} CANDIDATE_ENTITIES
                                 </label>
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={addOption}
                                     disabled={options.length >= 10}
-                                    variant="lime"
-                                    size="sm"
-                                    className="flex items-center gap-2"
+                                    className="!py-1.5 !px-3"
                                 >
-                                    <Plus className="w-3 h-3" /> ADD_ENTITY
-                                </ArcadeButton>
+                                    <Plus className="w-3 h-3 mr-2 inline-block" /> ADD_ENTITY
+                                </CyberButton>
                             </div>
 
                             <div className="space-y-4">
@@ -366,32 +361,30 @@ export default function CreateRoomWizard({
                             </div>
 
                             <div className="flex gap-3 mt-8">
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={() => setStep(2)}
-                                    variant="cyan"
                                     disabled={loading}
                                     className="flex-1"
                                 >
-                                    <ArrowLeft className="w-4 h-4 mr-2" /> BACK
-                                </ArcadeButton>
-                                <ArcadeButton
+                                    <ArrowLeft className="w-4 h-4 mr-2 inline-block" /> BACK
+                                </CyberButton>
+                                <CyberButton
                                     onClick={handleSubmit}
                                     disabled={loading || options.filter(o => o.title.trim()).length < 2}
-                                    variant="lime"
-                                    className="flex-1 flex items-center justify-center gap-2"
+                                    className="flex-1"
                                 >
                                     {loading ? (
                                         <>
-                                            <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'black', borderTopColor: 'transparent' }} />
+                                            <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2 inline-block" style={{ borderColor: 'white', borderTopColor: 'transparent' }} />
                                             INITIALIZING...
                                         </>
                                     ) : (
                                         <>
-                                            <Check className="w-4 h-4" />
+                                            <Check className="w-4 h-4 mr-2 inline-block" />
                                             LAUNCH_CHAMBER
                                         </>
                                     )}
-                                </ArcadeButton>
+                                </CyberButton>
                             </div>
                         </div>
                     )}

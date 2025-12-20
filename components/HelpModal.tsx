@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { HelpCircle, X, Vote, FileText, Zap, Trophy, Shield, ChevronRight } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface HelpModalProps {
     onClose: () => void;
@@ -82,7 +82,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
                 cornerStyle="tech"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: `${NEON_CYAN}30` }}>
+                <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: `${NEON_CYAN} 30` }}>
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 border flex items-center justify-center bg-black" style={{ borderColor: NEON_CYAN }}>
                             <HelpCircle className="w-6 h-6 animate-pulse" style={{ color: NEON_CYAN }} />
@@ -92,20 +92,18 @@ export default function HelpModal({ onClose }: HelpModalProps) {
                             <p className="text-xs text-gray-500 uppercase">V.2.0.4 MANUAL</p>
                         </div>
                     </div>
-                    <ArcadeButton
+                    <CyberButton
                         onClick={onClose}
-                        variant="magenta"
-                        size="sm"
-                        className="w-10 h-10 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
+                        className="!w-10 !h-10 !p-0 flex items-center justify-center opacity-70 hover:opacity-100"
                     >
-                        <X className="w-6 h-6" strokeWidth={2.5} />
-                    </ArcadeButton>
+                        <X className="w-5 h-5 transition-colors" />
+                    </CyberButton>
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Sidebar */}
-                    <div className="w-64 border-r p-4 space-y-2 overflow-y-auto bg-black/20" style={{ borderColor: `${NEON_CYAN}30` }}>
+                    <div className="w-64 border-r p-4 space-y-2 overflow-y-auto bg-black/20" style={{ borderColor: `${NEON_CYAN} 30` }}>
                         {Object.entries(sections).map(([key, section]) => {
                             const Icon = section.icon;
                             const isActive = activeSection === key;
@@ -117,7 +115,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
                                     className="w-full flex items-center gap-3 px-4 py-3 border transition-all relative overflow-hidden group"
                                     style={{
                                         borderColor: isActive ? NEON_CYAN : 'transparent',
-                                        backgroundColor: isActive ? `${NEON_CYAN}10` : 'transparent',
+                                        backgroundColor: isActive ? `${NEON_CYAN} 10` : 'transparent',
                                         color: isActive ? NEON_CYAN : 'gray'
                                     }}
                                 >
@@ -188,13 +186,13 @@ export default function HelpModal({ onClose }: HelpModalProps) {
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t bg-black/60 flex items-center justify-between" style={{ borderColor: `${NEON_CYAN}30` }}>
+                <div className="p-6 border-t bg-black/60 flex items-center justify-between" style={{ borderColor: `${NEON_CYAN} 30` }}>
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest">
                         {'>'} END_OF_FILE
                     </p>
-                    <ArcadeButton onClick={onClose} variant="blue" className="text-xs px-6 py-2">
+                    <CyberButton onClick={onClose} className="text-xs px-6 py-2">
                         ACKNOWLEDGE
-                    </ArcadeButton>
+                    </CyberButton>
                 </div>
             </CyberCard>
         </div>

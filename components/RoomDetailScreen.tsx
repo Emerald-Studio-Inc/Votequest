@@ -5,7 +5,7 @@ import ShareRoomInvite from './ShareRoomInvite';
 import CoinFeaturesPurchase from './CoinFeaturesPurchase';
 import EditRoomModal from './EditRoomModal';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface RoomDetailScreenProps {
     roomId: string;
@@ -115,9 +115,10 @@ export default function RoomDetailScreen({
                 <div className="text-center p-8 border border-red-900/50 bg-red-900/10 max-w-md">
                     <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <p className="font-mono text-red-400 mb-6 uppercase">ERROR: CHAMBER_NOT_FOUND</p>
-                    <ArcadeButton onClick={onBack} variant="cyan">
-                        RETURN_TO_BASE
-                    </ArcadeButton>
+                    <CyberButton onClick={onBack} className="opacity-70">
+                        <ArrowLeft className="w-4 h-4 mr-2 inline-block" />
+                        BACK_TO_HUB
+                    </CyberButton>
                 </div>
             </div>
         );
@@ -135,15 +136,13 @@ export default function RoomDetailScreen({
                 <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-5">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                         <div className="flex items-center gap-3">
-                            <ArcadeButton
+                            <CyberButton
                                 onClick={onBack}
-                                variant="cyan"
-                                size="sm"
-                                className="w-10 h-10 !p-0 flex items-center justify-center"
-                                tooltip="Return"
+                                className="!py-1.5 !px-3"
                             >
-                                <ArrowLeft className="w-5 h-5" />
-                            </ArcadeButton>
+                                <ArrowLeft className="w-4 h-4 mr-1 inline-block" />
+                                BACK_TO_HUB
+                            </CyberButton>
 
                             {/* Status Badge */}
                             <div className="flex items-center gap-2 px-3 py-1.5 border"
@@ -166,62 +165,50 @@ export default function RoomDetailScreen({
                         {/* Action Buttons */}
                         <div className="flex flex-wrap items-center gap-2">
                             {room.status === 'draft' && (
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={() => updateRoomStatus('active')}
-                                    variant="cyan"
                                     className="flex items-center gap-2"
-                                    tooltip="Open Voting"
                                 >
                                     <Play className="w-4 h-4" />
                                     <span>ACTIVATE_PROTOCOL</span>
-                                </ArcadeButton>
+                                </CyberButton>
                             )}
 
                             {room.status === 'active' && (
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={() => updateRoomStatus('closed')}
-                                    variant="magenta"
                                     className="flex items-center gap-2"
-                                    tooltip="Pause Voting"
                                 >
                                     <Pause className="w-4 h-4" />
                                     <span>HALT_VOTING</span>
-                                </ArcadeButton>
+                                </CyberButton>
                             )}
 
                             {room.status === 'closed' && (
-                                <ArcadeButton
+                                <CyberButton
                                     onClick={() => updateRoomStatus('archived')}
-                                    variant="cyan"
                                     className="flex items-center gap-2"
-                                    tooltip="Store Data"
                                 >
                                     <Archive className="w-4 h-4" />
                                     <span>ARCHIVE_DATA</span>
-                                </ArcadeButton>
+                                </CyberButton>
                             )}
-
-                            <ArcadeButton
-                                onClick={() => setShowEditModal(true)}
-                                variant="cyan"
-                                size="sm"
-                                className="flex items-center gap-2"
-                                tooltip="Edit Settings"
-                            >
-                                <Edit className="w-4 h-4" />
-                                <span>CONFIG</span>
-                            </ArcadeButton>
-
-                            <ArcadeButton
+                            <div className="flex items-center gap-3">
+                                <CyberButton
+                                    onClick={() => setShowEditModal(true)}
+                                    className="!py-1.5 !px-3"
+                                >
+                                    <Edit className="w-4 h-4 mr-1" />
+                                    <span className="hidden sm:inline text-xs">RECONFIGURE</span>
+                                </CyberButton>
+                            </div>
+                            <CyberButton
                                 onClick={() => setShowCoinFeatures(true)}
-                                variant="lime"
-                                size="sm"
                                 className="flex items-center gap-2"
-                                tooltip="Purchase Features"
                             >
                                 <Zap className="w-4 h-4" />
                                 <span>BOOST_CHAMBER</span>
-                            </ArcadeButton>
+                            </CyberButton>
                         </div>
                     </div>
 

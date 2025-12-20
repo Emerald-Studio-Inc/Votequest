@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Share2, Mail, QrCode } from 'lucide-react';
 import QRCode from 'qrcode';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface ShareRoomInviteProps {
     roomId: string;
@@ -142,13 +142,12 @@ export default function ShareRoomInvite({ roomId, roomTitle }: ShareRoomInvitePr
                     <div className="flex justify-center mb-4 p-2 bg-white inline-block">
                         <canvas ref={canvasRef} />
                     </div>
-                    <ArcadeButton
+                    <CyberButton
                         onClick={downloadQR}
-                        variant="cyan"
-                        className="w-full text-[10px]"
+                        className="w-full !text-[10px]"
                     >
                         DOWNLOAD_QR_MATRIX
-                    </ArcadeButton>
+                    </CyberButton>
                 </div>
             )}
 

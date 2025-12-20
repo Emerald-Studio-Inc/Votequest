@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MessageSquare, Flame, TrendingUp, Search, Filter, ShieldAlert, Zap, Loader2 } from 'lucide-react';
 import CyberCard from './CyberCard';
-import ArcadeButton from './ArcadeButton';
+import CyberButton from './CyberButton';
 
 interface FeedItem {
     id: string;
@@ -53,12 +53,12 @@ export default function CommunityScreen({ onNavigate }: { onNavigate: (screen: s
                     <p className="text-blue-500/60 font-mono text-sm tracking-widest">{'>'} GLOBAL_DISCOURSE_NETWORK</p>
                 </div>
                 <div className="flex gap-2">
-                    <ArcadeButton variant="cyan" size="sm" onClick={() => { }} className="text-xs">
-                        <Filter className="w-3 h-3 mr-2" /> FILTER
-                    </ArcadeButton>
-                    <ArcadeButton variant="lime" size="sm" onClick={() => { }} className="text-xs">
-                        <Search className="w-3 h-3 mr-2" /> SEARCH
-                    </ArcadeButton>
+                    <CyberButton onClick={() => { }} className="!py-2 !px-4">
+                        <Filter className="w-3 h-3 mr-1" /> FILTER
+                    </CyberButton>
+                    <CyberButton onClick={() => { }} className="!py-2 !px-4">
+                        <Search className="w-3 h-3 mr-1" /> SEARCH
+                    </CyberButton>
                 </div>
             </div>
 
