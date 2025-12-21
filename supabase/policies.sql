@@ -46,3 +46,10 @@ CREATE POLICY "Allow public read access to user_achievements"
 ON user_achievements FOR SELECT
 TO anon, authenticated
 USING (true);
+
+-- Policies for 'organizations' table
+CREATE POLICY "Allow public read access to organizations"
+ON organizations FOR SELECT
+TO anon, authenticated
+USING (true);
+

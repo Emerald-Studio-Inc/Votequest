@@ -10,9 +10,10 @@ import {
 import CyberButton from './CyberButton';
 import CyberCard from './CyberCard';
 import ArenaView from './ArenaView';
+import OperativeDossier from './OperativeDossier';
 
 // Dynamic import for DiscourseMesh to avoid SSR issues with React-Three-Fiber
-const DiscourseMesh = dynamic(() => import('./DiscourseMesh'), {
+const DiscourseMesh = dynamic<any>(() => import('./DiscourseMesh'), {
     ssr: false,
     loading: () => (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
@@ -21,11 +22,13 @@ const DiscourseMesh = dynamic(() => import('./DiscourseMesh'), {
     )
 });
 
-export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, data?: any) => void }) {
+export default function TheGrid({ onNavigate, userData }: { onNavigate: (screen: string, data?: any) => void, userData?: any }) {
     const [activeNode, setActiveNode] = useState<any>(null);
     const [showArena, setShowArena] = useState(false);
+    const [showDossier, setShowDossier] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [feed, setFeed] = useState<any[]>([]);
+    const [organizations, setOrganizations] = useState<any[]>([]);
     const [consensusPulse, setConsensusPulse] = useState(false);
 
     useEffect(() => {
@@ -40,24 +43,26 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
                 const res = await fetch('/api/community?filter=hot', { signal: controller.signal });
                 const data = await res.json();
 
-                if (!data.feed || data.feed.length === 0) {
-                    const simulatedData = [
-                        { id: 'm1', title: 'SYNTHETIC_NODE_ZETA', type: 'debate', status: 'live', participants: 42, tag: 'POLICY', replies: 12, created_at: new Date().toISOString() },
-                        { id: 'm2', title: 'LIQUIDITY_PULSE_BETA', type: 'debate', status: 'live', participants: 89, tag: 'TREASURY', replies: 34, created_at: new Date().toISOString() },
-                        { id: 'm3', title: 'ENCRYPTION_WAVE_9', type: 'discussion', status: 'stable', participants: 156, tag: 'SECURITY', replies: 56, created_at: new Date().toISOString() },
-                        { id: 'm4', title: 'GOVERNANCE_SIGNAL_PROX', type: 'discussion', status: 'stable', participants: 28, tag: 'CORE', replies: 5, created_at: new Date().toISOString() }
-                    ];
-                    setFeed(simulatedData);
-                } else {
+                if (data.feed && data.feed.length > 0) {
                     setFeed(data.feed);
+                    setOrganizations(data.organizations || []);
+                } else {
+                    // DEMO DATA: Provide a vibrant initial experience if DB is empty
+                    setOrganizations([
+                        { id: 'tech-hub', name: 'TECH_SYNAPSE', sector: 'TECH' },
+                        { id: 'econ-hub', name: 'TREASURY_RESERVE', sector: 'ECON' },
+                        { id: 'gov-hub', name: 'GLOBAL_ADVISORY', sector: 'GOV' }
+                    ]);
+                    setFeed([
+                        { id: 'd1', title: 'SYSTEM_AUTONOMY_INITIATIVE', type: 'debate', status: 'live', organization_id: 'tech-hub', participants: 420 },
+                        { id: 'd2', title: 'LIQUIDITY_PROTOCOL_SHIFT', type: 'debate', status: 'stable', organization_id: 'econ-hub', participants: 1337 },
+                        { id: 't1', title: 'SECTOR_ALIGNMENT_PROTOCOL', type: 'discussion', organization_id: 'gov-hub', replies: 88 }
+                    ]);
                 }
             } catch (error) {
                 console.error('Failed to fetch community feed:', error);
-                // Fallback data
-                setFeed([
-                    { id: 'f1', title: 'RECOVERY_SIGNAL_ALPHA', type: 'debate', status: 'live', participants: 12, tag: 'SYSTEM', replies: 5, created_at: new Date().toISOString() },
-                    { id: 'f2', title: 'NETWORK_RESILIENCE_BETA', type: 'discussion', status: 'stable', participants: 45, tag: 'CORE', replies: 20, created_at: new Date().toISOString() }
-                ]);
+                // Show empty state on error, not mock data
+                setFeed([]);
             } finally {
                 clearTimeout(timeoutId);
                 setIsLoading(false);
@@ -65,6 +70,23 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
         };
         fetchFeed();
     }, []);
+
+    // Calculate Faction Stats from Feed
+    const factionStats = useMemo(() => {
+        let totalPro = 0;
+        let totalCon = 0;
+        feed.forEach(d => {
+            if (d.type === 'debate') {
+                totalPro += d.pro_count || 0;
+                totalCon += d.con_count || 0;
+            }
+        });
+        const total = totalPro + totalCon || 1;
+        return {
+            proPercent: Math.round((totalPro / total) * 100),
+            conPercent: Math.round((totalCon / total) * 100)
+        };
+    }, [feed]);
 
     const handleNodeSelection = (node: any) => {
         setActiveNode(node);
@@ -91,12 +113,12 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
 
                 {/* Nav Links */}
                 <div className="flex-1 px-4 space-y-2">
-                    <NavItem icon={<LayoutDashboard className="w-4 h-4" />} label="HUD Overview" />
-                    <NavItem icon={<Terminal className="w-4 h-4" />} label="Architect Console" />
+                    <NavItem icon={<LayoutDashboard className="w-4 h-4" />} label="HUD Overview" onClick={() => onNavigate('overview')} />
+                    <NavItem icon={<Terminal className="w-4 h-4" />} label="Architect Console" onClick={() => alert('SYSTEM WARNING\n\nCONSOLE OFFLINE // PENDING PHASE 4 UPLINK')} />
                     <NavItem icon={<Globe className="w-4 h-4" />} label="THE_GRID" active />
-                    <NavItem icon={<Users className="w-4 h-4" />} label="Factions & Orgs" />
-                    <NavItem icon={<MessageCircle className="w-4 h-4" />} label="Personal Signals" />
-                    <NavItem icon={<Settings className="w-4 h-4" />} label="Settings" />
+                    <NavItem icon={<Users className="w-4 h-4" />} label="Factions & Orgs" onClick={() => onNavigate('organization')} />
+                    <NavItem icon={<MessageCircle className="w-4 h-4" />} label="Personal Signals" onClick={() => setShowDossier(!showDossier)} active={showDossier} />
+                    <NavItem icon={<Settings className="w-4 h-4" />} label="Settings" onClick={() => onNavigate('settings')} />
                 </div>
 
                 {/* User Panel Bottom */}
@@ -184,6 +206,7 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
                         ) : (
                             <DiscourseMesh
                                 feed={feed}
+                                organizations={organizations}
                                 onSelectNode={handleNodeSelection}
                             />
                         )}
@@ -232,12 +255,12 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
                         content={
                             <div className="space-y-3 mt-4">
                                 <div className="space-y-1">
-                                    <div className="flex justify-between text-[9px] text-gray-500 uppercase"><span>The Core</span><span>42%</span></div>
-                                    <div className="h-1 bg-white/5 w-full rounded-full overflow-hidden"><div className="h-full bg-cyan-500 w-[42%]" /></div>
+                                    <div className="flex justify-between text-[9px] text-gray-500 uppercase"><span>The Core (Pro)</span><span>{factionStats.proPercent}%</span></div>
+                                    <div className="h-1 bg-white/5 w-full rounded-full overflow-hidden"><div className="h-full bg-cyan-500 transition-all duration-1000" style={{ width: `${factionStats.proPercent}%` }} /></div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="flex justify-between text-[9px] text-gray-500 uppercase"><span>Shadow Sector</span><span>28%</span></div>
-                                    <div className="h-1 bg-white/5 w-full rounded-full overflow-hidden"><div className="h-full bg-magenta-500 w-[28%]" /></div>
+                                    <div className="flex justify-between text-[9px] text-gray-500 uppercase"><span>Shadow Sector (Con)</span><span>{factionStats.conPercent}%</span></div>
+                                    <div className="h-1 bg-white/5 w-full rounded-full overflow-hidden"><div className="h-full bg-magenta-500 transition-all duration-1000" style={{ width: `${factionStats.conPercent}%` }} /></div>
                                 </div>
                             </div>
                         }
@@ -249,12 +272,15 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
                         icon={<Shield className="w-4 h-4 text-green-500" />}
                         content={
                             <div className="space-y-2 mt-4">
-                                <div className="text-[10px] font-mono text-gray-500 pl-3 border-l-2 border-cyan-500/40">
-                                    <span className="text-cyan-400">STABILIZED</span> Policy_v2.4_Shard
-                                </div>
-                                <div className="text-[10px] font-mono text-gray-500 pl-3 border-l-2 border-cyan-500/40">
-                                    <span className="text-cyan-400">STABILIZED</span> Encryption_Standard_Z
-                                </div>
+                                {feed.filter(d => d.status === 'stable').length > 0 ? (
+                                    feed.filter(d => d.status === 'stable').slice(0, 2).map((d, i) => (
+                                        <div key={i} className="text-[10px] font-mono text-gray-500 pl-3 border-l-2 border-cyan-500/40 truncate">
+                                            <span className="text-cyan-400">STABILIZED</span> {d.title}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-[9px] text-gray-600 italic py-2">No recently stabilized mandates.</div>
+                                )}
                             </div>
                         }
                         btnText="REVIEW_OUTCOMES"
@@ -265,9 +291,11 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
                         icon={<ShieldAlert className="w-4 h-4 text-magenta-500" />}
                         content={
                             <div className="space-y-2 mt-4">
-                                <div className="text-[10px] font-mono text-gray-500 pl-3 border-l-2 border-magenta-500/40">
-                                    <span className="text-magenta-400">CRITICAL</span> Liquidity_Pulse_Beta
-                                </div>
+                                {feed.filter(d => d.type === 'debate' && d.status !== 'stable').sort((a, b) => (b.participants || 0) - (a.participants || 0)).slice(0, 2).map((d, i) => (
+                                    <div key={i} className="text-[10px] font-mono text-gray-500 pl-3 border-l-2 border-magenta-500/40 truncate">
+                                        <span className="text-magenta-400">CRITICAL</span> {d.title}
+                                    </div>
+                                ))}
                             </div>
                         }
                         btnText="ENTER_ARENA"
@@ -289,6 +317,14 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
                 <div className="fixed inset-0 z-[100] pointer-events-none bg-cyan-500/10 animate-pulse-once border-[10px] border-cyan-500/20" />
             )}
 
+            {/* Operative Dossier Overlay */}
+            {showDossier && userData && (
+                <OperativeDossier
+                    userData={userData}
+                    onClose={() => setShowDossier(false)}
+                />
+            )}
+
             <style jsx global>{`
                 @keyframes pulse-once { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
                 .animate-pulse-once { animation: pulse-once 1s ease-out; }
@@ -297,9 +333,9 @@ export default function TheGrid({ onNavigate }: { onNavigate: (screen: string, d
     );
 }
 
-function NavItem({ icon, label, active = false }: { icon: React.ReactNode, label: string, active?: boolean }) {
+function NavItem({ icon, label, active = false, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
     return (
-        <div className={`
+        <div onClick={onClick} className={`
             flex items-center gap-4 px-4 py-3 rounded-sm cursor-pointer transition-all border
             ${active
                 ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(0,255,255,0.1)]'

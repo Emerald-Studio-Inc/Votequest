@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
                 pro_count,
                 con_count,
                 created_at,
+                organization_id,
                 creator:users!debates_creator_id_fkey(username)
             `)
             .order('created_at', { ascending: false })
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
                 is_pinned,
                 view_count,
                 created_at,
+                organization_id,
                 author:users!forum_threads_author_id_fkey(username)
             `)
             .order(filter === 'new' ? 'created_at' : 'view_count', { ascending: false })
@@ -48,6 +50,17 @@ export async function GET(request: NextRequest) {
         if (threadsError) {
             console.error('Error fetching threads:', threadsError);
         }
+
+        // Fetch Organizations for the hubs
+        const orgIds = Array.from(new Set([
+            ...(debates?.map(d => d.organization_id).filter(Boolean) || []),
+            ...(threads?.map(t => t.organization_id).filter(Boolean) || [])
+        ]));
+
+        const { data: organizations } = await supabase
+            .from('organizations')
+            .select('id, name, slug, sector')
+            .in('id', orgIds);
 
         // Calculate engagement metrics for threads (comments count)
         const threadIds = threads?.map(t => t.id) || [];
@@ -68,14 +81,17 @@ export async function GET(request: NextRequest) {
         const feed = [
             // Live debates first
             ...(debates || [])
-                .filter(d => filter === 'debates' || d.status === 'live')
+                .filter(d => filter === 'debates' || ['live', 'stable', 'friction'].includes(d.status))
                 .map(d => ({
                     id: d.id,
                     title: d.title,
                     author: (d.creator as any)?.[0]?.username || 'System',
                     type: 'debate' as const,
                     status: d.status,
+                    organization_id: d.organization_id,
                     participants: d.pro_count + d.con_count,
+                    pro_count: d.pro_count,
+                    con_count: d.con_count,
                     views: null,
                     upvotes: null,
                     replies: null,
@@ -89,6 +105,7 @@ export async function GET(request: NextRequest) {
                 author: (t.author as any)?.[0]?.username || 'Anonymous',
                 type: 'discussion' as const,
                 status: null,
+                organization_id: t.organization_id,
                 participants: null,
                 views: t.view_count?.toString() || '0',
                 upvotes: t.view_count || 0, // Using view_count as proxy for now
@@ -103,7 +120,7 @@ export async function GET(request: NextRequest) {
             feed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         }
 
-        return NextResponse.json({ feed });
+        return NextResponse.json({ feed, organizations });
 
     } catch (error) {
         console.error('Community API error:', error);

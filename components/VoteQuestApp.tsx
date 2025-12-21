@@ -788,7 +788,16 @@ const VoteQuestApp = () => {
                     {activeDashboardTab === 'community' && (
                         <div className="pb-24 h-full">
                             <TheGrid
-                                onNavigate={setCurrentScreen}
+                                userData={userData}
+                                onNavigate={(screen) => {
+                                    if (screen === 'settings') {
+                                        setActiveDashboardTab('settings');
+                                    } else if (screen === 'overview') {
+                                        setActiveDashboardTab('overview');
+                                    } else {
+                                        setCurrentScreen(screen);
+                                    }
+                                }}
                             />
                         </div>
                     )}

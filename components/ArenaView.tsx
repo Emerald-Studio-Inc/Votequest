@@ -1,16 +1,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Shield, Zap, Target, Activity, MessageCircle, X, Info, ChevronRight, AlertCircle, Cpu, Loader2 } from 'lucide-react';
+import { Shield, Zap, Target, Activity, MessageCircle, X, Info, ChevronRight, AlertCircle, Cpu, Loader2, Radio, Gift, ExternalLink } from 'lucide-react';
 import CyberButton from './CyberButton';
 import CyberCard from './CyberCard';
 import EntranceExam from './EntranceExam';
+import DebateConsole from './DebateConsole';
+import MedalGiftingModal from './MedalGiftingModal';
 import { getArchitectResponse } from '@/lib/architect-lore';
 import { supabase } from '@/lib/supabase-auth';
 
 interface Signal {
     id: string;
     author: string;
+    author_id?: string;
     level: number;
     content: string;
     side: 'pro' | 'con';
@@ -33,6 +36,10 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
     const [debateDetails, setDebateDetails] = useState<any>(debate);
     const [architectBriefing, setArchitectBriefing] = useState<string[]>([]);
     const [user, setUser] = useState<any>(null);
+    const [showConsole, setShowConsole] = useState(false);
+    const [showMedalModal, setShowMedalModal] = useState(false);
+    const [giftRecipient, setGiftRecipient] = useState<{ id: string; name: string } | null>(null);
+    const [userBalance, setUserBalance] = useState(0);
 
     const NEON_CYAN = '#00ffff';
     const NEON_MAGENTA = '#ff00ff';
@@ -46,6 +53,15 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
                 const { data: { user: currentUser } } = await supabase.auth.getUser();
                 setUser(currentUser);
 
+                if (currentUser) {
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('coins')
+                        .eq('id', currentUser.id)
+                        .single();
+                    if (userData) setUserBalance(userData.coins || 0);
+                }
+
                 // Fetch Debate Details & Arguments
                 const res = await fetch(`/api/debates/${debate.id}`);
                 const data = await res.json();
@@ -55,6 +71,7 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
                 const proSignals = (data.proArguments || []).map((c: any) => ({
                     id: c.id,
                     author: c.user?.username || 'Anonymous',
+                    author_id: c.user_id,
                     level: c.user?.global_rank || 1,
                     content: c.content,
                     side: 'pro',
@@ -66,6 +83,7 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
                 const conSignals = (data.conArguments || []).map((c: any) => ({
                     id: c.id,
                     author: c.user?.username || 'Anonymous',
+                    author_id: c.user_id,
                     level: c.user?.global_rank || 1,
                     content: c.content,
                     side: 'con',
@@ -105,11 +123,17 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
         });
 
         const momentum = debateData?.pro_count > debateData?.con_count ? 'CONSENSUS_BEYOND_THRESHOLD' : 'HIGH_FRICTION_LOAD';
+        const rules = debateData?.rules || [
+            { title: 'SIGNAL_PURITY', description: 'Zero tolerance for low-effort noise.' },
+            { title: 'VQC_STAKE', description: 'Rules violations deduct 25 VQC.' }
+        ];
+
         return [
             architectResponse,
             `TACTICAL_MOMENTUM: ${momentum}`,
             `SIGNAL_THROUGHPUT: ${debateData?.pro_count + debateData?.con_count}_ACTIVE`,
-            `INTEGRITY_INDEX: ${isExamPassed ? 'VERIFIED' : 'PENDING'}`
+            `INTEGRITY_INDEX: ${isExamPassed ? 'VERIFIED' : 'PENDING'}`,
+            ...rules.map((r: any) => `PROTOCOL: ${r.title}`)
         ];
     };
 
@@ -183,6 +207,37 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
                 </div>
 
                 <div className="flex items-center gap-4 md:gap-10">
+                    {/* Console Button */}
+                    <CyberButton
+                        onClick={() => setShowConsole(true)}
+                        className="!py-2 !px-3 !text-[9px] hidden md:flex items-center gap-2"
+                    >
+                        <Radio className="w-4 h-4" /> CONSOLE
+                    </CyberButton>
+
+                    {/* Gift Medal Button */}
+                    <CyberButton
+                        onClick={() => {
+                            setGiftRecipient(null);
+                            setShowMedalModal(true);
+                        }}
+                        className="!py-2 !px-3 !text-[9px] hidden md:flex items-center gap-2 !border-magenta-500/30 hover:!bg-magenta-500/20"
+                    >
+                        <Gift className="w-4 h-4" /> MEDALS
+                    </CyberButton>
+
+                    {/* Share/Invite Button */}
+                    <CyberButton
+                        onClick={() => {
+                            const shareUrl = `${window.location.origin}?debate=${debate.id}`;
+                            navigator.clipboard.writeText(shareUrl);
+                            alert('Arena Link Copied to Clipboard!');
+                        }}
+                        className="!py-2 !px-3 !text-[9px] hidden md:flex items-center gap-2 !border-cyan-500/30 hover:!bg-cyan-500/20"
+                    >
+                        <ExternalLink className="w-4 h-4" /> INVITE
+                    </CyberButton>
+
                     <div className="hidden lg:flex flex-col items-end">
                         <span className="text-[10px] text-gray-500 uppercase tracking-widest">Sector Alignment</span>
                         <div className="flex items-center gap-1 mt-1">
@@ -235,7 +290,15 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6 custom-scrollbar">
                         {signals.filter(s => s.side === 'pro').length > 0 ? (
                             signals.filter(s => s.side === 'pro').map(signal => (
-                                <SignalCard key={signal.id} signal={signal} themeColor={NEON_CYAN} />
+                                <SignalCard
+                                    key={signal.id}
+                                    signal={signal}
+                                    themeColor={NEON_CYAN}
+                                    onGift={(id: string, name: string) => {
+                                        setGiftRecipient({ id, name });
+                                        setShowMedalModal(true);
+                                    }}
+                                />
                             ))
                         ) : (
                             <div className="text-[10px] text-gray-700 text-center py-10 uppercase tracking-widest">No signals broadcasted</div>
@@ -254,7 +317,15 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6 custom-scrollbar">
                         {signals.filter(s => s.side === 'con').length > 0 ? (
                             signals.filter(s => s.side === 'con').map(signal => (
-                                <SignalCard key={signal.id} signal={signal} themeColor={NEON_MAGENTA} />
+                                <SignalCard
+                                    key={signal.id}
+                                    signal={signal}
+                                    themeColor={NEON_MAGENTA}
+                                    onGift={(id: string, name: string) => {
+                                        setGiftRecipient({ id, name });
+                                        setShowMedalModal(true);
+                                    }}
+                                />
                             ))
                         ) : (
                             <div className="text-[10px] text-gray-700 text-center py-10 uppercase tracking-widest">No interference detected</div>
@@ -308,11 +379,33 @@ export default function ArenaView({ debate, onClose, onNavigate }: ArenaViewProp
                     onCancel={() => setShowExam(false)}
                 />
             )}
+
+            {showConsole && (
+                <DebateConsole
+                    debateId={debate.id}
+                    userId={user?.id}
+                    isParticipant={isExamPassed}
+                    onClose={() => setShowConsole(false)}
+                />
+            )}
+
+            {showMedalModal && (
+                <MedalGiftingModal
+                    isOpen={showMedalModal}
+                    onClose={() => setShowMedalModal(false)}
+                    userId={user?.id}
+                    userBalance={userBalance}
+                    recipientId={giftRecipient?.id}
+                    recipientName={giftRecipient?.name}
+                    debateId={debate.id}
+                    onSuccess={(newBalance) => setUserBalance(newBalance)}
+                />
+            )}
         </div>
     );
 }
 
-function SignalCard({ signal, themeColor }: { signal: Signal; themeColor: string }) {
+function SignalCard({ signal, themeColor, onGift }: { signal: Signal; themeColor: string; onGift?: (userId: string, username: string) => void }) {
     return (
         <div
             className="p-6 bg-white/[0.01] border border-white/5 relative group transition-all duration-300 hover:bg-white/[0.03] hover:border-white/10"
@@ -330,12 +423,23 @@ function SignalCard({ signal, themeColor }: { signal: Signal; themeColor: string
                         </div>
                     </div>
                 </div>
-                {signal.aiTag && (
-                    <div className="px-2.5 py-0.5 border text-[8px] font-bold tracking-[.25em] transition-all"
-                        style={{ color: signal.aiTag.color, borderColor: `${signal.aiTag.color}30`, backgroundColor: `${signal.aiTag.color}05` }}>
-                        {signal.aiTag.label}: {signal.aiTag.value}
-                    </div>
-                )}
+                <div className="flex items-center gap-3">
+                    {signal.aiTag && (
+                        <div className="px-2.5 py-0.5 border text-[8px] font-bold tracking-[.25em] transition-all"
+                            style={{ color: signal.aiTag.color, borderColor: `${signal.aiTag.color}30`, backgroundColor: `${signal.aiTag.color}05` }}>
+                            {signal.aiTag.label}: {signal.aiTag.value}
+                        </div>
+                    )}
+                    {signal.author_id && (
+                        <button
+                            onClick={() => onGift?.(signal.author_id!, signal.author)}
+                            className="p-1.5 bg-magenta-500/10 border border-magenta-500/30 text-magenta-400 hover:bg-magenta-500 hover:text-white transition-all rounded-sm group/gift"
+                            title="Gift Medal"
+                        >
+                            <Gift className="w-3.5 h-3.5 group-hover/gift:scale-110" />
+                        </button>
+                    )}
+                </div>
             </div>
 
             <p className="text-[13px] text-gray-400 font-mono leading-relaxed mb-8 border-l border-white/5 pl-4">

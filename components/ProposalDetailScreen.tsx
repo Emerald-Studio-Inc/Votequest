@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, Users, Check, Shield, TrendingUp, Activity, AlertCircle, CheckCircle2, ChevronRight, Share2, Zap, Star } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Check, Shield, TrendingUp, Activity, AlertCircle, CheckCircle2, ChevronRight, Share2, Zap, Star, MessageSquare, Send } from 'lucide-react';
 import { ProposalWithOptions } from '@/lib/supabase';
 import Tooltip from './Tooltip';
 import ShareModal from './ShareModal';
@@ -44,6 +44,44 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 
     // TODO: Import toast properly
     const [boosted, setBoosted] = useState(false);
+    const [comments, setComments] = useState<any[]>([]);
+    const [newComment, setNewComment] = useState('');
+    const [commentLoading, setCommentLoading] = useState(false);
+
+    // Load comments
+    useEffect(() => {
+        const loadComments = async () => {
+            try {
+                const res = await fetch(`/api/proposals/${proposal.id}/comments`);
+                const data = await res.json();
+                if (data.comments) setComments(data.comments);
+            } catch (e) {
+                console.error('Failed to load comments:', e);
+            }
+        };
+        loadComments();
+    }, [proposal.id]);
+
+    const handlePostComment = async () => {
+        if (!newComment.trim() || !userId) return;
+        setCommentLoading(true);
+        try {
+            const res = await fetch(`/api/proposals/${proposal.id}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, content: newComment })
+            });
+            const data = await res.json();
+            if (data.comment) {
+                setComments([...comments, data.comment]);
+                setNewComment('');
+            }
+        } catch (e) {
+            console.error('Failed to post comment:', e);
+        }
+        setCommentLoading(false);
+    };
+
 
     const toast = {
         success: (title: string, msg: string) => alert(`${title}\n${msg}`),
@@ -526,6 +564,66 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
                 proposalTitle={proposal.title}
                 userId={userId}
             />
+
+            {/* Comments Section */}
+            <div className="mt-8 border-t border-white/10 pt-8">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5" style={{ color: NEON_CYAN }} />
+                    DISCUSSION ({comments.length})
+                </h3>
+
+                {/* New Comment Input */}
+                <div className="flex gap-2 mb-6">
+                    <input
+                        type="text"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Add your perspective..."
+                        className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50"
+                        onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
+                    />
+                    <CyberButton
+                        onClick={handlePostComment}
+                        disabled={commentLoading || !newComment.trim()}
+                        className="!px-4"
+                    >
+                        <Send className="w-4 h-4" />
+                    </CyberButton>
+                </div>
+
+                {/* Comments List */}
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {comments.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500 text-sm">
+                            No comments yet. Be the first to share your thoughts.
+                        </div>
+                    ) : (
+                        comments.map((comment) => (
+                            <div key={comment.id} className="p-4 bg-white/5 border border-white/5 hover:border-cyan-500/20 transition-colors">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-cyan-400 font-mono text-sm">{comment.author}</span>
+                                    <span className="text-gray-600 text-xs">
+                                        {new Date(comment.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <p className="text-gray-300 text-sm">{comment.content}</p>
+
+                                {/* Replies */}
+                                {comment.replies?.length > 0 && (
+                                    <div className="mt-3 pl-4 border-l border-white/10 space-y-2">
+                                        {comment.replies.map((reply: any) => (
+                                            <div key={reply.id} className="text-sm">
+                                                <span className="text-cyan-400/70 font-mono">{reply.author}: </span>
+                                                <span className="text-gray-400">{reply.content}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
         </div>
     );
 };
